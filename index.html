@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试1版</title>
+    <title>基沃托斯日讯-测试版v1.5</title>
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --bg-color: #121212; --card-bg: #1e1e1e; --text-main: #e0e0e0; --text-sub: #888888; --accent-color: #4a90e2; --ba-pink: #ff7b9c; --border-color: #333333; }
+        :root { --bg-color: #121212; --card-bg: #1e1e1e; --text-main: #e0e0e0; --text-sub: #888888; --accent-color: #ff7b9c; --border-color: #333333; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-main); line-height: 1.5; padding-bottom: 60px; }
         #toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--accent-color); width: 80%; max-width: 300px;}
@@ -16,7 +16,6 @@
         #auth-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background: var(--bg-color); position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
         .auth-box { width: 100%; max-width: 360px; background: var(--card-bg); padding: 30px 20px; border-radius: 16px; border: 1px solid var(--border-color); }
         .auth-title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 24px; color: var(--accent-color); }
-        .auth-subtitle { text-align: center; font-size: 12px; color: var(--text-sub); margin-top: -18px; margin-bottom: 24px; }
         .input-group { margin-bottom: 16px; }
         .input-group label { display: block; font-size: 13px; color: var(--text-sub); margin-bottom: 6px; }
         .auth-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 15px; outline: none; }
@@ -30,6 +29,12 @@
         .header-top { font-size: 16px; font-weight: bold; display: flex; justify-content: space-between; color: var(--accent-color);}
         .search-box { width: 100%; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
         
+        /* 公告栏 */
+        .announcement-bar { margin: 12px 16px 0; background: rgba(255, 123, 156, 0.1); border: 1px solid var(--accent-color); border-radius: 8px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; }
+        .announcement-icon { font-size: 18px; line-height: 1.4;}
+        .announcement-content { flex: 1; font-size: 14px; color: var(--text-main); white-space: pre-wrap; word-break: break-all;}
+        .announcement-edit { font-size: 12px; color: var(--accent-color); cursor: pointer; padding: 2px 6px; border: 1px solid var(--accent-color); border-radius: 4px;}
+
         /* 底部导航 */
         .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; height: 60px; background: rgba(24,24,24,0.95); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 200; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sub); cursor: pointer; flex: 1; }
@@ -37,7 +42,11 @@
         .nav-btn-add { background: var(--accent-color); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-top: -20px; cursor: pointer; font-size: 24px; font-weight: bold; }
         
         /* 帖子 */
-        .post-card { background: var(--bg-color); padding: 16px; border-bottom: 8px solid #000; }
+        .post-card { background: var(--bg-color); padding: 16px; border-bottom: 8px solid #000; animation: slideDown 0.4s ease-out; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .post-main-area { cursor: pointer; }
         .post-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .user-info { display: flex; align-items: center; }
@@ -45,32 +54,54 @@
         .avatar img { width: 100%; height: 100%; object-fit: cover; }
         .name-time { display: flex; flex-direction: column; }
         .username { font-weight: 500; font-size: 15px; display: flex; align-items: center; gap: 6px; }
-        .role-tag { font-size: 11px; background: rgba(74, 144, 226, 0.2); color: var(--accent-color); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--accent-color); }
+        .role-tag { font-size: 11px; background: rgba(255, 123, 156, 0.2); color: var(--accent-color); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--accent-color); }
+        .admin-tag { font-size: 11px; background: #ff4757; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         .time { font-size: 12px; color: var(--text-sub); }
-        .post-content { font-size: 15px; margin-bottom: 12px; word-break: break-all; }
+        .post-content { font-size: 15px; margin-bottom: 12px; word-break: break-all; white-space: pre-wrap; }
         .post-content.cosplay-text { font-style: italic; color: #b0c4de; background: #1a1a1a; padding: 10px; border-radius: 8px; border-left: 3px solid var(--accent-color); }
+        
+        /* 媒体展示 */
+        .post-media { width: 100%; max-height: 300px; border-radius: 8px; margin-bottom: 12px; object-fit: cover; background: #000; }
+        
         .action-bar { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; padding-top: 8px; border-top: 1px solid var(--border-color); }
-        .action-item { cursor: pointer; padding: 6px 10px; }
+        .action-item { cursor: pointer; padding: 6px 10px; display: flex; align-items: center; gap: 4px;}
+        .delete-btn { color: #e74c3c; font-weight: bold; }
         
         /* 个人主页 */
-        .profile-header { padding: 30px 16px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        .profile-header { padding: 30px 16px 20px; text-align: center; border-bottom: 1px solid var(--border-color); background: linear-gradient(180deg, #1a1a1a 0%, var(--bg-color) 100%);}
         .profile-avatar { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 12px; display: flex; justify-content: center; align-items: center; font-size: 32px; color: #fff; overflow: hidden; position: relative; border: 2px solid var(--accent-color); }
         .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .avatar-upload { position: absolute; bottom: -5px; right: -5px; background: var(--accent-color); width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; border: 2px solid var(--bg-color); font-size: 14px;}
-        .logout-btn { margin-top: 20px; background: transparent; border: 1px solid #e74c3c; color: #e74c3c; padding: 8px 24px; border-radius: 20px; cursor: pointer; }
+        .profile-bio { font-size: 14px; color: #b0c4de; margin: 10px auto; max-width: 80%; line-height: 1.4; word-wrap: break-word;}
+        
+        .profile-stats { display: flex; justify-content: center; gap: 30px; margin-top: 15px; margin-bottom: 20px;}
+        .stat-item { display: flex; flex-direction: column; align-items: center; }
+        .stat-num { font-weight: bold; font-size: 18px; color: var(--text-main); }
+        .stat-label { font-size: 12px; color: var(--text-sub); }
+        
+        .profile-actions { display: flex; justify-content: center; gap: 15px; }
+        .btn-outline { background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 14px;}
+        .logout-btn { background: transparent; border: 1px solid #e74c3c; color: #e74c3c; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 14px;}
 
         /* 弹窗 */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 300; display: none; justify-content: center; align-items: flex-end; }
-        .modal-content { background: var(--card-bg); width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; display: flex; flex-direction: column;}
+        .modal-content { background: var(--card-bg); width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; display: flex; flex-direction: column; max-height: 85vh;}
         .modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: bold; }
-        .modal-textarea { width: 100%; height: 100px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; color: var(--text-main); font-size: 15px; resize: none; outline: none; margin-bottom: 16px; }
+        .modal-textarea { width: 100%; height: 100px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; color: var(--text-main); font-size: 15px; resize: none; outline: none; margin-bottom: 12px; }
         .modal-submit { width: 100%; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
         
         /* 发帖模式切换 */
         .mode-switch { display: flex; margin-bottom: 12px; gap: 10px; }
         .mode-btn { flex: 1; padding: 8px; text-align: center; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-sub); border-radius: 8px; cursor: pointer; font-size: 14px; }
-        .mode-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: rgba(74, 144, 226, 0.1); }
+        .mode-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: rgba(255, 123, 156, 0.1); }
         .role-input-group { display: none; margin-bottom: 12px; }
+        
+        /* 媒体上传按钮与预览 */
+        .media-tools { display: flex; gap: 10px; margin-bottom: 12px; align-items: center;}
+        .upload-btn { background: #2a2a2a; color: #aaa; padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid #444;}
+        .preview-container { display: none; position: relative; margin-bottom: 12px; }
+        .preview-media { width: 100%; max-height: 200px; border-radius: 8px; object-fit: cover; }
+        .remove-media { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; cursor: pointer;}
     </style>
 </head>
 <body>
@@ -78,7 +109,7 @@
 
 <div id="auth-page">
     <div class="auth-box">
-        <div class="auth-title" id="auth-title">基沃托斯日讯-测试1版</div>
+        <div class="auth-title" id="auth-title">基沃托斯日讯-测试版v1.5</div>
         <div class="input-group" id="nickname-group" style="display: none;">
             <label>昵称</label>
             <input type="text" class="auth-input" id="auth-nickname" placeholder="给自己起个名字">
@@ -105,7 +136,10 @@
         </div>
         <input type="text" class="search-box" id="search-input" placeholder="搜索帖子、角色或用户...">
     </header>
-    <main id="main-content"></main>
+    
+    <main id="main-content">
+        <!-- 公告栏由JS动态插入 -->
+    </main>
     
     <nav class="bottom-nav">
         <div class="nav-item active" data-view="feed" onclick="switchView('feed')">首页</div>
@@ -119,7 +153,7 @@
 <!-- 发帖弹窗 -->
 <div class="modal-overlay" id="post-modal">
     <div class="modal-content">
-        <div class="modal-header"><span>发布新帖子</span><span style="cursor:pointer; padding:5px;" onclick="document.getElementById('post-modal').style.display='none'">✕</span></div>
+        <div class="modal-header"><span>发布新帖子</span><span style="cursor:pointer; padding:5px;" onclick="closePostModal()">✕</span></div>
         
         <div class="mode-switch">
             <div class="mode-btn active" id="mode-normal" onclick="switchPostMode('normal')">日常发帖</div>
@@ -131,7 +165,20 @@
         </div>
 
         <textarea class="modal-textarea" id="post-input" placeholder="分享你此刻的想法..."></textarea>
-        <button class="modal-submit" onclick="submitPost()">发布</button>
+        
+        <div class="media-tools">
+            <div class="upload-btn" onclick="document.getElementById('media-uploader').click()">📷 添加图片 / 视频</div>
+            <span style="font-size:12px; color:#888;">(最大 2MB图 / 5MB视频)</span>
+        </div>
+        <input type="file" id="media-uploader" accept="image/*,video/*" style="display: none;" onchange="handleMediaSelect(event)">
+        
+        <div class="preview-container" id="media-preview-container">
+            <img id="preview-img" class="preview-media" style="display:none;">
+            <video id="preview-video" class="preview-media" controls style="display:none;"></video>
+            <div class="remove-media" onclick="clearMedia()">✕</div>
+        </div>
+
+        <button class="modal-submit" onclick="submitPost()" style="margin-top: 10px;">发布</button>
     </div>
 </div>
 
@@ -147,13 +194,34 @@
     </div>
 </div>
 
+<!-- 编辑资料弹窗 -->
+<div class="modal-overlay" id="edit-profile-modal">
+    <div class="modal-content">
+        <div class="modal-header"><span>编辑个人简介</span><span style="cursor:pointer; padding:5px;" onclick="document.getElementById('edit-profile-modal').style.display='none'">✕</span></div>
+        <textarea class="modal-textarea" id="edit-bio-input" placeholder="介绍一下自己吧，比如：夏莱的老师、阿罗娜的助手..." style="height: 120px;"></textarea>
+        <button class="modal-submit" onclick="saveProfile()">保存资料</button>
+    </div>
+</div>
+
+<!-- 编辑公告弹窗（仅管理员可用） -->
+<div class="modal-overlay" id="edit-announcement-modal">
+    <div class="modal-content">
+        <div class="modal-header"><span>编辑系统公告</span><span style="cursor:pointer; padding:5px;" onclick="document.getElementById('edit-announcement-modal').style.display='none'">✕</span></div>
+        <textarea class="modal-textarea" id="edit-announcement-input" placeholder="输入要展示在首页的公告内容..." style="height: 120px;"></textarea>
+        <button class="modal-submit" onclick="saveAnnouncement()">发布公告</button>
+    </div>
+</div>
+
 <!-- 隐藏的文件上传组件 -->
 <input type="file" id="avatar-uploader" accept="image/*" style="display: none;" onchange="handleAvatarUpload(event)">
 
 <script>
+    // ================= 配置区 =================
+    const ADMIN_EMAIL = 'admin@kivotos.com'; 
     const SUPABASE_URL = 'https://ycjshhxxqnyizewpswoc.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut'; 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // ==========================================
 
     function showToast(msg) {
         const toast = document.getElementById('toast');
@@ -161,6 +229,11 @@
         toast.style.display = 'block';
         clearTimeout(window.toastTimer);
         window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+
+    function generateSignal() {
+        const num = Math.floor(100000 + Math.random() * 900000);
+        return `KIV-${num}`;
     }
 
     const PRESET_AVATARS = [
@@ -172,19 +245,36 @@
     ];
 
     let MemoryData = JSON.parse(localStorage.getItem('forum_ba_v2')) || {
-        users: [], posts: [
-            { id: 'p1', authorId: 'sys', content: '【夏莱通知】老师，什亭之匣网络测试已完成，现在可以自由交流了。', type: 'normal', time: Date.now(), likes: 128, isLiked: false, comments: [] },
-            { id: 'p2', authorId: 'sys', content: '*全息投影闪烁了一下，阿罗娜出现在半空中* 老师，今天的基沃托斯依然和平呢！但是...好像有新的帖子出现了！', type: 'cosplay', role: '阿罗娜', time: Date.now() - 100000, likes: 256, isLiked: false, comments: [] }
+        users: [], 
+        announcement: '欢迎来到基沃托斯日讯！测试版v1.5现已上线，支持发表带图/视频的帖子，管理员可在此处发布公告。',
+        posts: [
+            { id: 'p1', authorId: 'sys', content: '【夏莱通知】老师，什亭之匣网络测试已完成，现在可以自由交流了。', type: 'normal', time: Date.now(), likes: 128, isLiked: false, comments: [], media: null },
+            { id: 'p2', authorId: 'sys', content: '*全息投影闪烁了一下，阿罗娜出现在半空中* 老师，今天的基沃托斯依然和平呢！但是...好像有新的帖子出现了！', type: 'cosplay', role: '阿罗娜', time: Date.now() - 100000, likes: 256, isLiked: false, comments: [], media: null }
         ]
     };
-    if(!MemoryData.users.find(u => u.id === 'sys')){
-        MemoryData.users.push({ id: 'sys', name: '联邦学生会', avatar: PRESET_AVATARS[0], followers: 999, followingList: [], bookmarks: [], avatarColor: '#4a90e2' });
+    
+    // 兼容老版本数据：如果没有公告字段，给个默认的
+    if (!MemoryData.announcement) {
+        MemoryData.announcement = '欢迎来到基沃托斯日讯！';
     }
+
+    if(!MemoryData.users.find(u => u.id === 'sys')){
+        MemoryData.users.push({ 
+            id: 'sys', name: '联邦学生会', avatar: PRESET_AVATARS[0], followers: 999, 
+            followingList: [], bookmarks: [], avatarColor: '#ff7b9c', bio: '基沃托斯官方认证账号。',
+            signal: 'KIV-000000'
+        });
+    }
+
+    MemoryData.users.forEach(u => {
+        if (!u.signal) u.signal = generateSignal();
+    });
 
     let currentUserSessionId = null;
     let isRegisterMode = false;
     let currentView = 'feed', searchQuery = '', currentPostIdForComment = null;
     let currentPostMode = 'normal'; 
+    let currentSelectedMedia = null;
 
     const DB = {
         save() { localStorage.setItem('forum_ba_v2', JSON.stringify(MemoryData)); },
@@ -192,6 +282,11 @@
         getUser(id) { return MemoryData.users.find(u => u.id === id) || { name: '未知', avatarColor: '#555' }; },
         formatTime(ts) { const d = Date.now() - ts; return d < 60000 ? '刚刚' : d < 3600000 ? Math.floor(d/60000)+'分钟前' : Math.floor(d/3600000)+'小时前'; }
     };
+
+    function checkIsAdmin() {
+        const user = DB.getCurrentUser();
+        return user && user.email === ADMIN_EMAIL;
+    }
 
     window.toggleAuthMode = function() {
         isRegisterMode = !isRegisterMode;
@@ -205,22 +300,32 @@
         const email = document.getElementById('auth-email').value.trim();
         const password = document.getElementById('auth-password').value;
         const nickname = document.getElementById('auth-nickname').value.trim();
+        const btn = document.getElementById('auth-submit-btn');
         
         if (!email || !password) return showToast('请填写邮箱和密码');
         if (password.length < 6) return showToast('密码至少需要6位');
 
-        document.getElementById('auth-submit-btn').innerText = '处理中...';
+        const originalText = btn.innerText;
+        btn.innerText = '连接服务器中...';
+        btn.disabled = true;
 
         try {
             if (isRegisterMode) {
-                if (!nickname) { document.getElementById('auth-submit-btn').innerText = '注 册'; return showToast('请输入昵称'); }
+                if (!nickname) { 
+                    btn.innerText = originalText; btn.disabled = false;
+                    return showToast('请输入昵称'); 
+                }
                 
-                const { data, error } = await supabaseClient.auth.signUp({
-                    email: email, password: password, options: { data: { display_name: nickname } }
-                });
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('请求超时：网络可能无法直连')), 8000));
+                
+                const { data, error } = await Promise.race([
+                    supabaseClient.auth.signUp({
+                        email: email, password: password, options: { data: { display_name: nickname } }
+                    }),
+                    timeoutPromise
+                ]);
 
-                document.getElementById('auth-submit-btn').innerText = '注 册';
-                if (error) return showToast('注册失败：' + error.message);
+                if (error) throw error;
 
                 if (data.user && data.user.confirmed_at === null) {
                     showToast('注册成功！请去邮箱点击验证链接。');
@@ -230,24 +335,31 @@
                     loginSuccess(data.user);
                 }
             } else {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
-                document.getElementById('auth-submit-btn').innerText = '登 录';
-                if (error) {
-                    if (error.message.includes('Email not confirmed')) return showToast('请先去邮箱点击验证链接！');
-                    if (error.message.includes('Invalid login')) return showToast('邮箱或密码错误');
-                    return showToast('登录失败：' + error.message);
-                }
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('请求超时：网络可能无法直连')), 8000));
+                
+                const { data, error } = await Promise.race([
+                    supabaseClient.auth.signInWithPassword({ email: email, password: password }),
+                    timeoutPromise
+                ]);
+
+                if (error) throw error;
                 loginSuccess(data.user);
             }
         } catch (err) {
-            document.getElementById('auth-submit-btn').innerText = isRegisterMode ? '注 册' : '登 录';
-            showToast('网络错误，请稍后再试');
+            showToast('错误提示：' + err.message);
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
         }
     }
 
     function loginSuccess(supabaseUser) {
         const email = supabaseUser.email;
-        const nickname = supabaseUser.user_metadata?.display_name || email.split('@')[0];
+        let nickname = supabaseUser.user_metadata?.display_name || email.split('@')[0];
+        if (email === ADMIN_EMAIL && nickname === email.split('@')[0]) {
+            nickname = '风纪委员';
+        }
+        
         const supaId = supabaseUser.id;
 
         let localUser = MemoryData.users.find(u => u.id === supaId);
@@ -257,18 +369,21 @@
                 id: supaId, name: nickname, email: email, 
                 avatar: randomAvatar, 
                 followers: 0, followingList: [], bookmarks: [], 
-                avatarColor: '#' + Math.floor(Math.random()*16777215).toString(16) 
+                avatarColor: '#' + Math.floor(Math.random()*16777215).toString(16),
+                bio: '',
+                signal: generateSignal()
             };
             MemoryData.users.push(localUser);
             DB.save();
         }
+        
         currentUserSessionId = supaId;
         localStorage.setItem('taoxun_session_id', supaId);
         
         document.getElementById('auth-page').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         switchView('feed');
-        showToast('登录成功！');
+        showToast(email === ADMIN_EMAIL ? '管理员权限已激活' : '登录成功！');
     }
 
     window.logout = async function() {
@@ -305,6 +420,8 @@
     function render() {
         const currentUser = DB.getCurrentUser();
         if (!currentUser) return;
+        
+        const isAdmin = checkIsAdmin();
 
         let postsToRender = MemoryData.posts;
         
@@ -329,33 +446,71 @@
             );
         }
 
+        postsToRender.sort((a, b) => b.time - a.time);
+
         let html = '';
+
+        // 渲染公告栏（在所有主视图顶部显示，除了搜索时）
+        if (!searchQuery) {
+            html += `<div class="announcement-bar">
+                <div class="announcement-icon">📢</div>
+                <div class="announcement-content">${MemoryData.announcement}</div>
+                ${isAdmin ? `<div class="announcement-edit" onclick="openEditAnnouncement()">✏️ 编辑</div>` : ''}
+            </div>`;
+        }
+
         if (currentView === 'profile') {
+            let totalLikes = 0;
+            MemoryData.posts.forEach(p => {
+                if (p.authorId === currentUser.id) {
+                    totalLikes += (p.likes || 0);
+                }
+            });
+
             html += `<div class="profile-header">
                 <div class="profile-avatar" style="background: ${currentUser.avatarColor}">
                     <img src="${currentUser.avatar}" alt="avatar">
                     <div class="avatar-upload" onclick="document.getElementById('avatar-uploader').click()">📷</div>
                 </div>
-                <h2>${currentUser.name}</h2>
-                <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">${currentUser.email}</div>
-                <div style="display:flex; justify-content:center; gap:40px; margin-top:20px;">
-                    <div><b>${currentUser.followers || 0}</b><br><span style="font-size:12px;color:#888;">粉丝</span></div>
-                    <div><b>${currentUser.followingList.length}</b><br><span style="font-size:12px;color:#888;">关注</span></div>
+                <h2>${currentUser.name} ${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}</h2>
+                <div class="profile-bio">${currentUser.bio || '这个人很神秘，什么简介都没写~'}</div>
+                <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
+                    讯号：<span style="color:var(--accent-color); font-family: monospace; font-weight: bold;">${currentUser.signal}</span>
                 </div>
-                <div>
+                
+                <div class="profile-stats">
+                    <div class="stat-item"><span class="stat-num">${currentUser.followers || 0}</span><span class="stat-label">粉丝</span></div>
+                    <div class="stat-item"><span class="stat-num">${currentUser.followingList.length}</span><span class="stat-label">关注</span></div>
+                    <div class="stat-item"><span class="stat-num">${totalLikes}</span><span class="stat-label">被赞</span></div>
+                </div>
+                
+                <div class="profile-actions">
+                    <button class="btn-outline" onclick="openEditProfile()">编辑资料</button>
                     <button class="logout-btn" onclick="logout()">退出登录</button>
                 </div>
             </div><div style="padding: 12px 16px; font-weight: bold;">我发布的帖子</div>`;
         }
 
-        if (postsToRender.length === 0) html += `<div style="text-align:center; padding:50px; color:#666;">空空如也~</div>`;
-        else {
+        if (postsToRender.length === 0) {
+            html += `<div style="text-align:center; padding:50px; color:#666;">空空如也~</div>`;
+        } else {
             postsToRender.forEach(post => {
                 const author = DB.getUser(post.authorId);
                 const isMe = post.authorId === currentUser.id;
                 const isFollowed = currentUser.followingList.includes(post.authorId);
                 const isBookmarked = currentUser.bookmarks.includes(post.id);
                 const isCos = post.type === 'cosplay';
+                
+                const canDelete = isMe || isAdmin;
+
+                let mediaHtml = '';
+                if (post.media && post.media.data) {
+                    if (post.media.type === 'image') {
+                        mediaHtml = `<img src="${post.media.data}" class="post-media" alt="post image">`;
+                    } else if (post.media.type === 'video') {
+                        mediaHtml = `<video src="${post.media.data}" class="post-media" controls></video>`;
+                    }
+                }
 
                 html += `<div class="post-card">
                     <div class="post-main-area" onclick="openDetailModal('${post.id}')">
@@ -367,21 +522,24 @@
                                 <div class="name-time">
                                     <span class="username">
                                         ${author.name}
+                                        ${author.email === ADMIN_EMAIL ? '<span class="admin-tag">管理员</span>' : ''}
                                         ${isCos ? `<span class="role-tag">${post.role || '神秘角色'}</span>` : ''}
                                     </span>
                                     <span class="time">${DB.formatTime(post.time)}</span>
                                 </div>
                             </div>
-                            ${!isMe ? `<button style="border:1px solid ${isFollowed?'#888':'#4a90e2'}; color:${isFollowed?'#888':'#4a90e2'}; background:none; padding:4px 10px; border-radius:12px; font-size:12px;" onclick="event.stopPropagation(); toggleFollow('${post.authorId}')">${isFollowed ? '已关注' : '+ 关注'}</button>` : ''}
+                            ${!isMe ? `<button style="border:1px solid ${isFollowed?'#888':'#ff7b9c'}; color:${isFollowed?'#888':'#ff7b9c'}; background:none; padding:4px 10px; border-radius:12px; font-size:12px;" onclick="event.stopPropagation(); toggleFollow('${post.authorId}')">${isFollowed ? '已关注' : '+ 关注'}</button>` : ''}
                         </div>
                         <div class="post-content ${isCos ? 'cosplay-text' : ''}">
                             ${post.content}
                         </div>
+                        ${mediaHtml}
                     </div>
                     <div class="action-bar">
                         <div class="action-item ${post.isLiked ? 'color:#ff7b9c' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? '❤️' : '🤍'} ${post.likes}</div>
                         <div class="action-item" onclick="openDetailModal('${post.id}')">💬 ${(post.comments || []).length}</div>
-                        <div class="action-item ${isBookmarked ? 'color:#4a90e2' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? '⭐' : '☆'} 收藏</div>
+                        <div class="action-item ${isBookmarked ? 'color:#ff7b9c' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? '⭐' : '☆'} 收藏</div>
+                        ${canDelete ? `<div class="action-item delete-btn" onclick="event.stopPropagation(); deletePost('${post.id}')">🗑️ 删除</div>` : ''}
                     </div>
                 </div>`;
             });
@@ -389,13 +547,54 @@
         document.getElementById('main-content').innerHTML = html;
     }
 
+    // ====== 公告编辑逻辑 ======
+    window.openEditAnnouncement = function() {
+        if (!checkIsAdmin()) return;
+        document.getElementById('edit-announcement-input').value = MemoryData.announcement || '';
+        document.getElementById('edit-announcement-modal').style.display = 'flex';
+    }
+
+    window.saveAnnouncement = function() {
+        if (!checkIsAdmin()) return;
+        const newAnnouncement = document.getElementById('edit-announcement-input').value.trim();
+        if (!newAnnouncement) return showToast('公告内容不能为空');
+        
+        MemoryData.announcement = newAnnouncement;
+        DB.save();
+        document.getElementById('edit-announcement-modal').style.display = 'none';
+        render();
+        showToast('公告更新成功！');
+    }
+    // ========================
+
+    // 编辑资料
+    window.openEditProfile = function() {
+        const currentUser = DB.getCurrentUser();
+        if (currentUser) {
+            document.getElementById('edit-bio-input').value = currentUser.bio || '';
+            document.getElementById('edit-profile-modal').style.display = 'flex';
+        }
+    }
+
+    window.saveProfile = function() {
+        const currentUser = DB.getCurrentUser();
+        const newBio = document.getElementById('edit-bio-input').value.trim();
+        if (currentUser) {
+            currentUser.bio = newBio;
+            DB.save();
+            document.getElementById('edit-profile-modal').style.display = 'none';
+            render();
+            showToast('资料更新成功！');
+        }
+    }
+
+    // 头像上传
     window.handleAvatarUpload = function(event) {
         const file = event.target.files[0];
         if (!file) return;
         if (file.size > 2 * 1024 * 1024) {
             return showToast('图片太大了，请选择小于2MB的图片');
         }
-
         const reader = new FileReader();
         reader.onload = function(e) {
             const base64Image = e.target.result;
@@ -415,11 +614,31 @@
     window.toggleBookmark = function(id) { const u = DB.getCurrentUser(); const i = u.bookmarks.indexOf(id); if (i > -1) u.bookmarks.splice(i, 1); else u.bookmarks.push(id); DB.save(); render(); }
     window.toggleFollow = function(authorId) { const u = DB.getCurrentUser(); const i = u.followingList.indexOf(authorId); if (i > -1) u.followingList.splice(i, 1); else u.followingList.push(authorId); DB.save(); render(); }
 
+    // 删除帖子功能
+    window.deletePost = function(id) {
+        const isAdmin = checkIsAdmin();
+        const msg = isAdmin ? '【管理员权限】确定要删除这条帖子吗？' : '确定要删除这条帖子吗？';
+        
+        if (confirm(msg)) {
+            MemoryData.posts = MemoryData.posts.filter(p => p.id !== id);
+            DB.save();
+            render();
+            showToast('帖子已删除');
+        }
+    }
+
+    // 发帖相关
     window.openPostModal = function() { 
         document.getElementById('post-input').value = ''; 
         document.getElementById('post-role').value = ''; 
+        clearMedia();
         switchPostMode('normal'); 
         document.getElementById('post-modal').style.display = 'flex'; 
+    }
+
+    window.closePostModal = function() {
+        document.getElementById('post-modal').style.display = 'none';
+        clearMedia();
     }
 
     window.switchPostMode = function(mode) {
@@ -436,11 +655,57 @@
         }
     }
 
+    // 处理媒体选择
+    window.handleMediaSelect = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+
+        if (isImage && file.size > 2 * 1024 * 1024) {
+            return showToast('图片太大啦，请小于 2MB');
+        }
+        if (isVideo && file.size > 5 * 1024 * 1024) {
+            return showToast('视频太大啦，请小于 5MB');
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Data = e.target.result;
+            currentSelectedMedia = { type: isImage ? 'image' : 'video', data: base64Data };
+            
+            const container = document.getElementById('media-preview-container');
+            const img = document.getElementById('preview-img');
+            const video = document.getElementById('preview-video');
+
+            container.style.display = 'block';
+            if (isImage) {
+                img.src = base64Data;
+                img.style.display = 'block';
+                video.style.display = 'none';
+            } else {
+                video.src = base64Data;
+                video.style.display = 'block';
+                img.style.display = 'none';
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.clearMedia = function() {
+        currentSelectedMedia = null;
+        document.getElementById('media-preview-container').style.display = 'none';
+        document.getElementById('preview-img').src = '';
+        document.getElementById('preview-video').src = '';
+        document.getElementById('media-uploader').value = '';
+    };
+
     window.submitPost = function() {
         const c = document.getElementById('post-input').value.trim();
         const role = document.getElementById('post-role').value.trim();
         
-        if (!c) return showToast('内容不能为空');
+        if (!c && !currentSelectedMedia) return showToast('内容和图片不能都为空');
         if (currentPostMode === 'cosplay' && !role) return showToast('请填写扮演的角色名');
 
         MemoryData.posts.push({ 
@@ -452,13 +717,14 @@
             time: Date.now(), 
             likes: 0, 
             isLiked: false, 
-            comments: [] 
+            comments: [],
+            media: currentSelectedMedia 
         });
         
         DB.save(); 
-        document.getElementById('post-modal').style.display = 'none'; 
+        closePostModal(); 
         switchView(currentPostMode === 'cosplay' ? 'story' : 'feed'); 
-        showToast('发布成功');
+        showToast('发布成功！已在顶部显示。');
     }
 
     window.openDetailModal = function(id) {
@@ -493,4 +759,4 @@
     checkAuth();
 </script>
 </body>
-</html>
+    </html>
