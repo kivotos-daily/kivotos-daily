@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>基沃托斯日讯-测试1版</title>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --bg-color: #121212; --card-bg: #1e1e1e; --text-main: #e0e0e0; --text-sub: #888888; --accent-color: #4a90e2; --ba-pink: #ff7b9c; --border-color: #333333; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-main); line-height: 1.5; padding-bottom: 60px; }
+        #toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--accent-color); width: 80%; max-width: 300px;}
+        
+        /* 登录注册 */
+        #auth-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background: var(--bg-color); position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
+        .auth-box { width: 100%; max-width: 360px; background: var(--card-bg); padding: 30px 20px; border-radius: 16px; border: 1px solid var(--border-color); }
+        .auth-title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 24px; color: var(--accent-color); }
+        .auth-subtitle { text-align: center; font-size: 12px; color: var(--text-sub); margin-top: -18px; margin-bottom: 24px; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 13px; color: var(--text-sub); margin-bottom: 6px; }
+        .auth-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 15px; outline: none; }
+        .auth-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--accent-color); color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .auth-switch { text-align: center; font-size: 13px; color: var(--text-sub); margin-top: 16px; cursor: pointer; padding: 10px; }
+        .auth-switch span { color: var(--accent-color); font-weight: bold; }
+        
+        /* 主应用 */
+        #app { display: none; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; }
+        .header { position: sticky; top: 0; background: rgba(18,18,18,0.95); backdrop-filter: blur(10px); padding: 10px 16px; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; z-index: 100;}
+        .header-top { font-size: 16px; font-weight: bold; display: flex; justify-content: space-between; color: var(--accent-color);}
+        .search-box { width: 100%; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
+        
+        /* 底部导航 */
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; height: 60px; background: rgba(24,24,24,0.95); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 200; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sub); cursor: pointer; flex: 1; }
+        .nav-item.active { color: var(--accent-color); }
+        .nav-btn-add { background: var(--accent-color); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-top: -20px; cursor: pointer; font-size: 24px; font-weight: bold; }
+        
+        /* 帖子 */
+        .post-card { background: var(--bg-color); padding: 16px; border-bottom: 8px solid #000; }
+        .post-main-area { cursor: pointer; }
+        .post-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .user-info { display: flex; align-items: center; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #333; margin-right: 10px; display: flex; justify-content: center; align-items: center; color: #fff; overflow: hidden; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .name-time { display: flex; flex-direction: column; }
+        .username { font-weight: 500; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+        .role-tag { font-size: 11px; background: rgba(74, 144, 226, 0.2); color: var(--accent-color); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--accent-color); }
+        .time { font-size: 12px; color: var(--text-sub); }
+        .post-content { font-size: 15px; margin-bottom: 12px; word-break: break-all; }
+        .post-content.cosplay-text { font-style: italic; color: #b0c4de; background: #1a1a1a; padding: 10px; border-radius: 8px; border-left: 3px solid var(--accent-color); }
+        .action-bar { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; padding-top: 8px; border-top: 1px solid var(--border-color); }
+        .action-item { cursor: pointer; padding: 6px 10px; }
+        
+        /* 个人主页 */
+        .profile-header { padding: 30px 16px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 12px; display: flex; justify-content: center; align-items: center; font-size: 32px; color: #fff; overflow: hidden; position: relative; border: 2px solid var(--accent-color); }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-upload { position: absolute; bottom: -5px; right: -5px; background: var(--accent-color); width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; border: 2px solid var(--bg-color); font-size: 14px;}
+        .logout-btn { margin-top: 20px; background: transparent; border: 1px solid #e74c3c; color: #e74c3c; padding: 8px 24px; border-radius: 20px; cursor: pointer; }
+
+        /* 弹窗 */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 300; display: none; justify-content: center; align-items: flex-end; }
+        .modal-content { background: var(--card-bg); width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; display: flex; flex-direction: column;}
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: bold; }
+        .modal-textarea { width: 100%; height: 100px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; color: var(--text-main); font-size: 15px; resize: none; outline: none; margin-bottom: 16px; }
+        .modal-submit { width: 100%; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        
+        /* 发帖模式切换 */
+        .mode-switch { display: flex; margin-bottom: 12px; gap: 10px; }
+        .mode-btn { flex: 1; padding: 8px; text-align: center; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-sub); border-radius: 8px; cursor: pointer; font-size: 14px; }
+        .mode-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: rgba(74, 144, 226, 0.1); }
+        .role-input-group { display: none; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+<div id="toast">提示信息</div>
+
+<div id="auth-page">
+    <div class="auth-box">
+        <div class="auth-title" id="auth-title">基沃托斯日讯-测试1版</div>
+        <div class="input-group" id="nickname-group" style="display: none;">
+            <label>昵称</label>
+            <input type="text" class="auth-input" id="auth-nickname" placeholder="给自己起个名字">
+        </div>
+        <div class="input-group">
+            <label>邮箱</label>
+            <input type="email" class="auth-input" id="auth-email" placeholder="example@mail.com">
+        </div>
+        <div class="input-group">
+            <label>密码</label>
+            <input type="password" class="auth-input" id="auth-password" placeholder="至少 6 位字符">
+        </div>
+        <button class="auth-btn" id="auth-submit-btn" onclick="handleAuth()">登 录</button>
+        <div class="auth-switch" onclick="toggleAuthMode()">
+            还没有账号？<span id="auth-switch-text">立即注册</span>
+        </div>
+    </div>
+</div>
+
+<div id="app">
+    <header class="header">
+        <div class="header-top">
+            <span id="header-title">基沃托斯日讯-首页</span>
+        </div>
+        <input type="text" class="search-box" id="search-input" placeholder="搜索帖子、角色或用户...">
+    </header>
+    <main id="main-content"></main>
+    
+    <nav class="bottom-nav">
+        <div class="nav-item active" data-view="feed" onclick="switchView('feed')">首页</div>
+        <div class="nav-item" data-view="story" onclick="switchView('story')">剧情广场</div>
+        <div class="nav-btn-add" onclick="openPostModal()">+</div>
+        <div class="nav-item" data-view="bookmarks" onclick="switchView('bookmarks')">收藏</div>
+        <div class="nav-item" data-view="profile" onclick="switchView('profile')">我的</div>
+    </nav>
+</div>
+
+<!-- 发帖弹窗 -->
+<div class="modal-overlay" id="post-modal">
+    <div class="modal-content">
+        <div class="modal-header"><span>发布新帖子</span><span style="cursor:pointer; padding:5px;" onclick="document.getElementById('post-modal').style.display='none'">✕</span></div>
+        
+        <div class="mode-switch">
+            <div class="mode-btn active" id="mode-normal" onclick="switchPostMode('normal')">日常发帖</div>
+            <div class="mode-btn" id="mode-cos" onclick="switchPostMode('cosplay')">🎭 剧情演绎</div>
+        </div>
+
+        <div class="role-input-group" id="role-input-group">
+            <input type="text" class="auth-input" id="post-role" placeholder="扮演角色（如：砂狼白子、老师）" style="margin-bottom: 10px;">
+        </div>
+
+        <textarea class="modal-textarea" id="post-input" placeholder="分享你此刻的想法..."></textarea>
+        <button class="modal-submit" onclick="submitPost()">发布</button>
+    </div>
+</div>
+
+<!-- 评论弹窗 -->
+<div class="modal-overlay" id="detail-modal">
+    <div class="modal-content" style="height: 60vh;">
+        <div class="modal-header"><span>评论</span><span onclick="document.getElementById('detail-modal').style.display='none'" style="cursor:pointer; padding:5px;">✕</span></div>
+        <div style="flex:1; overflow-y:auto; margin-bottom:10px;" id="detail-comments"></div>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="comment-input" placeholder="发表你的评论..." style="flex:1; padding:10px; border-radius:20px; border:1px solid #333; background:#121212; color:#fff; outline:none;">
+            <button class="modal-submit" style="width:80px; padding:10px;" onclick="submitComment()">发送</button>
+        </div>
+    </div>
+</div>
+
+<!-- 隐藏的文件上传组件 -->
+<input type="file" id="avatar-uploader" accept="image/*" style="display: none;" onchange="handleAvatarUpload(event)">
+
+<script>
+    const SUPABASE_URL = 'https://ycjshhxxqnyizewpswoc.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut'; 
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.innerText = msg;
+        toast.style.display = 'block';
+        clearTimeout(window.toastTimer);
+        window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+
+    const PRESET_AVATARS = [
+        'https://api.dicebear.com/7.x/adventurer/svg?seed=Hoshino&backgroundColor=ffd5dc',
+        'https://api.dicebear.com/7.x/adventurer/svg?seed=Shiroko&backgroundColor=b6e3f4',
+        'https://api.dicebear.com/7.x/adventurer/svg?seed=Aris&backgroundColor=c0aede',
+        'https://api.dicebear.com/7.x/adventurer/svg?seed=Aru&backgroundColor=ffdfbf',
+        'https://api.dicebear.com/7.x/adventurer/svg?seed=Yuzu&backgroundColor=d1d4f9'
+    ];
+
+    let MemoryData = JSON.parse(localStorage.getItem('forum_ba_v2')) || {
+        users: [], posts: [
+            { id: 'p1', authorId: 'sys', content: '【夏莱通知】老师，什亭之匣网络测试已完成，现在可以自由交流了。', type: 'normal', time: Date.now(), likes: 128, isLiked: false, comments: [] },
+            { id: 'p2', authorId: 'sys', content: '*全息投影闪烁了一下，阿罗娜出现在半空中* 老师，今天的基沃托斯依然和平呢！但是...好像有新的帖子出现了！', type: 'cosplay', role: '阿罗娜', time: Date.now() - 100000, likes: 256, isLiked: false, comments: [] }
+        ]
+    };
+    if(!MemoryData.users.find(u => u.id === 'sys')){
+        MemoryData.users.push({ id: 'sys', name: '联邦学生会', avatar: PRESET_AVATARS[0], followers: 999, followingList: [], bookmarks: [], avatarColor: '#4a90e2' });
+    }
+
+    let currentUserSessionId = null;
+    let isRegisterMode = false;
+    let currentView = 'feed', searchQuery = '', currentPostIdForComment = null;
+    let currentPostMode = 'normal'; 
+
+    const DB = {
+        save() { localStorage.setItem('forum_ba_v2', JSON.stringify(MemoryData)); },
+        getCurrentUser() { return MemoryData.users.find(u => u.id === currentUserSessionId) || null; },
+        getUser(id) { return MemoryData.users.find(u => u.id === id) || { name: '未知', avatarColor: '#555' }; },
+        formatTime(ts) { const d = Date.now() - ts; return d < 60000 ? '刚刚' : d < 3600000 ? Math.floor(d/60000)+'分钟前' : Math.floor(d/3600000)+'小时前'; }
+    };
+
+    window.toggleAuthMode = function() {
+        isRegisterMode = !isRegisterMode;
+        document.getElementById('auth-title').innerText = isRegisterMode ? '基沃托斯日讯-注册' : '基沃托斯日讯-登录';
+        document.getElementById('auth-submit-btn').innerText = isRegisterMode ? '注 册' : '登 录';
+        document.getElementById('auth-switch-text').innerText = isRegisterMode ? '去登录' : '立即注册';
+        document.getElementById('nickname-group').style.display = isRegisterMode ? 'block' : 'none';
+    };
+
+    window.handleAuth = async function() {
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
+        const nickname = document.getElementById('auth-nickname').value.trim();
+        
+        if (!email || !password) return showToast('请填写邮箱和密码');
+        if (password.length < 6) return showToast('密码至少需要6位');
+
+        document.getElementById('auth-submit-btn').innerText = '处理中...';
+
+        try {
+            if (isRegisterMode) {
+                if (!nickname) { document.getElementById('auth-submit-btn').innerText = '注 册'; return showToast('请输入昵称'); }
+                
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email, password: password, options: { data: { display_name: nickname } }
+                });
+
+                document.getElementById('auth-submit-btn').innerText = '注 册';
+                if (error) return showToast('注册失败：' + error.message);
+
+                if (data.user && data.user.confirmed_at === null) {
+                    showToast('注册成功！请去邮箱点击验证链接。');
+                    toggleAuthMode(); 
+                } else {
+                    showToast('注册成功，已自动登录！');
+                    loginSuccess(data.user);
+                }
+            } else {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+                document.getElementById('auth-submit-btn').innerText = '登 录';
+                if (error) {
+                    if (error.message.includes('Email not confirmed')) return showToast('请先去邮箱点击验证链接！');
+                    if (error.message.includes('Invalid login')) return showToast('邮箱或密码错误');
+                    return showToast('登录失败：' + error.message);
+                }
+                loginSuccess(data.user);
+            }
+        } catch (err) {
+            document.getElementById('auth-submit-btn').innerText = isRegisterMode ? '注 册' : '登 录';
+            showToast('网络错误，请稍后再试');
+        }
+    }
+
+    function loginSuccess(supabaseUser) {
+        const email = supabaseUser.email;
+        const nickname = supabaseUser.user_metadata?.display_name || email.split('@')[0];
+        const supaId = supabaseUser.id;
+
+        let localUser = MemoryData.users.find(u => u.id === supaId);
+        if (!localUser) {
+            const randomAvatar = PRESET_AVATARS[Math.floor(Math.random() * PRESET_AVATARS.length)];
+            localUser = { 
+                id: supaId, name: nickname, email: email, 
+                avatar: randomAvatar, 
+                followers: 0, followingList: [], bookmarks: [], 
+                avatarColor: '#' + Math.floor(Math.random()*16777215).toString(16) 
+            };
+            MemoryData.users.push(localUser);
+            DB.save();
+        }
+        currentUserSessionId = supaId;
+        localStorage.setItem('taoxun_session_id', supaId);
+        
+        document.getElementById('auth-page').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        switchView('feed');
+        showToast('登录成功！');
+    }
+
+    window.logout = async function() {
+        await supabaseClient.auth.signOut();
+        currentUserSessionId = null;
+        localStorage.removeItem('taoxun_session_id');
+        showToast('已退出登录');
+        document.getElementById('auth-page').style.display = 'flex';
+        document.getElementById('app').style.display = 'none';
+    }
+
+    async function checkAuth() {
+        const savedId = localStorage.getItem('taoxun_session_id');
+        if (savedId && MemoryData.users.find(u => u.id === savedId)) {
+            currentUserSessionId = savedId;
+            document.getElementById('auth-page').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            switchView('feed');
+        } else {
+            document.getElementById('auth-page').style.display = 'flex';
+            document.getElementById('app').style.display = 'none';
+        }
+    }
+
+    window.switchView = function(viewName) {
+        currentView = viewName;
+        document.getElementById('search-input').value = '';
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        const navBtn = document.querySelector(`.nav-item[data-view="${viewName}"]`);
+        if(navBtn) navBtn.classList.add('active');
+        render();
+    }
+
+    function render() {
+        const currentUser = DB.getCurrentUser();
+        if (!currentUser) return;
+
+        let postsToRender = MemoryData.posts;
+        
+        if (currentView === 'story') {
+            postsToRender = postsToRender.filter(p => p.type === 'cosplay');
+            document.getElementById('header-title').innerText = '剧情广场';
+        } else if (currentView === 'bookmarks') {
+            postsToRender = postsToRender.filter(p => currentUser.bookmarks.includes(p.id));
+            document.getElementById('header-title').innerText = '我的收藏';
+        } else if (currentView === 'profile') {
+            postsToRender = postsToRender.filter(p => p.authorId === currentUser.id);
+            document.getElementById('header-title').innerText = '我的主页';
+        } else {
+            document.getElementById('header-title').innerText = '基沃托斯日讯-首页';
+        }
+
+        if (searchQuery) {
+            postsToRender = postsToRender.filter(p => 
+                p.content.includes(searchQuery) || 
+                DB.getUser(p.authorId).name.includes(searchQuery) || 
+                (p.role && p.role.includes(searchQuery))
+            );
+        }
+
+        let html = '';
+        if (currentView === 'profile') {
+            html += `<div class="profile-header">
+                <div class="profile-avatar" style="background: ${currentUser.avatarColor}">
+                    <img src="${currentUser.avatar}" alt="avatar">
+                    <div class="avatar-upload" onclick="document.getElementById('avatar-uploader').click()">📷</div>
+                </div>
+                <h2>${currentUser.name}</h2>
+                <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">${currentUser.email}</div>
+                <div style="display:flex; justify-content:center; gap:40px; margin-top:20px;">
+                    <div><b>${currentUser.followers || 0}</b><br><span style="font-size:12px;color:#888;">粉丝</span></div>
+                    <div><b>${currentUser.followingList.length}</b><br><span style="font-size:12px;color:#888;">关注</span></div>
+                </div>
+                <div>
+                    <button class="logout-btn" onclick="logout()">退出登录</button>
+                </div>
+            </div><div style="padding: 12px 16px; font-weight: bold;">我发布的帖子</div>`;
+        }
+
+        if (postsToRender.length === 0) html += `<div style="text-align:center; padding:50px; color:#666;">空空如也~</div>`;
+        else {
+            postsToRender.forEach(post => {
+                const author = DB.getUser(post.authorId);
+                const isMe = post.authorId === currentUser.id;
+                const isFollowed = currentUser.followingList.includes(post.authorId);
+                const isBookmarked = currentUser.bookmarks.includes(post.id);
+                const isCos = post.type === 'cosplay';
+
+                html += `<div class="post-card">
+                    <div class="post-main-area" onclick="openDetailModal('${post.id}')">
+                        <div class="post-header">
+                            <div class="user-info">
+                                <div class="avatar" style="background: ${author.avatarColor}">
+                                    <img src="${author.avatar}" alt="avatar">
+                                </div>
+                                <div class="name-time">
+                                    <span class="username">
+                                        ${author.name}
+                                        ${isCos ? `<span class="role-tag">${post.role || '神秘角色'}</span>` : ''}
+                                    </span>
+                                    <span class="time">${DB.formatTime(post.time)}</span>
+                                </div>
+                            </div>
+                            ${!isMe ? `<button style="border:1px solid ${isFollowed?'#888':'#4a90e2'}; color:${isFollowed?'#888':'#4a90e2'}; background:none; padding:4px 10px; border-radius:12px; font-size:12px;" onclick="event.stopPropagation(); toggleFollow('${post.authorId}')">${isFollowed ? '已关注' : '+ 关注'}</button>` : ''}
+                        </div>
+                        <div class="post-content ${isCos ? 'cosplay-text' : ''}">
+                            ${post.content}
+                        </div>
+                    </div>
+                    <div class="action-bar">
+                        <div class="action-item ${post.isLiked ? 'color:#ff7b9c' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? '❤️' : '🤍'} ${post.likes}</div>
+                        <div class="action-item" onclick="openDetailModal('${post.id}')">💬 ${(post.comments || []).length}</div>
+                        <div class="action-item ${isBookmarked ? 'color:#4a90e2' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? '⭐' : '☆'} 收藏</div>
+                    </div>
+                </div>`;
+            });
+        }
+        document.getElementById('main-content').innerHTML = html;
+    }
+
+    window.handleAvatarUpload = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+            return showToast('图片太大了，请选择小于2MB的图片');
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Image = e.target.result;
+            const currentUser = DB.getCurrentUser();
+            if (currentUser) {
+                currentUser.avatar = base64Image; 
+                DB.save();
+                render();
+                showToast('头像更换成功！');
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    document.getElementById('search-input').addEventListener('input', (e) => { searchQuery = e.target.value.trim(); render(); });
+    window.toggleLike = function(id) { const p = MemoryData.posts.find(x => x.id === id); p.isLiked = !p.isLiked; p.likes += p.isLiked ? 1 : -1; DB.save(); render(); }
+    window.toggleBookmark = function(id) { const u = DB.getCurrentUser(); const i = u.bookmarks.indexOf(id); if (i > -1) u.bookmarks.splice(i, 1); else u.bookmarks.push(id); DB.save(); render(); }
+    window.toggleFollow = function(authorId) { const u = DB.getCurrentUser(); const i = u.followingList.indexOf(authorId); if (i > -1) u.followingList.splice(i, 1); else u.followingList.push(authorId); DB.save(); render(); }
+
+    window.openPostModal = function() { 
+        document.getElementById('post-input').value = ''; 
+        document.getElementById('post-role').value = ''; 
+        switchPostMode('normal'); 
+        document.getElementById('post-modal').style.display = 'flex'; 
+    }
+
+    window.switchPostMode = function(mode) {
+        currentPostMode = mode;
+        document.getElementById('mode-normal').classList.remove('active');
+        document.getElementById('mode-cos').classList.remove('active');
+        
+        if (mode === 'normal') {
+            document.getElementById('mode-normal').classList.add('active');
+            document.getElementById('role-input-group').style.display = 'none';
+        } else {
+            document.getElementById('mode-cos').classList.add('active');
+            document.getElementById('role-input-group').style.display = 'block';
+        }
+    }
+
+    window.submitPost = function() {
+        const c = document.getElementById('post-input').value.trim();
+        const role = document.getElementById('post-role').value.trim();
+        
+        if (!c) return showToast('内容不能为空');
+        if (currentPostMode === 'cosplay' && !role) return showToast('请填写扮演的角色名');
+
+        MemoryData.posts.push({ 
+            id: 'p_'+Date.now(), 
+            authorId: DB.getCurrentUser().id, 
+            content: c, 
+            type: currentPostMode,
+            role: currentPostMode === 'cosplay' ? role : null,
+            time: Date.now(), 
+            likes: 0, 
+            isLiked: false, 
+            comments: [] 
+        });
+        
+        DB.save(); 
+        document.getElementById('post-modal').style.display = 'none'; 
+        switchView(currentPostMode === 'cosplay' ? 'story' : 'feed'); 
+        showToast('发布成功');
+    }
+
+    window.openDetailModal = function(id) {
+        currentPostIdForComment = id; const p = MemoryData.posts.find(x => x.id === id);
+        let h = ''; const cmts = p.comments || [];
+        if (cmts.length === 0) h = `<div style="text-align:center; padding:20px; color:#666;">还没有评论</div>`;
+        else cmts.forEach(c => { 
+            const a = DB.getUser(c.authorId); 
+            h += `<div style="display:flex; margin-bottom:16px;">
+                    <div class="avatar" style="width:32px;height:32px;background:${a.avatarColor}">
+                        <img src="${a.avatar}" alt="avatar">
+                    </div>
+                    <div style="margin-left:10px;">
+                        <div style="font-size:13px; color:#888;">${a.name}</div>
+                        <div style="font-size:14px; color:#ddd;">${c.content}</div>
+                    </div>
+                  </div>`; 
+        });
+        document.getElementById('detail-comments').innerHTML = h;
+        document.getElementById('comment-input').value = '';
+        document.getElementById('detail-modal').style.display = 'flex';
+    }
+
+    window.submitComment = function() {
+        const c = document.getElementById('comment-input').value.trim(); if (!c) return;
+        const p = MemoryData.posts.find(x => x.id === currentPostIdForComment);
+        if (!p.comments) p.comments = []; 
+        p.comments.push({ authorId: DB.getCurrentUser().id, content: c, time: Date.now() });
+        DB.save(); openDetailModal(currentPostIdForComment); render(); showToast('评论成功');
+    }
+
+    checkAuth();
+</script>
+</body>
+</html>
