@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>基沃托斯日讯-测试版v1.8</title>
     
-    <!-- 三重保险 CDN 加载 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         if (typeof supabase === 'undefined') { document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>'); }
@@ -213,7 +212,7 @@
         .preview-media { width: 100%; max-height: 200px; border-radius: 12px; object-fit: cover; }
         .remove-media { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold;}
 
-        /* ======== 编辑资料弹窗专用样式 ======== */
+        /* 编辑资料弹窗 */
         .edit-section { display: flex; align-items: center; justify-content: space-between; background: #1e1e1e; padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border-color);}
         .edit-section-info { display: flex; align-items: center; gap: 12px; }
         .edit-section-label { font-size: 15px; color: #fff; font-weight: bold;}
@@ -322,7 +321,6 @@
     <div class="modal-content">
         <div class="modal-header"><span>个人主页装扮</span><span style="cursor:pointer; padding:5px;" onclick="document.getElementById('edit-profile-modal').style.display='none'">✕</span></div>
         
-        <!-- 头像设置 -->
         <div class="edit-section">
             <div class="edit-section-info">
                 <div class="edit-avatar-preview" id="edit-avatar-preview"></div>
@@ -331,7 +329,6 @@
             <button class="btn-small" style="background:#333; border:none; color:#fff; padding:6px 12px; border-radius:16px; font-size:13px; cursor:pointer;" onclick="document.getElementById('avatar-uploader').click()">上传</button>
         </div>
 
-        <!-- 背景设置 -->
         <div class="edit-section">
             <div class="edit-section-info">
                 <div class="edit-cover-preview" id="edit-cover-preview"></div>
@@ -405,7 +402,7 @@
     }
     MemoryData.users.forEach(u => { 
         if (!u.signal) u.signal = generateSignal(); 
-        if (!u.cover) u.cover = ''; // 兼容旧数据
+        if (!u.cover) u.cover = ''; 
     });
 
     let currentUserSessionId = null;
@@ -414,12 +411,10 @@
     let currentPostMode = 'normal'; 
     let currentSelectedMedia = null;
     let currentReplyTo = null;
-    
-    let currentLayout = localStorage.getItem('forum_layout') || 'new'; 
-
-    // 临时缓存编辑资料弹窗里的图片
     let tempAvatar = null;
     let tempCover = null;
+    
+    let currentLayout = localStorage.getItem('forum_layout') || 'new'; 
 
     const DB = {
         save() { localStorage.setItem('forum_ba_v4', JSON.stringify(MemoryData)); },
@@ -492,6 +487,7 @@
         finally { btn.innerText = originalText; btn.disabled = false; }
     }
 
+    // 强制清空旧会话并切换登录账号的方法
     function loginSuccess(supabaseUser) {
         const email = supabaseUser.email;
         let nickname = supabaseUser.user_metadata?.display_name || email.split('@')[0];
@@ -511,20 +507,46 @@
         switchView('feed');
     }
 
+    // 强化退出：不仅清理本地，还强制清理 Supabase 云端缓存
     window.logout = async function() {
-        if(supabaseClient) await supabaseClient.auth.signOut();
-        currentUserSessionId = null; localStorage.removeItem('taoxun_session_id');
-        document.getElementById('auth-page').style.display = 'flex'; document.getElementById('app').style.display = 'none';
+        if(supabaseClient) {
+            await supabaseClient.auth.signOut({ scope: 'global' }); 
+        }
+        currentUserSessionId = null; 
+        localStorage.removeItem('taoxun_session_id');
+        document.getElementById('auth-page').style.display = 'flex'; 
+        document.getElementById('app').style.display = 'none';
     }
 
+    // 强化验证：不仅看本地有没有 id，还要去 Supabase 验证 Session 是否有效
     async function checkAuth() {
-        const savedId = localStorage.getItem('taoxun_session_id');
-        if (savedId && MemoryData.users.find(u => u.id === savedId)) {
-            currentUserSessionId = savedId;
-            document.getElementById('auth-page').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-            switchView('feed');
-        } else { document.getElementById('auth-page').style.display = 'flex'; document.getElementById('app').style.display = 'none'; }
+        if (!supabaseClient) {
+            document.getElementById('auth-page').style.display = 'flex'; 
+            document.getElementById('app').style.display = 'none';
+            return;
+        }
+
+        try {
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            const savedId = localStorage.getItem('taoxun_session_id');
+
+            if (session && savedId && MemoryData.users.find(u => u.id === savedId)) {
+                // 云端本地都有，正常进入
+                currentUserSessionId = savedId;
+                document.getElementById('auth-page').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                switchView('feed');
+            } else {
+                // 只要有一边不对，就强制显示登录页
+                currentUserSessionId = null;
+                localStorage.removeItem('taoxun_session_id');
+                document.getElementById('auth-page').style.display = 'flex'; 
+                document.getElementById('app').style.display = 'none';
+            }
+        } catch(e) {
+            document.getElementById('auth-page').style.display = 'flex'; 
+            document.getElementById('app').style.display = 'none';
+        }
     }
 
     window.switchView = function(viewName) {
@@ -538,7 +560,6 @@
         if (!currentUser) return;
         const isAdmin = checkIsAdmin();
         
-        // ======== 动态渲染 Header & 导航栏 ========
         const headerContainer = document.getElementById('header-container');
         const bottomNav = document.getElementById('bottom-nav');
 
@@ -610,7 +631,6 @@
             MemoryData.posts.forEach(p => { if (p.authorId === currentUser.id) totalLikes += (p.likes || 0); });
 
             if (currentLayout === 'new') {
-                // 普通版：带背景图的新卡片
                 html += `
                 <div class="profile-cover-new" style="background-image: url('${currentUser.cover}');"></div>
                 <div class="profile-header-new">
@@ -632,7 +652,6 @@
                     </div>
                 </div><div style="padding: 12px 16px; font-weight: bold;">我发布的帖子</div>`;
             } else {
-                // 怀旧版：推特风资料页
                 html += `
                 <div class="profile-cover-classic" style="background-image: url('${currentUser.cover}');"></div>
                 <div class="profile-info-container-classic">
@@ -744,7 +763,6 @@
         }
     }
 
-    // ======== 编辑资料（弹窗）逻辑 ========
     window.openEditProfile = function() {
         const u = DB.getCurrentUser();
         if (!u) return;
@@ -760,7 +778,6 @@
         document.getElementById('edit-profile-modal').style.display = 'flex';
     }
 
-    // 处理弹窗里的图片临时上传
     window.handleTempUpload = function(event, type) {
         const file = event.target.files[0];
         if (!file) return;
@@ -799,7 +816,6 @@
         showToast('资料已保存！');
     }
 
-    // ======== 帖子详情页与常规功能 ========
     window.openDetailPage = function(id) {
         currentPostIdForComment = id; currentReplyTo = null;
         const p = MemoryData.posts.find(x => x.id === id);
