@@ -3,23 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-v2.7 绝对防卡版</title>
+    <title>基沃托斯日讯-测试版v2.8</title>
     
     <!-- 国内极速节点 -->
     <script src="https://cdn.bootcdn.net/ajax/libs/supabase-js/2.39.7/supabase.min.js"></script>
 
     <style>
-        :root { 
-            --bg-color: #121212; 
-            --text-main: #e0e0e0; 
-            --accent-color: #ff7b9c; 
-            --border-color: #333333; 
-        }
+        :root { --bg-color: #121212; --card-bg: #1e1e1e; --text-main: #e0e0e0; --text-sub: #888888; --accent-color: #ff7b9c; --border-color: #333333; --hover-bg: #2a2a2a; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden;}
+        body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; overflow-x: hidden;}
         
-        /* 悬浮提示 */
-        #toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); color: #fff; padding: 14px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--accent-color); width: 85%; max-width: 320px; font-weight: 500;}
+        #toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #fff; padding: 14px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--accent-color); width: 85%; max-width: 320px; font-weight: 500;}
         
         /* 登录注册 */
         #auth-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background: #121212; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
@@ -29,12 +23,162 @@
         .input-group label { display: block; font-size: 13px; color: #888; margin-bottom: 6px; }
         .auth-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #121212; color: var(--text-main); font-size: 15px; outline: none; }
         .auth-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--accent-color); color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .auth-btn:disabled { opacity: 0.6; }
         .auth-switch { text-align: center; font-size: 14px; color: #888; margin-top: 20px; cursor: pointer; padding: 15px; }
         .auth-switch span { color: var(--accent-color); font-weight: bold; }
         
-        /* 主应用 (隐藏) */
-        #app { display: none; }
+        /* 主应用 */
+        #app { display: none; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; background: var(--bg-color); }
+        .header { position: sticky; top: 0; background: rgba(18,18,18,0.85); backdrop-filter: blur(12px); padding: 10px 16px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; z-index: 100;}
+        
+        /* 顶部导航 */
+        .header-normal { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .header-normal-top { width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: bold; color: var(--accent-color); }
+        
+        .header-classic { padding: 10px 16px; }
+        .header-left { display: flex; align-items: center; cursor: pointer; }
+        .header-avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; overflow: hidden; display: flex; justify-content: center; align-items: center; color: #fff; border: 1px solid #444;}
+        .header-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .header-title-center { font-size: 16px; font-weight: bold; color: #fff; flex: 1; text-align: center;}
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .layout-btn { font-size: 11px; background: transparent; padding: 4px 8px; border-radius: 12px; cursor: pointer; border: 1px solid var(--border-color); color: var(--text-sub);}
+        .header-add-btn { font-size: 24px; color: var(--accent-color); cursor: pointer; font-weight: bold; line-height: 1;}
+
+        /* 底部导航 */
+        .bottom-nav { display: none; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; height: 60px; background: rgba(24,24,24,0.95); border-top: 1px solid var(--border-color); justify-content: space-around; align-items: center; z-index: 200; }
+        .bottom-nav.show { display: flex; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sub); cursor: pointer; flex: 1; }
+        .nav-item.active { color: var(--accent-color); }
+        .nav-btn-add { background: var(--accent-color); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-top: -20px; cursor: pointer; font-size: 24px; }
+
+        /* 侧边栏 */
+        .drawer-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 400; display: none; opacity: 0; transition: opacity 0.3s; }
+        .drawer-overlay.active { display: block; opacity: 1; }
+        .sidebar-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #151515; z-index: 401; border-right: 1px solid var(--border-color); transition: left 0.3s ease; display: flex; flex-direction: column;}
+        .sidebar-drawer.active { left: 0; }
+        .drawer-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; }
+        .drawer-user-info { display: flex; align-items: center; gap: 12px; }
+        .drawer-user-info .avatar { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; background: #333; }
+        .drawer-user-info .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .drawer-user-name { font-size: 16px; font-weight: bold; color: #fff; }
+        .drawer-user-handle { font-size: 13px; color: var(--text-sub); }
+        .drawer-nav { flex: 1; padding: 10px 0; overflow-y: auto; }
+        .drawer-nav-item { display: flex; align-items: center; gap: 16px; padding: 16px 20px; font-size: 16px; color: #fff; cursor: pointer; font-weight: bold;}
+        .drawer-nav-item.active { color: var(--accent-color); }
+        .drawer-nav-item .icon { font-size: 20px; width: 24px; text-align: center;}
+        .drawer-footer { padding: 20px; border-top: 1px solid var(--border-color); }
+        .drawer-logout-btn { width: 100%; padding: 12px; border-radius: 24px; background: transparent; border: 1px solid #ff4757; color: #ff4757; font-weight: bold; cursor: pointer;}
+
+        /* 通用 */
+        .announcement-bar { margin: 12px 16px; background: rgba(255, 123, 156, 0.1); border: 1px solid var(--accent-color); border-radius: 12px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; }
+        .announcement-content { flex: 1; font-size: 14px; }
+        .role-tag { font-size: 11px; background: rgba(255, 123, 156, 0.2); color: var(--accent-color); padding: 1px 6px; border-radius: 4px; }
+        .admin-tag { font-size: 11px; background: #ff4757; color: #fff; padding: 1px 6px; border-radius: 4px; font-weight: bold; }
+        
+        /* 普通版帖子 */
+        .post-card-new { background: var(--bg-color); padding: 16px; border-bottom: 8px solid #000; }
+        .post-new-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .post-new-user { display: flex; align-items: center; }
+        .post-new-user .avatar { width: 40px; height: 40px; margin-right: 10px; border-radius: 50%; background: #333; display: flex; justify-content: center; align-items: center; color:#fff; overflow: hidden;}
+        .post-new-user .avatar img { width: 100%; height: 100%; object-fit: cover;}
+        .post-new-name { display: flex; flex-direction: column; }
+        .post-new-name .username { font-weight: 500; font-size: 15px; display: flex; align-items: center; gap: 6px;}
+        .post-new-name .time { font-size: 12px; color: var(--text-sub); }
+        .post-content { font-size: 15px; margin-bottom: 12px; word-break: break-word; white-space: pre-wrap; }
+        .post-content.cosplay-text { font-style: italic; color: #b0c4de; background: #1a1a1a; padding: 10px; border-radius: 8px; border-left: 3px solid var(--accent-color); }
+        .post-media { width: 100%; max-height: 300px; border-radius: 8px; margin-bottom: 12px; object-fit: cover; background: #000; }
+        .post-new-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; padding-top: 8px; border-top: 1px solid var(--border-color); }
+        .action-item { cursor: pointer; display: flex; align-items: center; gap: 4px;}
+
+        /* 怀旧版帖子 */
+        .post-classic { display: flex; padding: 12px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+        .post-classic-avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; overflow: hidden; background: #333; display: flex; justify-content: center; align-items: center;}
+        .post-classic-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .post-classic-main { flex: 1; min-width: 0; }
+        .post-classic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+        .post-classic-name-group { display: flex; align-items: center; gap: 4px; }
+        .post-classic-name { font-size: 15px; font-weight: bold; color: #fff; }
+        .post-classic-time { font-size: 14px; color: var(--text-sub); }
+        .post-classic-content { font-size: 15px; margin-bottom: 10px; white-space: pre-wrap; }
+        .post-classic-media { width: 100%; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 10px; max-height: 400px; object-fit: cover; }
+        .post-classic-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; max-width: 380px; }
+        .action-icon { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
+        /* 个人主页 */
+        .profile-cover-new { height: 120px; background: #333 center/cover no-repeat; width: 100%; }
+        .profile-header-new { padding: 0 16px 20px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        .profile-avatar-new { width: 80px; height: 80px; border-radius: 50%; margin: -40px auto 12px; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; border: 4px solid var(--bg-color); background: #222;}
+        .profile-avatar-new img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-bio-new { font-size: 14px; color: #b0c4de; margin: 10px auto; max-width: 80%; }
+        .profile-stats-new { display: flex; justify-content: center; gap: 30px; margin-top: 15px; margin-bottom: 20px;}
+        .stat-item-new { display: flex; flex-direction: column; align-items: center; }
+        .stat-num-new { font-weight: bold; font-size: 18px; }
+        .stat-label-new { font-size: 12px; color: var(--text-sub); }
+        .btn-outline-new { background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 20px; border-radius: 20px; cursor: pointer; }
+
+        .profile-cover-classic { height: 120px; background: #333 center/cover no-repeat; width: 100%; }
+        .profile-info-container-classic { padding: 0 16px 16px; position: relative; }
+        .profile-avatar-wrapper-classic { width: 84px; height: 84px; border-radius: 50%; border: 4px solid var(--bg-color); background: #222; margin-top: -42px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;}
+        .profile-avatar-wrapper-classic img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-actions-row-classic { display: flex; justify-content: flex-end; gap: 10px; margin-top: -36px; margin-bottom: 16px;}
+        .btn-outline-classic { background: transparent; color: #eff3f4; border: 1px solid #536471; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer;}
+        .profile-name-classic { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 2px;}
+        .profile-handle-classic { font-size: 15px; color: var(--text-sub); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;}
+        .tag-platform { background: #2f3336; color: #e0e0e0; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+        .profile-bio-classic { font-size: 15px; margin-bottom: 12px; }
+        .profile-stats-row-classic { display: flex; gap: 20px; font-size: 14px; color: var(--text-sub); margin-bottom: 16px;}
+        .profile-stats-row-classic b { color: #eff3f4; }
+
+        /* 详情页 */
+        #detail-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 250; display: none; flex-direction: column; max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
+        .detail-header { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
+        .back-btn { font-size: 20px; cursor: pointer; margin-right: 20px; color: #fff;}
+        .detail-content-area { flex: 1; overflow-y: auto; padding-bottom: 60px; }
+        .detail-post-main { padding: 16px; border-bottom: 1px solid var(--border-color); }
+        .detail-user-info { display: flex; align-items: center; margin-bottom: 12px;}
+        .detail-avatar { width: 48px; height: 48px; border-radius: 50%; margin-right: 12px; overflow: hidden; background: #333;}
+        .detail-avatar img { width: 100%; height: 100%; object-fit: cover;}
+        .detail-post-content { font-size: 18px; color: #fff; line-height: 1.5; margin-bottom: 16px; white-space: pre-wrap; }
+        .detail-post-media { width: 100%; border-radius: 16px; margin-bottom: 16px; }
+        .detail-bottom-bar { position: absolute; bottom: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color); padding: 12px 16px; display: flex; align-items: center; gap: 12px;}
+        .detail-input { flex: 1; background: #161616; border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 16px; color: #fff; outline: none;}
+        .detail-send-btn { background: var(--accent-color); color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer;}
+
+        /* 评论 */
+        .comment-list { padding: 16px; }
+        .comment-thread { margin-bottom: 20px;}
+        .comment-main { display: flex; gap: 12px; }
+        .comment-main .avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #333;}
+        .comment-main .avatar img { width: 100%; height: 100%; object-fit: cover;}
+        .comment-main-body { flex: 1; }
+        .comment-header { display: flex; align-items: center; gap: 4px; margin-bottom: 4px;}
+        .comment-name { font-size: 15px; font-weight: bold; color: #fff; }
+        .comment-time { font-size: 14px; color: var(--text-sub); }
+        .comment-text { font-size: 15px; color: #eff3f4; margin-bottom: 8px; }
+        .comment-actions { display: flex; gap: 20px; font-size: 13px; color: var(--text-sub); }
+        .comment-actions span { cursor: pointer; }
+        .comment-replies { margin-left: 20px; padding-left: 20px; border-left: 2px solid var(--border-color); margin-top: 12px; }
+        .reply-item { display: flex; gap: 10px; margin-bottom: 12px;}
+        .reply-item .avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #333;}
+        .reply-item .avatar img { width: 100%; height: 100%; object-fit: cover;}
+        .reply-body { flex: 1; }
+        .reply-header { display: flex; align-items: center; gap: 4px; margin-bottom: 2px;}
+        .reply-name { font-size: 14px; font-weight: bold; color: #fff;}
+        .reply-target { font-size: 14px; color: var(--accent-color);}
+        .reply-text { font-size: 14px; color: #eff3f4; margin-bottom: 4px;}
+
+        /* 弹窗 */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 500; display: none; justify-content: center; align-items: flex-end; }
+        .modal-content { background: var(--bg-color); width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; display: flex; flex-direction: column; border: 1px solid var(--border-color); border-bottom: none; max-height: 90vh; overflow-y: auto;}
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: bold; font-size: 18px; color: #fff;}
+        .modal-textarea { width: 100%; height: 120px; background: transparent; border: none; border-bottom: 1px solid var(--border-color); padding: 12px 0; color: #fff; font-size: 18px; resize: none; outline: none; margin-bottom: 12px; }
+        .modal-submit { width: 100%; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 20px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;}
+        
+        .edit-section { display: flex; align-items: center; justify-content: space-between; background: #1e1e1e; padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border-color);}
+        .edit-section-info { display: flex; align-items: center; gap: 12px; }
+        .edit-section-label { font-size: 15px; color: #fff; font-weight: bold;}
+        .edit-avatar-preview { width: 48px; height: 48px; border-radius: 50%; background: #333; overflow: hidden; border: 2px solid var(--accent-color);}
+        .edit-cover-preview { width: 80px; height: 45px; border-radius: 6px; background: #333; overflow: hidden; border: 1px solid var(--border-color);}
+        .edit-avatar-preview img, .edit-cover-preview img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
@@ -43,7 +187,7 @@
 <!-- 登录页 -->
 <div id="auth-page">
     <div class="auth-box">
-        <div class="auth-title" id="auth-title">基沃托斯日讯-登录</div>
+        <div class="auth-title" id="auth-title">基沃托斯日讯-测试版v2.8</div>
         <div class="input-group" id="nickname-group" style="display: none;">
             <label>昵称</label>
             <input type="text" class="auth-input" id="auth-nickname" placeholder="给自己起个名字">
@@ -56,127 +200,666 @@
             <label>密码</label>
             <input type="password" class="auth-input" id="auth-password" placeholder="至少 6 位字符">
         </div>
-        <button class="auth-btn" id="auth-submit-btn">登 录</button>
-        <div class="auth-switch" id="auth-switch-btn">
+        <button class="auth-btn" id="auth-submit-btn" onclick="handleAuth()">登 录</button>
+        <div class="auth-switch" onclick="toggleAuthMode()">
             还没有账号？<span id="auth-switch-text">立即注册</span>
         </div>
     </div>
 </div>
 
+<!-- 主应用 -->
+<div id="app">
+    <header id="header-container"></header>
+    <main id="main-content"></main>
+
+    <nav class="bottom-nav" id="bottom-nav">
+        <div class="nav-item" data-view="feed" onclick="switchView('feed')">首页</div>
+        <div class="nav-item" data-view="story" onclick="switchView('story')">剧情</div>
+        <div class="nav-btn-add" onclick="openPostModal()">+</div>
+        <div class="nav-item" data-view="profile" onclick="switchView('profile')">我的</div>
+    </nav>
+</div>
+
+<!-- 侧边栏 -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="sidebar-drawer" id="sidebar-drawer">
+    <div class="drawer-header" id="drawer-header-content"></div>
+    <div class="drawer-nav">
+        <div class="drawer-nav-item" id="nav-feed" onclick="switchView('feed')"><span class="icon">🏠</span>首页</div>
+        <div class="drawer-nav-item" id="nav-story" onclick="switchView('story')"><span class="icon">🎭</span>剧情广场</div>
+        <div class="drawer-nav-item" id="nav-profile" onclick="switchView('profile')"><span class="icon">👤</span>个人主页</div>
+    </div>
+    <div class="drawer-footer">
+        <button class="drawer-logout-btn" onclick="logout()">退出登录</button>
+    </div>
+</div>
+
+<!-- 详情页 -->
+<div id="detail-page">
+    <div class="detail-header">
+        <div class="back-btn" onclick="closeDetailPage()">←</div>
+        <div class="detail-header-title">帖子详情</div>
+    </div>
+    <div class="detail-content-area" id="detail-render-area"></div>
+    <div class="detail-bottom-bar">
+        <input type="text" class="detail-input" id="comment-input" placeholder="发布你的评论...">
+        <button class="detail-send-btn" onclick="submitComment()">回复</button>
+    </div>
+</div>
+
+<!-- 发帖弹窗 -->
+<div class="modal-overlay" id="post-modal">
+    <div class="modal-content">
+        <div class="modal-header"><span>发布新帖子</span><span style="cursor:pointer;" onclick="closePostModal()">✕</span></div>
+        <div class="mode-switch" style="display:flex; gap:10px; margin-bottom:12px;">
+            <div class="mode-btn active" id="mode-normal" onclick="switchPostMode('normal')" style="flex:1; text-align:center; padding:8px; border-radius:20px; border:1px solid #333; cursor:pointer; background:#222; color:#fff;">日常发帖</div>
+            <div class="mode-btn" id="mode-cos" onclick="switchPostMode('cosplay')" style="flex:1; text-align:center; padding:8px; border-radius:20px; border:1px solid #333; cursor:pointer; background:transparent; color:#888;">🎭 剧情演绎</div>
+        </div>
+        <div class="role-input-group" id="role-input-group" style="display:none; margin-bottom:12px;">
+            <input type="text" class="auth-input" id="post-role" placeholder="扮演角色（如：砂狼白子）" style="margin-bottom: 10px;">
+        </div>
+        <textarea class="modal-textarea" id="post-input" placeholder="有什么新鲜事？"></textarea>
+        
+        <div class="input-group" style="margin-top:10px;">
+            <label>附带图片/视频链接 (可选)</label>
+            <input type="text" class="auth-input" id="post-media-url" placeholder="https://... (填入以http开头的图片地址)">
+        </div>
+
+        <button class="modal-submit" onclick="submitPost()">发布</button>
+    </div>
+</div>
+
+<!-- 编辑资料弹窗 -->
+<div class="modal-overlay" id="edit-profile-modal">
+    <div class="modal-content">
+        <div class="modal-header"><span>个人主页装扮</span><span style="cursor:pointer;" onclick="document.getElementById('edit-profile-modal').style.display='none'">✕</span></div>
+        
+        <div class="edit-section">
+            <div class="edit-section-info">
+                <div class="edit-avatar-preview" id="edit-avatar-preview"></div>
+                <div class="edit-section-label">更改头像</div>
+            </div>
+            <button class="btn-small" style="background:#333; border:none; color:#fff; padding:6px 12px; border-radius:16px; cursor:pointer;" onclick="document.getElementById('avatar-uploader').click()">上传</button>
+        </div>
+
+        <div class="edit-section">
+            <div class="edit-section-info">
+                <div class="edit-cover-preview" id="edit-cover-preview"></div>
+                <div class="edit-section-label">更改主页背景</div>
+            </div>
+            <button class="btn-small" style="background:#333; border:none; color:#fff; padding:6px 12px; border-radius:16px; cursor:pointer;" onclick="document.getElementById('cover-uploader').click()">上传</button>
+        </div>
+
+        <div class="input-group" style="margin-top:10px;">
+            <label>名称/昵称</label>
+            <input type="text" class="auth-input" id="edit-name-input" placeholder="输入新昵称">
+        </div>
+        <div class="input-group">
+            <label>个人简介 / 签名</label>
+            <textarea class="auth-input" id="edit-bio-input" placeholder="介绍一下自己吧..." style="height: 80px; resize: none;"></textarea>
+        </div>
+
+        <button class="modal-submit" onclick="saveProfile()">保存资料</button>
+    </div>
+</div>
+
+<input type="file" id="avatar-uploader" accept="image/*" style="display: none;" onchange="handleTempUpload(event, 'avatar')">
+<input type="file" id="cover-uploader" accept="image/*" style="display: none;" onchange="handleTempUpload(event, 'cover')">
+
 <script>
-    // 1. 基础配置
+    // ==========================================
+    // 👇👇👇 请确保这里是你的 Supabase 正确配置 👇👇👇
+    // ==========================================
     const SUPABASE_URL = 'https://ycjshhxxqnyizewpswoc.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut'; 
-    let supabaseClient = null;
+    // ==========================================
 
-    try {
-        if (typeof supabase !== 'undefined') {
-            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        }
-    } catch(e) {}
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 2. 悬浮提示
     function showToast(msg) {
         const toast = document.getElementById('toast');
         toast.innerText = msg; 
         toast.style.display = 'block';
         clearTimeout(window.toastTimer);
-        window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3500);
     }
 
-    // 3. 状态
+    let CurrentUserProfile = null;
+    let AllPosts = []; 
     let isRegisterMode = false;
+    let currentView = 'feed';
+    let currentPostMode = 'normal';
+    let currentPostIdForComment = null;
+    let currentReplyTo = null;
+    let currentLayout = localStorage.getItem('forum_layout') || 'new';
+    let tempAvatar = null;
+    let tempCover = null;
     let isLoggingIn = false;
 
-    // 4. 绑定事件 (等页面加载完再绑，绝对不会失效)
-    document.addEventListener("DOMContentLoaded", () => {
-        // 绑定切换按钮
-        document.getElementById('auth-switch-btn').addEventListener('click', () => {
-            isRegisterMode = !isRegisterMode;
-            document.getElementById('auth-title').innerText = isRegisterMode ? '基沃托斯日讯-注册' : '基沃托斯日讯-登录';
-            document.getElementById('auth-submit-btn').innerText = isRegisterMode ? '注 册' : '登 录';
-            document.getElementById('auth-switch-text').innerText = isRegisterMode ? '去登录' : '立即注册';
-            document.getElementById('nickname-group').style.display = isRegisterMode ? 'block' : 'none';
-            // 测试用提示
-            showToast(isRegisterMode ? '已切换到注册模式' : '已切换到登录模式');
-        });
+    function generateSignal() { return `KIV-${Math.floor(100000 + Math.random() * 900000)}`; }
 
-        // 绑定登录/注册按钮
-        document.getElementById('auth-submit-btn').addEventListener('click', async () => {
-            if (isLoggingIn) return; // 防连点
-            if (!supabaseClient) return showToast('网络组件加载失败，请刷新页面');
+    window.toggleAuthMode = function() {
+        isRegisterMode = !isRegisterMode;
+        document.getElementById('auth-title').innerText = isRegisterMode ? '基沃托斯日讯-测试版v2.8 注册' : '基沃托斯日讯-测试版v2.8';
+        document.getElementById('auth-submit-btn').innerText = isRegisterMode ? '注 册' : '登 录';
+        document.getElementById('auth-switch-text').innerText = isRegisterMode ? '去登录' : '立即注册';
+        document.getElementById('nickname-group').style.display = isRegisterMode ? 'block' : 'none';
+    };
 
-            const email = document.getElementById('auth-email').value.trim();
-            const password = document.getElementById('auth-password').value;
-            const nickname = document.getElementById('auth-nickname').value.trim();
-            const btn = document.getElementById('auth-submit-btn');
+    window.handleAuth = async function() {
+        if (isLoggingIn) return; 
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
+        const nickname = document.getElementById('auth-nickname').value.trim();
+        const btn = document.getElementById('auth-submit-btn');
+        
+        if (!email || !password) return showToast('请填写邮箱和密码');
+        if (password.length < 6) return showToast('密码至少需要6位');
+        if (isRegisterMode && !nickname) return showToast('请输入昵称');
 
-            if (!email || !password) return showToast('请填写邮箱和密码');
-            if (password.length < 6) return showToast('密码至少需要6位');
-            if (isRegisterMode && !nickname) return showToast('请输入昵称');
+        isLoggingIn = true;
+        const originalText = btn.innerText;
+        btn.innerText = '网络连接中...'; btn.disabled = true;
 
-            isLoggingIn = true;
-            const originalText = btn.innerText;
-            btn.innerText = '处理中...'; 
-            btn.disabled = true;
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('连接超时，请切换WiFi/流量重试')), 12000)
+        );
 
-            // 超时机制：8秒强制断开
-            const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('网络连接超时，请检查网络或稍后再试')), 8000)
-            );
-
-            try {
-                if (isRegisterMode) {
-                    const { data, error } = await Promise.race([
-                        supabaseClient.auth.signUp({ email, password, options: { data: { display_name: nickname } } }),
+        try {
+            if (isRegisterMode) {
+                const { data, error } = await Promise.race([
+                    supabaseClient.auth.signUp({ email, password, options: { data: { display_name: nickname } } }),
+                    timeoutPromise
+                ]);
+                if (error) throw error;
+                
+                if (data.user) {
+                    await Promise.race([
+                        supabaseClient.from('profiles').insert([{
+                            id: data.user.id, name: nickname, email: email, signal: generateSignal(), 
+                            avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`, bio: ''
+                        }]),
                         timeoutPromise
                     ]);
-                    if (error) throw error;
-                    
-                    if (data.user) {
-                        // 注册成功后，顺便把资料写进 profiles 表
-                        await Promise.race([
-                            supabaseClient.from('profiles').insert([{
-                                id: data.user.id, name: nickname, email: email, 
-                                signal: `KIV-${Math.floor(100000 + Math.random() * 900000)}`, 
-                                avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`, bio: ''
-                            }]),
-                            timeoutPromise
-                        ]);
-                        showToast('注册成功！请直接登录。');
-                        // 自动切回登录模式
-                        document.getElementById('auth-switch-btn').click();
-                    }
-                } else {
-                    const { data, error } = await Promise.race([
+                    showToast('注册成功，正在登录...');
+                    const { data: loginData, error: loginError } = await Promise.race([
                         supabaseClient.auth.signInWithPassword({ email, password }),
                         timeoutPromise
                     ]);
-                    if (error) throw error;
-                    
-                    showToast('登录成功！正在进入...');
-                    // 如果你有大段代码，这里可以写跳转逻辑
-                    setTimeout(() => {
-                        alert('登录成功了！由于这是测试页，我先把主界面隐藏了，确认你能点按钮后，我再把完整版发给你。');
-                    }, 500);
+                    if (loginError) throw loginError;
+                    await initUser(loginData.user);
                 }
-            } catch (err) { 
-                if (err.message.includes('Email not confirmed')) {
-                    showToast('账号未激活！请换一个邮箱重新注册。');
-                } else if (err.message.includes('Invalid login')) {
-                    showToast('邮箱或密码错误，请重试。');
-                } else if (err.message.includes('连接超时')) {
-                    showToast('网络连接超时！请切换WiFi/流量重试。');
-                } else {
-                    showToast('操作失败：' + err.message); 
-                }
-            } finally { 
-                isLoggingIn = false;
-                btn.innerText = originalText; 
-                btn.disabled = false; 
+            } else {
+                const { data, error } = await Promise.race([
+                    supabaseClient.auth.signInWithPassword({ email, password }),
+                    timeoutPromise
+                ]);
+                if (error) throw error;
+                await initUser(data.user);
             }
-        });
-    });
+        } catch (err) { 
+            if (err.message.includes('Email not confirmed')) {
+                showToast('账号未激活！请去后台删除或换邮箱。');
+            } else if (err.message.includes('Invalid login')) {
+                showToast('邮箱或密码错误，请重试。');
+            } else if (err.message.includes('连接超时')) {
+                showToast('网络超时！国内网络连不上服务器，请切换网络。');
+            } else {
+                showToast('操作失败：' + err.message); 
+            }
+        } finally { 
+            isLoggingIn = false;
+            btn.innerText = originalText; 
+            btn.disabled = false; 
+        }
+    }
+
+    window.logout = async function() {
+        await supabaseClient.auth.signOut();
+        CurrentUserProfile = null;
+        localStorage.removeItem('cached_profile');
+        localStorage.removeItem('cached_posts');
+        document.getElementById('auth-page').style.display = 'flex'; 
+        document.getElementById('app').style.display = 'none';
+    }
+
+    async function checkAuth() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            const cachedProfile = localStorage.getItem('cached_profile');
+            if (cachedProfile) {
+                CurrentUserProfile = JSON.parse(cachedProfile);
+                document.getElementById('auth-page').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                
+                const cachedPosts = localStorage.getItem('cached_posts');
+                if (cachedPosts) { AllPosts = JSON.parse(cachedPosts); render(); }
+            }
+            await initUser(session.user);
+        } else {
+            document.getElementById('auth-page').style.display = 'flex'; 
+            document.getElementById('app').style.display = 'none';
+        }
+    }
+
+    async function initUser(user) {
+        let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+        if (!profile) {
+            const newName = user.user_metadata?.display_name || user.email.split('@')[0];
+            await supabaseClient.from('profiles').insert([{
+                id: user.id, name: newName, email: user.email, signal: generateSignal(), 
+                avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${newName}`, bio: ''
+            }]);
+            const res = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+            profile = res.data;
+        }
+        CurrentUserProfile = profile;
+        localStorage.setItem('cached_profile', JSON.stringify(profile));
+        
+        document.getElementById('auth-page').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        await resetAndLoadPosts();
+    }
+
+    async function resetAndLoadPosts() {
+        if (AllPosts.length === 0) {
+            document.getElementById('main-content').innerHTML = `<div style="text-align:center; padding:50px; color:#888;">同步云端动态中...</div>`;
+        }
+        const { data: posts, error } = await supabaseClient.from('posts')
+            .select(`*, profiles ( name, avatar, signal, email )`)
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        if (error) return;
+        AllPosts = posts || [];
+        localStorage.setItem('cached_posts', JSON.stringify(AllPosts));
+        render();
+    }
+
+    // ====== UI 渲染 ======
+    window.toggleLayout = function() {
+        currentLayout = currentLayout === 'new' ? 'classic' : 'new';
+        localStorage.setItem('forum_layout', currentLayout);
+        render(); 
+    }
+
+    window.openDrawer = function() { document.getElementById('drawer-overlay').classList.add('active'); document.getElementById('sidebar-drawer').classList.add('active'); }
+    window.closeDrawer = function() { document.getElementById('drawer-overlay').classList.remove('active'); document.getElementById('sidebar-drawer').classList.remove('active'); }
+    window.switchView = function(viewName) { currentView = viewName; closeDrawer(); render(); }
+
+    function formatTime(ts) { 
+        const d = new Date(ts);
+        if (currentLayout === 'new') {
+            const diff = Date.now() - d.getTime();
+            return diff < 60000 ? '刚刚' : diff < 3600000 ? Math.floor(diff/60000)+'分钟前' : Math.floor(diff/3600000)+'小时前';
+        }
+        return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`; 
+    }
+
+    function render() {
+        if (!CurrentUserProfile) return;
+        
+        const headerContainer = document.getElementById('header-container');
+        const bottomNav = document.getElementById('bottom-nav');
+
+        if (currentLayout === 'new') {
+            bottomNav.classList.add('show');
+            let titleText = currentView === 'feed' ? '基沃托斯日讯-首页' : (currentView === 'story' ? '剧情广场' : '我的主页');
+            headerContainer.innerHTML = `
+                <div class="header header-normal">
+                    <div class="header-normal-top">
+                        <span>${titleText}</span>
+                        <span style="font-size: 12px; color: var(--text-sub); cursor:pointer;" onclick="toggleLayout()">切怀旧版</span>
+                    </div>
+                </div>
+            `;
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
+            const activeNav = document.querySelector(`.bottom-nav .nav-item[data-view="${currentView}"]`);
+            if (activeNav) activeNav.classList.add('active');
+        } else {
+            bottomNav.classList.remove('show');
+            let titleText = currentView === 'feed' ? '首页' : (currentView === 'story' ? '剧情广场' : '个人主页');
+            headerContainer.innerHTML = `
+                <div class="header header-classic">
+                    <div class="header-left" onclick="openDrawer()">
+                        <div class="header-avatar"><img src="${CurrentUserProfile.avatar}"></div>
+                    </div>
+                    <div class="header-title-center">${titleText}</div>
+                    <div class="header-right">
+                        <span class="layout-btn" onclick="toggleLayout()">切普通版</span>
+                        <span class="header-add-btn" onclick="openPostModal()">+</span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('drawer-header-content').innerHTML = `
+                <div class="drawer-user-info" onclick="switchView('profile')">
+                    <div class="avatar"><img src="${CurrentUserProfile.avatar}"></div>
+                    <div>
+                        <div class="drawer-user-name">${CurrentUserProfile.name}</div>
+                        <div class="drawer-user-handle">@${CurrentUserProfile.signal}</div>
+                    </div>
+                </div>
+            `;
+            document.querySelectorAll('.drawer-nav-item').forEach(el => el.classList.remove('active'));
+            if(document.getElementById('nav-' + currentView)) document.getElementById('nav-' + currentView).classList.add('active');
+        }
+        
+        renderPostsOnly();
+    }
+
+    function renderPostsOnly() {
+        if (!CurrentUserProfile) return;
+        let html = '';
+
+        if (currentView === 'profile') {
+            if (currentLayout === 'new') {
+                html += `
+                <div class="profile-cover-new" style="background-image: url('${CurrentUserProfile.cover || ''}');"></div>
+                <div class="profile-header-new">
+                    <div class="profile-avatar-new"><img src="${CurrentUserProfile.avatar}"></div>
+                    <h2>${CurrentUserProfile.name}</h2>
+                    <div class="profile-bio-new">${CurrentUserProfile.bio || '这个人很神秘，什么都没写。'}</div>
+                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">讯号：<span style="color:var(--accent-color);">${CurrentUserProfile.signal}</span></div>
+                    <div><button class="btn-outline-new" onclick="openEditProfile()">编辑资料</button></div>
+                </div><div style="padding: 12px 16px; font-weight: bold;">我发布的帖子</div>`;
+            } else {
+                html += `
+                <div class="profile-cover-classic" style="background-image: url('${CurrentUserProfile.cover || ''}');"></div>
+                <div class="profile-info-container-classic">
+                    <div class="profile-avatar-wrapper-classic"><img src="${CurrentUserProfile.avatar}"></div>
+                    <div class="profile-actions-row-classic"><button class="btn-outline-classic" onclick="openEditProfile()">编辑资料</button></div>
+                    <div class="profile-name-classic">${CurrentUserProfile.name}</div>
+                    <div class="profile-handle-classic">@${CurrentUserProfile.signal} <span class="tag-platform">平台用户</span></div>
+                    <div class="profile-bio-classic">${CurrentUserProfile.bio || '这个人很神秘，什么都没写。'}</div>
+                </div>`;
+            }
+            AllPosts.filter(p => p.author_id === CurrentUserProfile.id).forEach(post => { html += renderPostHTML(post); });
+        } else {
+            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 测试版v2.8 已上线！</div></div>`;
+            
+            let postsToRender = AllPosts;
+            if (currentView === 'story') postsToRender = postsToRender.filter(p => p.type === 'cosplay');
+            
+            if (postsToRender.length === 0) html += `<div style="text-align:center; padding:50px; color:#666;">这里空空如也~</div>`;
+            else postsToRender.forEach(post => { html += renderPostHTML(post); });
+        }
+        document.getElementById('main-content').innerHTML = html;
+    }
+
+    function renderPostHTML(post) {
+        const authorProfile = post.profiles || { name: '未知', avatar: '', email: '' };
+        const isMe = post.author_id === CurrentUserProfile.id;
+        
+        let mediaHtml = '';
+        if (post.media_data) {
+            if (post.media_type === 'image') mediaHtml = `<img src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}" loading="lazy">`;
+            else if (post.media_type === 'video') mediaHtml = `<video src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}" controls></video>`;
+        }
+
+        const postDate = formatTime(post.created_at);
+
+        if (currentLayout === 'new') {
+            return `<div class="post-card-new" onclick="openDetailPage('${post.id}')">
+                <div class="post-new-header">
+                    <div class="post-new-user">
+                        <div class="avatar"><img src="${authorProfile.avatar}" loading="lazy"></div>
+                        <div class="post-new-name">
+                            <span class="username">${authorProfile.name}${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}</span>
+                            <span class="time">${postDate}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="post-content ${post.type === 'cosplay' ? 'cosplay-text' : ''}">${post.content}</div>
+                ${mediaHtml}
+                <div class="post-new-actions">
+                    <div class="action-item">❤️ ${post.likes}</div>
+                    <div class="action-item" onclick="openDetailPage('${post.id}')">💬 评论</div>
+                    <div class="action-item">👁️ ${post.views}</div>
+                    ${isMe ? `<div class="action-item" style="color:#ff4757;" onclick="event.stopPropagation(); deletePost('${post.id}')">🗑️ 删除</div>` : ''}
+                </div>
+            </div>`;
+        } else {
+            return `<div class="post-classic" onclick="openDetailPage('${post.id}')">
+                <div class="post-classic-avatar"><img src="${authorProfile.avatar}" loading="lazy"></div>
+                <div class="post-classic-main">
+                    <div class="post-classic-header">
+                        <div class="post-classic-name-group">
+                            <span class="post-classic-name">${authorProfile.name}</span>
+                            ${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}
+                        </div>
+                        <span class="post-classic-time">· ${postDate}</span>
+                    </div>
+                    <div class="post-classic-content">${post.content}</div>
+                    ${mediaHtml}
+                    <div class="post-classic-actions">
+                        <div class="action-icon">💬</div>
+                        <div class="action-icon">❤️ ${post.likes}</div>
+                        <div class="action-icon">📊 ${post.views}</div>
+                        ${isMe ? `<div class="action-icon" onclick="event.stopPropagation(); deletePost('${post.id}')">🗑️</div>` : ''}
+                    </div>
+                </div>
+            </div>`;
+        }
+    }
+
+    window.openDetailPage = async function(id) {
+        currentPostIdForComment = id;
+        currentReplyTo = null;
+        
+        const post = AllPosts.find(x => x.id === id);
+        if (!post) return;
+
+        document.getElementById('detail-render-area').innerHTML = `<div style="text-align:center; padding:50px; color:#888;">拉取评论中...</div>`;
+        document.getElementById('detail-page').style.display = 'flex';
+        
+        post.views = (post.views || 0) + 1;
+        supabaseClient.from('posts').update({ views: post.views }).eq('id', id).then();
+
+        const { data: comments } = await supabaseClient.from('comments')
+            .select(`*, profiles ( name, avatar, signal )`)
+            .eq('post_id', id)
+            .order('created_at', { ascending: true });
+
+        const authorProfile = post.profiles || { name: '未知', avatar: '' };
+        let mediaHtml = post.media_data ? (post.media_type === 'image' ? `<img src="${post.media_data}" class="detail-post-media" loading="lazy">` : `<video src="${post.media_data}" class="detail-post-media" controls></video>`) : '';
+        
+        let html = `<div class="detail-post-main">
+            <div class="detail-user-info">
+                <div class="detail-avatar"><img src="${authorProfile.avatar}" loading="lazy"></div>
+                <div class="detail-name-block">
+                    <span class="comment-name">${authorProfile.name}</span>
+                    <span class="comment-time">@${authorProfile.signal}</span>
+                </div>
+            </div>
+            <div class="detail-post-content">${post.content}</div>
+            ${mediaHtml}
+        </div>`;
+
+        html += `<div class="comment-list">`;
+        
+        if (!comments || comments.length === 0) html += `<div style="text-align:center; padding:20px; color:#666;">还没有评论，快来抢沙发~</div>`;
+        else {
+            let rootComments = comments.filter(c => !c.reply_to);
+            rootComments.forEach(root => {
+                const rootAuthor = root.profiles || { name: '未知', avatar: '' };
+                const replies = comments.filter(c => c.reply_to === root.author_id);
+                
+                html += `<div class="comment-thread">
+                    <div class="comment-main">
+                        <div class="avatar"><img src="${rootAuthor.avatar}" loading="lazy"></div>
+                        <div class="comment-main-body">
+                            <div class="comment-header"><span class="comment-name">${rootAuthor.name}</span></div>
+                            <div class="comment-text">${root.content}</div>
+                            <div class="comment-actions"><span onclick="prepareReply('${rootAuthor.name}', '${root.author_id}')">💬 回复</span></div>
+                        </div>
+                    </div>`;
+                if (replies.length > 0) {
+                    html += `<div class="comment-replies">`;
+                    replies.forEach(reply => {
+                        const replyAuthor = reply.profiles || { name: '未知', avatar: '' };
+                        html += `<div class="reply-item">
+                            <div class="avatar"><img src="${replyAuthor.avatar}" loading="lazy"></div>
+                            <div class="reply-body">
+                                <div class="reply-header"><span class="reply-name">${replyAuthor.name}</span></div>
+                                <div class="reply-text"><span class="reply-target">回复：</span>${reply.content}</div>
+                            </div>
+                        </div>`;
+                    });
+                    html += `</div>`;
+                }
+                html += `</div>`;
+            });
+        }
+        html += `</div>`;
+        
+        document.getElementById('detail-render-area').innerHTML = html;
+        document.getElementById('comment-input').value = '';
+    }
+
+    window.closeDetailPage = function() {
+        document.getElementById('detail-page').style.display = 'none';
+    }
+
+    window.prepareReply = function(name, id) {
+        currentReplyTo = id; 
+        const input = document.getElementById('comment-input');
+        input.placeholder = `回复 @${name}...`;
+        input.focus();
+    }
+
+    window.submitComment = async function() {
+        const input = document.getElementById('comment-input');
+        const c = input.value.trim(); if (!c) return;
+        
+        const btn = document.querySelector('.detail-send-btn');
+        btn.innerText = '发送中'; btn.disabled = true;
+
+        await supabaseClient.from('comments').insert([{
+            post_id: currentPostIdForComment,
+            author_id: CurrentUserProfile.id,
+            content: c,
+            reply_to: currentReplyTo
+        }]);
+        
+        btn.innerText = '回复'; btn.disabled = false;
+        input.value = ''; currentReplyTo = null;
+        openDetailPage(currentPostIdForComment); 
+    }
+
+    window.openPostModal = function() { 
+        document.getElementById('post-input').value = ''; 
+        document.getElementById('post-role').value = ''; 
+        document.getElementById('post-media-url').value = '';
+        switchPostMode('normal'); 
+        document.getElementById('post-modal').style.display = 'flex'; 
+    }
+    window.closePostModal = function() { document.getElementById('post-modal').style.display = 'none'; }
+    window.switchPostMode = function(mode) {
+        currentPostMode = mode;
+        document.getElementById('mode-normal').style.background = mode === 'normal' ? '#222' : 'transparent';
+        document.getElementById('mode-normal').style.color = mode === 'normal' ? '#fff' : '#888';
+        document.getElementById('mode-cos').style.background = mode === 'cosplay' ? '#222' : 'transparent';
+        document.getElementById('mode-cos').style.color = mode === 'cosplay' ? '#fff' : '#888';
+        document.getElementById('role-input-group').style.display = mode === 'cosplay' ? 'block' : 'none';
+    }
+
+    window.submitPost = async function() {
+        const c = document.getElementById('post-input').value.trim();
+        const role = document.getElementById('post-role').value.trim();
+        const mediaUrl = document.getElementById('post-media-url').value.trim();
+        
+        if (!c) return showToast('内容不能为空');
+        if (currentPostMode === 'cosplay' && !role) return showToast('请填写角色名');
+
+        const btn = document.querySelector('#post-modal .modal-submit');
+        btn.innerText = '发布中...'; btn.disabled = true;
+
+        let mediaType = null;
+        if (mediaUrl) {
+            if (mediaUrl.match(/\.(jpeg|jpg|gif|png)$/i)) mediaType = 'image';
+            else mediaType = 'video';
+        }
+
+        await supabaseClient.from('posts').insert([{
+            author_id: CurrentUserProfile.id,
+            content: c,
+            type: currentPostMode,
+            role: currentPostMode === 'cosplay' ? role : null,
+            media_type: mediaType,
+            media_data: mediaUrl || null
+        }]);
+
+        btn.innerText = '发布'; btn.disabled = false;
+        closePostModal(); 
+        await resetAndLoadPosts(); 
+        switchView(currentPostMode === 'cosplay' ? 'story' : 'feed'); 
+        showToast('发布成功！');
+    }
+
+    window.deletePost = async function(id) {
+        if (confirm('确定要删除这条帖子吗？')) {
+            await supabaseClient.from('posts').delete().eq('id', id);
+            resetAndLoadPosts();
+        }
+    }
+
+    window.openEditProfile = function() {
+        tempAvatar = CurrentUserProfile.avatar; 
+        tempCover = CurrentUserProfile.cover || '';
+        document.getElementById('edit-name-input').value = CurrentUserProfile.name || '';
+        document.getElementById('edit-bio-input').value = CurrentUserProfile.bio || '';
+        document.getElementById('edit-avatar-preview').innerHTML = `<img src="${tempAvatar}" loading="lazy">`;
+        document.getElementById('edit-cover-preview').innerHTML = tempCover ? `<img src="${tempCover}" loading="lazy">` : '';
+        document.getElementById('edit-profile-modal').style.display = 'flex';
+    }
+
+    window.handleTempUpload = function(event, type) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (file.size > 500 * 1024) return showToast('图片太大，请小于500KB。');
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (type === 'avatar') {
+                tempAvatar = e.target.result;
+                document.getElementById('edit-avatar-preview').innerHTML = `<img src="${tempAvatar}" loading="lazy">`;
+            } else if (type === 'cover') {
+                tempCover = e.target.result;
+                document.getElementById('edit-cover-preview').innerHTML = `<img src="${tempCover}" loading="lazy">`;
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.saveProfile = async function() {
+        const newName = document.getElementById('edit-name-input').value.trim();
+        const newBio = document.getElementById('edit-bio-input').value.trim();
+        if (!newName) return showToast('昵称不能为空');
+        
+        const btn = document.querySelector('#edit-profile-modal .modal-submit');
+        btn.innerText = '保存中...'; btn.disabled = true;
+
+        await supabaseClient.from('profiles').update({
+            name: newName,
+            bio: newBio,
+            avatar: tempAvatar,
+            cover: tempCover
+        }).eq('id', CurrentUserProfile.id);
+
+        CurrentUserProfile.name = newName;
+        CurrentUserProfile.bio = newBio;
+        CurrentUserProfile.avatar = tempAvatar;
+        CurrentUserProfile.cover = tempCover;
+        
+        localStorage.setItem('cached_profile', JSON.stringify(CurrentUserProfile));
+
+        btn.innerText = '保存资料'; btn.disabled = false;
+        document.getElementById('edit-profile-modal').style.display = 'none';
+        render();
+        showToast('资料已保存！');
+    }
+
+    // 启动
+    checkAuth();
 </script>
 </body>
-</html>
+    </html>
