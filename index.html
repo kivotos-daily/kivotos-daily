@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>基沃托斯日讯-测试版v1.8</title>
     
+    <!-- 三重保险 CDN 加载 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         if (typeof supabase === 'undefined') { document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>'); }
@@ -483,11 +484,18 @@
                 if (error) throw error;
                 loginSuccess(data.user);
             }
-        } catch (err) { alert('操作失败：' + err.message); } 
+        } catch (err) { 
+            if (err.message.includes('Email not confirmed')) {
+                alert('【账号未激活】\n\n该账号是早期测试注册的，尚未激活。\n\n解决方法：\n1. 换一个邮箱重新注册；\n2. 或者联系管理员在后台为你激活。');
+            } else if (err.message.includes('Invalid login')) {
+                alert('【密码错误】\n\n邮箱或密码不正确，请检查后重试。');
+            } else {
+                alert('操作失败：' + err.message); 
+            }
+        } 
         finally { btn.innerText = originalText; btn.disabled = false; }
     }
 
-    // 强制清空旧会话并切换登录账号的方法
     function loginSuccess(supabaseUser) {
         const email = supabaseUser.email;
         let nickname = supabaseUser.user_metadata?.display_name || email.split('@')[0];
@@ -507,7 +515,6 @@
         switchView('feed');
     }
 
-    // 强化退出：不仅清理本地，还强制清理 Supabase 云端缓存
     window.logout = async function() {
         if(supabaseClient) {
             await supabaseClient.auth.signOut({ scope: 'global' }); 
@@ -518,7 +525,6 @@
         document.getElementById('app').style.display = 'none';
     }
 
-    // 强化验证：不仅看本地有没有 id，还要去 Supabase 验证 Session 是否有效
     async function checkAuth() {
         if (!supabaseClient) {
             document.getElementById('auth-page').style.display = 'flex'; 
@@ -531,13 +537,11 @@
             const savedId = localStorage.getItem('taoxun_session_id');
 
             if (session && savedId && MemoryData.users.find(u => u.id === savedId)) {
-                // 云端本地都有，正常进入
                 currentUserSessionId = savedId;
                 document.getElementById('auth-page').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
                 switchView('feed');
             } else {
-                // 只要有一边不对，就强制显示登录页
                 currentUserSessionId = null;
                 localStorage.removeItem('taoxun_session_id');
                 document.getElementById('auth-page').style.display = 'flex'; 
@@ -693,7 +697,9 @@
             
             postsToRender.sort((a, b) => b.time - a.time);
             
-            if (postsToRender.length === 0) html += `<div style="text-align:center; padding:60px 20px; color:#666;">这里空空如也，快来发第一条帖子吧~</div>`;
+            if (postsToRender.length === 0) html += `<div style="text-align:center; padding:60px 20px; color:#666;">
+
+这里空空如也，快来发第一条帖子吧~</div>`;
             else postsToRender.forEach(post => { html += renderPostHTML(post); });
         }
 
@@ -983,4 +989,4 @@
     checkAuth();
 </script>
 </body>
-</html>
+                </html>
