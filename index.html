@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v3.0</title>
+    <title>基沃托斯日讯-测试版v3.1</title>
     
-    <!-- 四重 CDN 保险，只要有一个通了就能运行 -->
+    <!-- 四重 CDN 保险 -->
     <script src="https://cdn.bootcdn.net/ajax/libs/supabase-js/2.39.7/supabase.min.js"></script>
     <script>
         if (typeof supabase === 'undefined') document.write('<script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/supabase-js/2.39.7/supabase.min.js"><\/script>');
     </script>
     <script>
         if (typeof supabase === 'undefined') document.write('<script src="https://cdn.staticfile.org/supabase-js/2.39.7/supabase.min.js"><\/script>');
-    </script>
-    <script>
-        if (typeof supabase === 'undefined') document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>');
     </script>
 
     <style>
@@ -35,7 +32,7 @@
         .auth-switch { text-align: center; font-size: 14px; color: #888; margin-top: 20px; cursor: pointer; padding: 15px; border: 1px dashed #444; border-radius: 8px; }
         .auth-switch span { color: var(--accent-color); font-weight: bold; }
         
-        /* 主应用及排版样式（完全保留） */
+        /* 主应用及排版样式 */
         #app { display: none; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; background: var(--bg-color); }
         .header { position: sticky; top: 0; background: rgba(18,18,18,0.85); backdrop-filter: blur(12px); padding: 10px 16px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; z-index: 100;}
         .header-normal { flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -53,6 +50,8 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sub); cursor: pointer; flex: 1; }
         .nav-item.active { color: var(--accent-color); }
         .nav-btn-add { background: var(--accent-color); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-top: -20px; cursor: pointer; font-size: 24px; }
+        
+        /* 侧边栏 */
         .drawer-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 400; display: none; opacity: 0; transition: opacity 0.3s; }
         .drawer-overlay.active { display: block; opacity: 1; }
         .sidebar-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #151515; z-index: 401; border-right: 1px solid var(--border-color); transition: left 0.3s ease; display: flex; flex-direction: column;}
@@ -69,6 +68,8 @@
         .drawer-nav-item .icon { font-size: 20px; width: 24px; text-align: center;}
         .drawer-footer { padding: 20px; border-top: 1px solid var(--border-color); }
         .drawer-logout-btn { width: 100%; padding: 12px; border-radius: 24px; background: transparent; border: 1px solid #ff4757; color: #ff4757; font-weight: bold; cursor: pointer;}
+
+        /* 通用及帖子 */
         .announcement-bar { margin: 12px 16px; background: rgba(255, 123, 156, 0.1); border: 1px solid var(--accent-color); border-radius: 12px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; }
         .announcement-content { flex: 1; font-size: 14px; }
         .role-tag { font-size: 11px; background: rgba(255, 123, 156, 0.2); color: var(--accent-color); padding: 1px 6px; border-radius: 4px; }
@@ -85,6 +86,7 @@
         .post-media { width: 100%; max-height: 300px; border-radius: 8px; margin-bottom: 12px; object-fit: cover; background: #000; }
         .post-new-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; padding-top: 8px; border-top: 1px solid var(--border-color); }
         .action-item { cursor: pointer; display: flex; align-items: center; gap: 4px;}
+        
         .post-classic { display: flex; padding: 12px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
         .post-classic-avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; overflow: hidden; background: #333; display: flex; justify-content: center; align-items: center;}
         .post-classic-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -97,16 +99,15 @@
         .post-classic-media { width: 100%; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 10px; max-height: 400px; object-fit: cover; }
         .post-classic-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; max-width: 380px; }
         .action-icon { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
+        /* 个人主页 */
         .profile-cover-new { height: 120px; background: #333 center/cover no-repeat; width: 100%; }
         .profile-header-new { padding: 0 16px 20px; text-align: center; border-bottom: 1px solid var(--border-color); }
         .profile-avatar-new { width: 80px; height: 80px; border-radius: 50%; margin: -40px auto 12px; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; border: 4px solid var(--bg-color); background: #222;}
         .profile-avatar-new img { width: 100%; height: 100%; object-fit: cover; }
         .profile-bio-new { font-size: 14px; color: #b0c4de; margin: 10px auto; max-width: 80%; }
-        .profile-stats-new { display: flex; justify-content: center; gap: 30px; margin-top: 15px; margin-bottom: 20px;}
-        .stat-item-new { display: flex; flex-direction: column; align-items: center; }
-        .stat-num-new { font-weight: bold; font-size: 18px; }
-        .stat-label-new { font-size: 12px; color: var(--text-sub); }
         .btn-outline-new { background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 20px; border-radius: 20px; cursor: pointer; }
+        
         .profile-cover-classic { height: 120px; background: #333 center/cover no-repeat; width: 100%; }
         .profile-info-container-classic { padding: 0 16px 16px; position: relative; }
         .profile-avatar-wrapper-classic { width: 84px; height: 84px; border-radius: 50%; border: 4px solid var(--bg-color); background: #222; margin-top: -42px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;}
@@ -115,10 +116,8 @@
         .btn-outline-classic { background: transparent; color: #eff3f4; border: 1px solid #536471; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer;}
         .profile-name-classic { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 2px;}
         .profile-handle-classic { font-size: 15px; color: var(--text-sub); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;}
-        .tag-platform { background: #2f3336; color: #e0e0e0; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
-        .profile-bio-classic { font-size: 15px; margin-bottom: 12px; }
-        .profile-stats-row-classic { display: flex; gap: 20px; font-size: 14px; color: var(--text-sub); margin-bottom: 16px;}
-        .profile-stats-row-classic b { color: #eff3f4; }
+
+        /* 详情页 */
         #detail-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 250; display: none; flex-direction: column; max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
         .detail-header { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
         .back-btn { font-size: 20px; cursor: pointer; margin-right: 20px; color: #fff;}
@@ -132,6 +131,8 @@
         .detail-bottom-bar { position: absolute; bottom: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color); padding: 12px 16px; display: flex; align-items: center; gap: 12px;}
         .detail-input { flex: 1; background: #161616; border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 16px; color: #fff; outline: none;}
         .detail-send-btn { background: var(--accent-color); color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer;}
+        
+        /* 评论及弹窗 */
         .comment-list { padding: 16px; }
         .comment-thread { margin-bottom: 20px;}
         .comment-main { display: flex; gap: 12px; }
@@ -153,6 +154,7 @@
         .reply-name { font-size: 14px; font-weight: bold; color: #fff;}
         .reply-target { font-size: 14px; color: var(--accent-color);}
         .reply-text { font-size: 14px; color: #eff3f4; margin-bottom: 4px;}
+        
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 500; display: none; justify-content: center; align-items: flex-end; }
         .modal-content { background: var(--bg-color); width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; display: flex; flex-direction: column; border: 1px solid var(--border-color); border-bottom: none; max-height: 90vh; overflow-y: auto;}
         .modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: bold; font-size: 18px; color: #fff;}
@@ -170,10 +172,9 @@
 
 <div id="error-box"></div>
 
-<!-- 登录页 -->
 <div id="auth-page">
     <div class="auth-box">
-        <div class="auth-title" id="auth-title">基沃托斯日讯-测试版v3.0</div>
+        <div class="auth-title" id="auth-title">基沃托斯日讯-测试版v3.1</div>
         <div class="input-group" id="nickname-group" style="display: none;">
             <label>昵称</label>
             <input type="text" class="auth-input" id="auth-nickname" placeholder="给自己起个名字">
@@ -187,14 +188,12 @@
             <input type="password" class="auth-input" id="auth-password" placeholder="至少 6 位字符">
         </div>
         <button class="auth-btn" id="submit-btn">登 录</button>
-        
         <div class="auth-switch" id="switch-btn">
             还没有账号？<span id="switch-text">立即注册</span>
         </div>
     </div>
 </div>
 
-<!-- 主应用 -->
 <div id="app">
     <header id="header-container"></header>
     <main id="main-content"></main>
@@ -206,7 +205,6 @@
     </nav>
 </div>
 
-<!-- 侧边栏 -->
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 <div class="sidebar-drawer" id="sidebar-drawer">
     <div class="drawer-header" id="drawer-header-content"></div>
@@ -220,7 +218,6 @@
     </div>
 </div>
 
-<!-- 详情页 -->
 <div id="detail-page">
     <div class="detail-header">
         <div class="back-btn" onclick="closeDetailPage()">←</div>
@@ -233,7 +230,6 @@
     </div>
 </div>
 
-<!-- 发帖弹窗 -->
 <div class="modal-overlay" id="post-modal">
     <div class="modal-content">
         <div class="modal-header"><span>发布新帖子</span><span style="cursor:pointer;" onclick="closePostModal()">✕</span></div>
@@ -253,22 +249,15 @@
     </div>
 </div>
 
-<!-- 编辑资料弹窗 -->
 <div class="modal-overlay" id="edit-profile-modal">
     <div class="modal-content">
         <div class="modal-header"><span>个人主页装扮</span><span style="cursor:pointer;" onclick="document.getElementById('edit-profile-modal').style.display='none'">✕</span></div>
         <div class="edit-section">
-            <div class="edit-section-info">
-                <div class="edit-avatar-preview" id="edit-avatar-preview"></div>
-                <div class="edit-section-label">更改头像</div>
-            </div>
+            <div class="edit-section-info"><div class="edit-avatar-preview" id="edit-avatar-preview"></div><div class="edit-section-label">更改头像</div></div>
             <button class="btn-small" style="background:#333; border:none; color:#fff; padding:6px 12px; border-radius:16px; cursor:pointer;" onclick="document.getElementById('avatar-uploader').click()">上传</button>
         </div>
         <div class="edit-section">
-            <div class="edit-section-info">
-                <div class="edit-cover-preview" id="edit-cover-preview"></div>
-                <div class="edit-section-label">更改主页背景</div>
-            </div>
+            <div class="edit-section-info"><div class="edit-cover-preview" id="edit-cover-preview"></div><div class="edit-section-label">更改主页背景</div></div>
             <button class="btn-small" style="background:#333; border:none; color:#fff; padding:6px 12px; border-radius:16px; cursor:pointer;" onclick="document.getElementById('cover-uploader').click()">上传</button>
         </div>
         <div class="input-group" style="margin-top:10px;">
@@ -287,11 +276,10 @@
 <input type="file" id="cover-uploader" accept="image/*" style="display: none;" onchange="handleTempUpload(event, 'cover')">
 
 <script>
-    // 全局错误捕获
     window.onerror = function(msg) {
         var errBox = document.getElementById('error-box');
         errBox.style.display = 'block';
-        errBox.innerHTML = "⚠️ 代码报错: " + msg + "<br>请刷新或联系开发者。";
+        errBox.innerHTML = "⚠️ 代码报错: " + msg;
         return false;
     };
 
@@ -303,7 +291,7 @@
         if (typeof supabase !== 'undefined') {
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         } else {
-            throw new Error("CDN 加载失败，请检查网络或切换浏览器");
+            throw new Error("CDN加载失败，请刷新或切换浏览器");
         }
     } catch(e) {
         document.getElementById('error-box').style.display = 'block';
@@ -352,7 +340,7 @@
             btn.innerText = '网络连接中...';
             btn.disabled = true;
 
-            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('网络连接超时，请切换WiFi/流量重试')), 12000));
+            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('网络连接超时，请切换网络重试')), 12000));
 
             try {
                 if (isRegisterMode) {
@@ -423,6 +411,40 @@
         AllPosts = posts || [];
         localStorage.setItem('cached_posts', JSON.stringify(AllPosts));
         render();
+    }
+
+    // ===== 补全的 checkAuth 函数 =====
+    async function checkAuth() {
+        if (!supabaseClient) return;
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                const cachedProfile = localStorage.getItem('cached_profile');
+                if (cachedProfile) {
+                    CurrentUserProfile = JSON.parse(cachedProfile);
+                    document.getElementById('auth-page').style.display = 'none';
+                    document.getElementById('app').style.display = 'block';
+                    const cachedPosts = localStorage.getItem('cached_posts');
+                    if (cachedPosts) { AllPosts = JSON.parse(cachedPosts); render(); }
+                }
+                await initUser(session.user);
+            } else {
+                document.getElementById('auth-page').style.display = 'flex'; 
+                document.getElementById('app').style.display = 'none';
+            }
+        } catch (e) {
+            document.getElementById('auth-page').style.display = 'flex'; 
+            document.getElementById('app').style.display = 'none';
+        }
+    }
+
+    window.logout = async function() {
+        await supabaseClient.auth.signOut();
+        CurrentUserProfile = null;
+        localStorage.removeItem('cached_profile');
+        localStorage.removeItem('cached_posts');
+        document.getElementById('auth-page').style.display = 'flex'; 
+        document.getElementById('app').style.display = 'none';
     }
 
     window.toggleLayout = function() {
@@ -520,8 +542,7 @@
             }
             AllPosts.filter(p => p.author_id === CurrentUserProfile.id).forEach(post => { html += renderPostHTML(post); });
         } else {
-            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 测试版v3.0 已上线！</div></div>`;
-            
+            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 测试版v3.1 已上线！</div></div>`;
             let postsToRender = AllPosts;
             if (currentView === 'story') postsToRender = postsToRender.filter(p => p.type === 'cosplay');
             
@@ -540,7 +561,6 @@
             if (post.media_type === 'image') mediaHtml = `<img src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}" loading="lazy">`;
             else if (post.media_type === 'video') mediaHtml = `<video src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}" controls></video>`;
         }
-
         const postDate = formatTime(post.created_at);
 
         if (currentLayout === 'new') {
@@ -590,7 +610,6 @@
     window.openDetailPage = async function(id) {
         currentPostIdForComment = id;
         currentReplyTo = null;
-        
         const post = AllPosts.find(x => x.id === id);
         if (!post) return;
 
@@ -665,9 +684,7 @@
         const c = input.value.trim(); if (!c) return;
         const btn = document.querySelector('.detail-send-btn');
         btn.innerText = '发送中'; btn.disabled = true;
-
         await supabaseClient.from('comments').insert([{ post_id: currentPostIdForComment, author_id: CurrentUserProfile.id, content: c, reply_to: currentReplyTo }]);
-        
         btn.innerText = '回复'; btn.disabled = false;
         input.value = ''; currentReplyTo = null;
         openDetailPage(currentPostIdForComment); 
@@ -694,18 +711,13 @@
         const c = document.getElementById('post-input').value.trim();
         const role = document.getElementById('post-role').value.trim();
         const mediaUrl = document.getElementById('post-media-url').value.trim();
-        
         if (!c) return alert('内容不能为空');
         if (currentPostMode === 'cosplay' && !role) return alert('请填写角色名');
-
         const btn = document.querySelector('#post-modal .modal-submit');
         btn.innerText = '发布中...'; btn.disabled = true;
-
         let mediaType = null;
         if (mediaUrl) { if (mediaUrl.match(/\.(jpeg|jpg|gif|png)$/i)) mediaType = 'image'; else mediaType = 'video'; }
-
         await supabaseClient.from('posts').insert([{ author_id: CurrentUserProfile.id, content: c, type: currentPostMode, role: currentPostMode === 'cosplay' ? role : null, media_type: mediaType, media_data: mediaUrl || null }]);
-
         btn.innerText = '发布'; btn.disabled = false;
         closePostModal(); 
         await resetAndLoadPosts(); 
@@ -744,25 +756,21 @@
         const newName = document.getElementById('edit-name-input').value.trim();
         const newBio = document.getElementById('edit-bio-input').value.trim();
         if (!newName) return alert('昵称不能为空');
-        
         const btn = document.querySelector('#edit-profile-modal .modal-submit');
         btn.innerText = '保存中...'; btn.disabled = true;
-
         await supabaseClient.from('profiles').update({ name: newName, bio: newBio, avatar: tempAvatar, cover: tempCover }).eq('id', CurrentUserProfile.id);
-
         CurrentUserProfile.name = newName;
         CurrentUserProfile.bio = newBio;
         CurrentUserProfile.avatar = tempAvatar;
         CurrentUserProfile.cover = tempCover;
-        
         localStorage.setItem('cached_profile', JSON.stringify(CurrentUserProfile));
         btn.innerText = '保存资料'; btn.disabled = false;
         document.getElementById('edit-profile-modal').style.display = 'none';
         render();
     }
 
-    // 启动
+    // 真正启动程序
     checkAuth();
 </script>
 </body>
-    </html>
+</html>
