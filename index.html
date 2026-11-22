@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-云端互通版v2.0</title>
+    <title>基沃托斯日讯-云端互通版v2.2</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -20,6 +20,11 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; overflow-x: hidden;}
         #toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--accent-color); width: 80%; max-width: 300px;}
+        
+        /* 加载动画 */
+        .loading-container { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 40vh; color: var(--text-sub); }
+        .spinner { width: 30px; height: 30px; border: 3px solid rgba(255, 123, 156, 0.2); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
         /* 登录注册 */
         #auth-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background: #121212; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
@@ -39,7 +44,6 @@
         /* 顶部导航-普通版 */
         .header-normal { flex-direction: column; align-items: flex-start; gap: 10px; }
         .header-normal-top { width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: bold; color: var(--accent-color); }
-        .search-box { width: 100%; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
         
         /* 顶部导航-怀旧版 */
         .header-classic { padding: 10px 16px; }
@@ -69,7 +73,6 @@
         .drawer-user-info .avatar img { width: 100%; height: 100%; object-fit: cover; }
         .drawer-user-name { font-size: 16px; font-weight: bold; color: #fff; }
         .drawer-user-handle { font-size: 13px; color: var(--text-sub); }
-        .drawer-stats { display: flex; gap: 15px; margin-top: 10px; font-size: 13px; color: var(--text-sub); }
         .drawer-nav { flex: 1; padding: 10px 0; overflow-y: auto; }
         .drawer-nav-item { display: flex; align-items: center; gap: 16px; padding: 16px 20px; font-size: 16px; color: #fff; cursor: pointer; font-weight: bold;}
         .drawer-nav-item.active { color: var(--accent-color); }
@@ -77,9 +80,9 @@
         .drawer-footer { padding: 20px; border-top: 1px solid var(--border-color); }
         .drawer-logout-btn { width: 100%; padding: 12px; border-radius: 24px; background: transparent; border: 1px solid #ff4757; color: #ff4757; font-weight: bold; cursor: pointer;}
 
-        /* 通用帖子样式 */
+        /* 通用 */
         .announcement-bar { margin: 12px 16px; background: rgba(255, 123, 156, 0.1); border: 1px solid var(--accent-color); border-radius: 12px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; }
-        .announcement-content { flex: 1; font-size: 14px; white-space: pre-wrap; word-break: break-all;}
+        .announcement-content { flex: 1; font-size: 14px; }
         .role-tag { font-size: 11px; background: rgba(255, 123, 156, 0.2); color: var(--accent-color); padding: 1px 6px; border-radius: 4px; }
         .admin-tag { font-size: 11px; background: #ff4757; color: #fff; padding: 1px 6px; border-radius: 4px; font-weight: bold; }
         
@@ -97,7 +100,6 @@
         .post-media { width: 100%; max-height: 300px; border-radius: 8px; margin-bottom: 12px; object-fit: cover; background: #000; }
         .post-new-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; padding-top: 8px; border-top: 1px solid var(--border-color); }
         .action-item { cursor: pointer; display: flex; align-items: center; gap: 4px;}
-        .action-item.active { color: var(--accent-color); }
 
         /* 怀旧版帖子 */
         .post-classic { display: flex; padding: 12px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
@@ -112,14 +114,13 @@
         .post-classic-media { width: 100%; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 10px; max-height: 400px; object-fit: cover; }
         .post-classic-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; max-width: 380px; }
         .action-icon { display: flex; align-items: center; gap: 4px; cursor: pointer; }
-        .action-icon.active { color: var(--accent-color); }
 
         /* 个人主页 */
         .profile-cover-new { height: 120px; background: #333 center/cover no-repeat; width: 100%; }
         .profile-header-new { padding: 0 16px 20px; text-align: center; border-bottom: 1px solid var(--border-color); }
-        .profile-avatar-new { width: 80px; height: 80px; border-radius: 50%; margin: -40px auto 12px; display: flex; justify-content: center; align-items: center; font-size: 32px; color: #fff; overflow: hidden; position: relative; border: 4px solid var(--bg-color); background: #222;}
+        .profile-avatar-new { width: 80px; height: 80px; border-radius: 50%; margin: -40px auto 12px; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; border: 4px solid var(--bg-color); background: #222;}
         .profile-avatar-new img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-bio-new { font-size: 14px; color: #b0c4de; margin: 10px auto; max-width: 80%; line-height: 1.4; }
+        .profile-bio-new { font-size: 14px; color: #b0c4de; margin: 10px auto; max-width: 80%; }
         .profile-stats-new { display: flex; justify-content: center; gap: 30px; margin-top: 15px; margin-bottom: 20px;}
         .stat-item-new { display: flex; flex-direction: column; align-items: center; }
         .stat-num-new { font-weight: bold; font-size: 18px; }
@@ -221,9 +222,7 @@
 <!-- 主应用 -->
 <div id="app">
     <header id="header-container"></header>
-    <main id="main-content">
-        <div style="text-align: center; padding: 50px; color: #888;">数据加载中...</div>
-    </main>
+    <main id="main-content"></main>
 
     <nav class="bottom-nav" id="bottom-nav">
         <div class="nav-item" data-view="feed" onclick="switchView('feed')">首页</div>
@@ -251,7 +250,7 @@
 <div id="detail-page">
     <div class="detail-header">
         <div class="back-btn" onclick="closeDetailPage()">←</div>
-        <div class="detail-header-title">帖子</div>
+        <div class="detail-header-title">帖子详情</div>
     </div>
     <div class="detail-content-area" id="detail-render-area"></div>
     <div class="detail-bottom-bar">
@@ -273,7 +272,6 @@
         </div>
         <textarea class="modal-textarea" id="post-input" placeholder="有什么新鲜事？"></textarea>
         
-        <!-- 图片链接输入 -->
         <div class="input-group" style="margin-top:10px;">
             <label>附带图片/视频链接 (可选)</label>
             <input type="text" class="auth-input" id="post-media-url" placeholder="https://... (填入以http开头的图片地址)">
@@ -333,10 +331,8 @@
         window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 2500);
     }
 
-    // 全局状态
     let CurrentUserProfile = null;
-    let AllPosts = [];
-    let AllComments = [];
+    let AllPosts = []; 
     let isRegisterMode = false;
     let currentView = 'feed';
     let currentPostMode = 'normal';
@@ -345,6 +341,12 @@
     let currentLayout = localStorage.getItem('forum_layout') || 'new';
     let tempAvatar = null;
     let tempCover = null;
+    
+    // ====== 分页变量 ======
+    let pageOffset = 0;
+    const PAGE_SIZE = 10;
+    let hasMorePosts = true;
+    let isLoadingPosts = false;
 
     function generateSignal() { return `KIV-${Math.floor(100000 + Math.random() * 900000)}`; }
 
@@ -376,15 +378,10 @@
                 if (error) throw error;
                 
                 if (data.user) {
-                    // 注册成功，在 profiles 表里生成初始资料
                     const newSignal = generateSignal();
                     await supabaseClient.from('profiles').insert([{
-                        id: data.user.id,
-                        name: nickname,
-                        email: email,
-                        signal: newSignal,
-                        avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`,
-                        bio: '这个人很神秘，什么简介都没写。'
+                        id: data.user.id, name: nickname, email: email, signal: newSignal, 
+                        avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`, bio: ''
                     }]);
                     alert('注册成功，正在进入...');
                     await initUser(data.user);
@@ -424,10 +421,8 @@
     }
 
     async function initUser(user) {
-        // 拉取个人资料
-        let { data: profile, error } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+        let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
         
-        // 如果没建表或没数据，做个兜底
         if (!profile) {
             const newName = user.user_metadata?.display_name || user.email.split('@')[0];
             const newSignal = generateSignal();
@@ -443,22 +438,72 @@
         document.getElementById('auth-page').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         
-        await loadAllData();
+        await resetAndLoadPosts();
     }
 
-    async function loadAllData() {
-        document.getElementById('main-content').innerHTML = `<div style="text-align:center; padding:50px; color:#888;">拉取云端数据中...</div>`;
-        
-        // 拉取帖子
-        const { data: posts } = await supabaseClient.from('posts').select('*').order('created_at', { ascending: false });
-        AllPosts = posts || [];
-
-        // 拉取评论
-        const { data: comments } = await supabaseClient.from('comments').select('*').order('created_at', { ascending: true });
-        AllComments = comments || [];
-
-        render();
+    async function resetAndLoadPosts() {
+        pageOffset = 0;
+        hasMorePosts = true;
+        AllPosts = [];
+        await loadMorePosts();
     }
+
+    async function loadMorePosts() {
+        if (isLoadingPosts || !hasMorePosts) return;
+        isLoadingPosts = true;
+
+        if (pageOffset === 0) {
+            document.getElementById('main-content').innerHTML = `<div class="loading-container"><div class="spinner"></div><div>加载基沃托斯动态中...</div></div>`;
+        } else {
+            // 底部显示加载更多的菊花
+            let loadMoreDiv = document.getElementById('load-more-indicator');
+            if (!loadMoreDiv) {
+                loadMoreDiv = document.createElement('div');
+                loadMoreDiv.id = 'load-more-indicator';
+                loadMoreDiv.style.padding = '15px';
+                loadMoreDiv.style.textAlign = 'center';
+                loadMoreDiv.innerHTML = `<div class="spinner" style="margin: 0 auto; width: 20px; height: 20px;"></div>`;
+                document.getElementById('main-content').appendChild(loadMoreDiv);
+            }
+        }
+
+        const { data: newPosts, error } = await supabaseClient.from('posts')
+            .select(`*, profiles ( name, avatar, signal, email )`)
+            .order('created_at', { ascending: false })
+            .range(pageOffset, pageOffset + PAGE_SIZE - 1);
+
+        if (error) {
+            console.error(error);
+            showToast('网络延迟，加载失败');
+            isLoadingPosts = false;
+            return;
+        }
+
+        if (newPosts.length < PAGE_SIZE) hasMorePosts = false;
+
+        // 追加数据
+        AllPosts = [...AllPosts, ...newPosts];
+        pageOffset += PAGE_SIZE;
+        isLoadingPosts = false;
+
+        if (currentView === 'profile') {
+            // 如果是在个人主页，只重新渲染该页面
+            render(); 
+        } else {
+            renderPostsOnly();
+        }
+    }
+
+    // 监听滚动到底部加载更多
+    window.addEventListener('scroll', () => {
+        if (currentView === 'profile') return; // 个人主页不需要无限滚动
+        if (isLoadingPosts || !hasMorePosts) return;
+
+        const scrollBottom = document.documentElement.scrollHeight - window.innerHeight - document.documentElement.scrollTop;
+        if (scrollBottom < 100) {
+            loadMorePosts();
+        }
+    });
 
     // ======== 渲染逻辑 ========
     window.toggleLayout = function() {
@@ -535,10 +580,6 @@
                         <div class="drawer-user-handle">@${CurrentUserProfile.signal}</div>
                     </div>
                 </div>
-                <div class="drawer-stats">
-                    <span><b>${CurrentUserProfile.following_list?.length || 0}</b> 关注</span>
-                    <span><b>${CurrentUserProfile.followers || 0}</b> 粉丝</span>
-                </div>
             `;
             document.querySelectorAll('.drawer-nav-item').forEach(el => el.classList.remove('active'));
             if(document.getElementById('nav-' + currentView)) document.getElementById('nav-' + currentView).classList.add('active');
@@ -553,8 +594,6 @@
         let html = '';
 
         if (currentView === 'profile') {
-            let totalLikes = AllPosts.filter(p => p.author_id === CurrentUserProfile.id).reduce((sum, p) => sum + (p.likes || 0), 0);
-            
             if (currentLayout === 'new') {
                 html += `
                 <div class="profile-cover-new" style="background-image: url('${CurrentUserProfile.cover || ''}');"></div>
@@ -563,11 +602,6 @@
                     <h2>${CurrentUserProfile.name} ${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}</h2>
                     <div class="profile-bio-new">${CurrentUserProfile.bio || '这个人很神秘，什么都没写。'}</div>
                     <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">讯号：<span style="color:var(--accent-color);">${CurrentUserProfile.signal}</span></div>
-                    <div class="profile-stats-new">
-                        <div class="stat-item-new"><span class="stat-num-new">${CurrentUserProfile.followers || 0}</span><span class="stat-label-new">粉丝</span></div>
-                        <div class="stat-item-new"><span class="stat-num-new">${CurrentUserProfile.following_list?.length || 0}</span><span class="stat-label-new">关注</span></div>
-                        <div class="stat-item-new"><span class="stat-num-new">${totalLikes}</span><span class="stat-label-new">被赞</span></div>
-                    </div>
                     <div><button class="btn-outline-new" onclick="openEditProfile()">编辑资料</button></div>
                 </div><div style="padding: 12px 16px; font-weight: bold;">我发布的帖子</div>`;
             } else {
@@ -579,31 +613,31 @@
                     <div class="profile-name-classic">${CurrentUserProfile.name} ${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}</div>
                     <div class="profile-handle-classic">@${CurrentUserProfile.signal} <span class="tag-platform">平台用户</span></div>
                     <div class="profile-bio-classic">${CurrentUserProfile.bio || '这个人很神秘，什么都没写。'}</div>
-                    <div class="profile-stats-row-classic">
-                        <span><b>${CurrentUserProfile.following_list?.length || 0}</b> 关注</span>
-                        <span><b>${CurrentUserProfile.followers || 0}</b> 粉丝</span>
-                        <span><b>${totalLikes}</b> 获赞</span>
-                    </div>
                 </div>`;
             }
             AllPosts.filter(p => p.author_id === CurrentUserProfile.id).forEach(post => { html += renderPostHTML(post); });
         } else {
-            // 首页 / 剧情
-            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 v2.0 云端互通版已上线！</div></div>`;
+            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 v2.2 极速分页版已上线！滑到底部自动加载下一页~</div></div>`;
             
             let postsToRender = AllPosts;
             if (currentView === 'story') postsToRender = postsToRender.filter(p => p.type === 'cosplay');
             
             if (postsToRender.length === 0) html += `<div style="text-align:center; padding:50px; color:#666;">这里空空如也~</div>`;
             else postsToRender.forEach(post => { html += renderPostHTML(post); });
+            
+            // 如果全部加载完了，显示底
+            if (!hasMorePosts && postsToRender.length > 0) {
+                html += `<div style="text-align:center; padding:20px; color:#666; font-size:12px;">— 已经到底啦 —</div>`;
+            }
         }
         document.getElementById('main-content').innerHTML = html;
     }
 
     function renderPostHTML(post) {
-        const author = { name: '未知', avatar: '', avatarColor: '#333' }; // 这里简化处理，直接展示内容
+        const authorProfile = post.profiles || { name: '未知', avatar: '', email: '' };
         const isMe = post.author_id === CurrentUserProfile.id;
         const canDelete = isMe || CurrentUserProfile.email === ADMIN_EMAIL;
+        const isAdmin = authorProfile.email === ADMIN_EMAIL;
         
         let mediaHtml = '';
         if (post.media_data) {
@@ -611,17 +645,15 @@
             else if (post.media_type === 'video') mediaHtml = `<video src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}" controls></video>`;
         }
 
-        const commentsCount = AllComments.filter(c => c.post_id === post.id).length;
         const postDate = formatTime(post.created_at);
-        const isAdmin = post.author_id === CurrentUserProfile.id && CurrentUserProfile.email === ADMIN_EMAIL;
 
         if (currentLayout === 'new') {
             return `<div class="post-card-new" onclick="openDetailPage('${post.id}')">
                 <div class="post-new-header">
                     <div class="post-new-user">
-                        <div class="avatar" style="background: ${CurrentUserProfile.avatarColor || '#333'}"><img src="${CurrentUserProfile.avatar}"></div>
+                        <div class="avatar"><img src="${authorProfile.avatar}"></div>
                         <div class="post-new-name">
-                            <span class="username">${CurrentUserProfile.name}${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}</span>
+                            <span class="username">${authorProfile.name}${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}</span>
                             <span class="time">${postDate}</span>
                         </div>
                     </div>
@@ -629,19 +661,19 @@
                 <div class="post-content ${post.type === 'cosplay' ? 'cosplay-text' : ''}">${post.content}</div>
                 ${mediaHtml}
                 <div class="post-new-actions">
-                    <div class="action-item" onclick="event.stopPropagation();">❤️ ${post.likes}</div>
-                    <div class="action-item" onclick="openDetailPage('${post.id}')">💬 ${commentsCount}</div>
+                    <div class="action-item">❤️ ${post.likes}</div>
+                    <div class="action-item" onclick="openDetailPage('${post.id}')">💬 评论</div>
                     <div class="action-item">👁️ ${post.views}</div>
                     ${canDelete ? `<div class="action-item" style="color:#ff4757;" onclick="event.stopPropagation(); deletePost('${post.id}')">🗑️ 删除</div>` : ''}
                 </div>
             </div>`;
         } else {
             return `<div class="post-classic" onclick="openDetailPage('${post.id}')">
-                <div class="post-classic-avatar"><img src="${CurrentUserProfile.avatar}"></div>
+                <div class="post-classic-avatar"><img src="${authorProfile.avatar}"></div>
                 <div class="post-classic-main">
                     <div class="post-classic-header">
                         <div class="post-classic-name-group">
-                            <span class="post-classic-name">${CurrentUserProfile.name}</span>
+                            <span class="post-classic-name">${authorProfile.name}</span>
                             ${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}
                             ${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}
                         </div>
@@ -650,7 +682,7 @@
                     <div class="post-classic-content">${post.content}</div>
                     ${mediaHtml}
                     <div class="post-classic-actions">
-                        <div class="action-icon">💬 ${commentsCount}</div>
+                        <div class="action-icon">💬</div>
                         <div class="action-icon">❤️ ${post.likes}</div>
                         <div class="action-icon">📊 ${post.views}</div>
                         ${canDelete ? `<div class="action-icon" onclick="event.stopPropagation(); deletePost('${post.id}')">🗑️</div>` : ''}
@@ -660,56 +692,66 @@
         }
     }
 
-    // ======== 详情页与评论 ========
+    // ======== 详情页与评论 (按需加载) ========
     window.openDetailPage = async function(id) {
         currentPostIdForComment = id;
         currentReplyTo = null;
         
         const post = AllPosts.find(x => x.id === id);
         if (!post) return;
-        
-        // 浏览量 +1
-        post.views = (post.views || 0) + 1;
-        await supabaseClient.from('posts').update({ views: post.views }).eq('id', id);
 
+        document.getElementById('detail-render-area').innerHTML = `<div class="loading-container"><div class="spinner"></div><div>拉取评论中...</div></div>`;
+        document.getElementById('detail-page').style.display = 'flex';
+        
+        post.views = (post.views || 0) + 1;
+        supabaseClient.from('posts').update({ views: post.views }).eq('id', id).then();
+
+        const { data: comments } = await supabaseClient.from('comments')
+            .select(`*, profiles ( name, avatar, signal )`)
+            .eq('post_id', id)
+            .order('created_at', { ascending: true });
+
+        const authorProfile = post.profiles || { name: '未知', avatar: '' };
         let mediaHtml = post.media_data ? (post.media_type === 'image' ? `<img src="${post.media_data}" class="detail-post-media">` : `<video src="${post.media_data}" class="detail-post-media" controls></video>`) : '';
         
         let html = `<div class="detail-post-main">
             <div class="detail-user-info">
-                <div class="detail-avatar"><img src="${CurrentUserProfile.avatar}"></div>
+                <div class="detail-avatar"><img src="${authorProfile.avatar}"></div>
                 <div class="detail-name-block">
-                    <span class="comment-name">${CurrentUserProfile.name}</span>
-                    <span class="comment-time">@${CurrentUserProfile.signal} · ${formatTime(post.created_at)}</span>
+                    <span class="comment-name">${authorProfile.name}</span>
+                    <span class="comment-time">@${authorProfile.signal}</span>
                 </div>
             </div>
             <div class="detail-post-content">${post.content}</div>
             ${mediaHtml}
         </div>`;
 
-        html += `<div class="comment-list" id="detail-comments">`;
-        const postComments = AllComments.filter(c => c.post_id === id);
+        html += `<div class="comment-list">`;
         
-        if (postComments.length === 0) html += `<div style="text-align:center; padding:20px; color:#666;">还没有评论~</div>`;
+        if (!comments || comments.length === 0) html += `<div style="text-align:center; padding:20px; color:#666;">还没有评论，快来抢沙发~</div>`;
         else {
-            let rootComments = postComments.filter(c => !c.reply_to);
+            let rootComments = comments.filter(c => !c.reply_to);
             rootComments.forEach(root => {
-                const replies = postComments.filter(c => c.reply_to === root.author_id); // 用 ID 关联
+                const rootAuthor = root.profiles || { name: '未知', avatar: '' };
+                const replies = comments.filter(c => c.reply_to === root.author_id);
+                
                 html += `<div class="comment-thread">
                     <div class="comment-main">
-                        <div class="avatar"><img src="${CurrentUserProfile.avatar}"></div>
+                        <div class="avatar"><img src="${rootAuthor.avatar}"></div>
                         <div class="comment-main-body">
-                            <div class="comment-header"><span class="comment-name">${CurrentUserProfile.name}</span></div>
+                            <div class="comment-header"><span class="comment-name">${rootAuthor.name}</span></div>
                             <div class="comment-text">${root.content}</div>
-                            <div class="comment-actions"><span onclick="prepareReply('${CurrentUserProfile.name}', '${root.author_id}')">💬 回复</span></div>
+                            <div class="comment-actions"><span onclick="prepareReply('${rootAuthor.name}', '${root.author_id}')">💬 回复</span></div>
                         </div>
                     </div>`;
                 if (replies.length > 0) {
                     html += `<div class="comment-replies">`;
                     replies.forEach(reply => {
+                        const replyAuthor = reply.profiles || { name: '未知', avatar: '' };
                         html += `<div class="reply-item">
-                            <div class="avatar"><img src="${CurrentUserProfile.avatar}"></div>
+                            <div class="avatar"><img src="${replyAuthor.avatar}"></div>
                             <div class="reply-body">
-                                <div class="reply-header"><span class="reply-name">${CurrentUserProfile.name}</span></div>
+                                <div class="reply-header"><span class="reply-name">${replyAuthor.name}</span></div>
                                 <div class="reply-text"><span class="reply-target">回复：</span>${reply.content}</div>
                             </div>
                         </div>`;
@@ -723,16 +765,14 @@
         
         document.getElementById('detail-render-area').innerHTML = html;
         document.getElementById('comment-input').value = '';
-        document.getElementById('detail-page').style.display = 'flex';
     }
 
     window.closeDetailPage = function() {
         document.getElementById('detail-page').style.display = 'none';
-        loadAllData(); // 刷新列表数据
     }
 
     window.prepareReply = function(name, id) {
-        currentReplyTo = id; // 存 ID
+        currentReplyTo = id; 
         const input = document.getElementById('comment-input');
         input.placeholder = `回复 @${name}...`;
         input.focus();
@@ -742,6 +782,9 @@
         const input = document.getElementById('comment-input');
         const c = input.value.trim(); if (!c) return;
         
+        const btn = document.querySelector('.detail-send-btn');
+        btn.innerText = '发送中'; btn.disabled = true;
+
         await supabaseClient.from('comments').insert([{
             post_id: currentPostIdForComment,
             author_id: CurrentUserProfile.id,
@@ -749,6 +792,7 @@
             reply_to: currentReplyTo
         }]);
         
+        btn.innerText = '回复'; btn.disabled = false;
         input.value = ''; currentReplyTo = null;
         openDetailPage(currentPostIdForComment); 
     }
@@ -799,6 +843,7 @@
 
         btn.innerText = '发布'; btn.disabled = false;
         closePostModal(); 
+        await resetAndLoadPosts(); 
         switchView(currentPostMode === 'cosplay' ? 'story' : 'feed'); 
         showToast('发布成功！');
     }
@@ -806,7 +851,7 @@
     window.deletePost = async function(id) {
         if (confirm('确定要删除这条帖子吗？')) {
             await supabaseClient.from('posts').delete().eq('id', id);
-            loadAllData();
+            resetAndLoadPosts();
         }
     }
 
@@ -824,8 +869,7 @@
     window.handleTempUpload = function(event, type) {
         const file = event.target.files[0];
         if (!file) return;
-        // 注意：为了演示互通，这里的本地图片转换后如果太大，数据库字段可能存不下
-        if (file.size > 500 * 1024) return alert('图片太大了（受限于云端数据库），请选小于500KB的，或者直接用网图链接。');
+        if (file.size > 500 * 1024) return alert('图片太大了（受限于云端），请选小于500KB的，或者直接用网图链接。');
         const reader = new FileReader();
         reader.onload = function(e) {
             if (type === 'avatar') {
@@ -844,6 +888,9 @@
         const newBio = document.getElementById('edit-bio-input').value.trim();
         if (!newName) return showToast('昵称不能为空');
         
+        const btn = document.querySelector('#edit-profile-modal .modal-submit');
+        btn.innerText = '保存中...'; btn.disabled = true;
+
         await supabaseClient.from('profiles').update({
             name: newName,
             bio: newBio,
@@ -856,13 +903,13 @@
         CurrentUserProfile.avatar = tempAvatar;
         CurrentUserProfile.cover = tempCover;
 
+        btn.innerText = '保存资料'; btn.disabled = false;
         document.getElementById('edit-profile-modal').style.display = 'none';
         render();
         showToast('资料已保存！');
     }
 
-    // 启动检查
     checkAuth();
 </script>
 </body>
-        </html>
+            </html>
