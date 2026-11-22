@@ -234,7 +234,7 @@
         </div>
         <div class="header-title" id="header-title">首页</div>
         <div class="header-right">
-            <span class="layout-btn" id="layout-toggle-btn" onclick="toggleLayout()">切普通版</span>
+            <span class="layout-btn" id="layout-toggle-btn" onclick="toggleLayout()">切怀旧版</span>
             <span class="header-add-btn" onclick="openPostModal()">+</span>
         </div>
     </header>
@@ -341,11 +341,11 @@
         'https://api.dicebear.com/7.x/adventurer/svg?seed=Yuzu&backgroundColor=d1d4f9'
     ];
 
-    // 核心修改点：数据版本号升级为 v3，并且清空了 posts 数组
-    let MemoryData = JSON.parse(localStorage.getItem('forum_ba_v3')) || {
+    // 初始数据版本升级到 v4，确保没有旧版缓存干扰
+    let MemoryData = JSON.parse(localStorage.getItem('forum_ba_v4')) || {
         users: [], 
         announcement: '基沃托斯日讯 v1.8 已上线！帖子已清空，快发布第一条动态吧~',
-        posts: [] // 删除了初始帖子
+        posts: []
     };
     
     if (!MemoryData.announcement) MemoryData.announcement = '欢迎来到基沃托斯日讯！';
@@ -363,10 +363,11 @@
     let currentSelectedMedia = null;
     let currentReplyTo = null;
     
-    let currentLayout = localStorage.getItem('forum_layout') || 'classic'; 
+    // 【核心修改】：默认排版设为新版（卡片风）
+    let currentLayout = localStorage.getItem('forum_layout') || 'new'; 
 
     const DB = {
-        save() { localStorage.setItem('forum_ba_v3', JSON.stringify(MemoryData)); },
+        save() { localStorage.setItem('forum_ba_v4', JSON.stringify(MemoryData)); },
         getCurrentUser() { return MemoryData.users.find(u => u.id === currentUserSessionId) || null; },
         getUser(id) { return MemoryData.users.find(u => u.id === id) || { name: '未知', avatarColor: '#555', avatar: PRESET_AVATARS[0] }; },
         formatTime(ts) { 
