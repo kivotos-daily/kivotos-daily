@@ -3,16 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v1.8</title>
+    <title>基沃托斯日讯-云端互通版v2.0</title>
     
-    <!-- 三重保险 CDN 加载 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        if (typeof supabase === 'undefined') { document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>'); }
-    </script>
-    <script>
-        if (typeof supabase === 'undefined') { document.write('<script src="https://cdn.bootcdn.net/ajax/libs/supabase-js/2.39.7/supabase.min.js"><\/script>'); }
-    </script>
 
     <style>
         :root { 
@@ -28,7 +21,7 @@
         body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; overflow-x: hidden;}
         #toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--accent-color); width: 80%; max-width: 300px;}
         
-        /* 登录页 */
+        /* 登录注册 */
         #auth-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background: #121212; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
         .auth-box { width: 100%; max-width: 360px; background: #1e1e1e; padding: 30px 20px; border-radius: 16px; border: 1px solid #333; }
         .auth-title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 24px; color: var(--accent-color); }
@@ -39,35 +32,33 @@
         .auth-switch { text-align: center; font-size: 13px; color: #888; margin-top: 16px; cursor: pointer; padding: 10px; }
         .auth-switch span { color: var(--accent-color); font-weight: bold; }
         
-        /* 主应用容器 */
+        /* 主应用 */
         #app { display: none; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; background: var(--bg-color); }
-        
-        /* ======== 顶部导航 ======== */
         .header { position: sticky; top: 0; background: rgba(18,18,18,0.85); backdrop-filter: blur(12px); padding: 10px 16px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; z-index: 100;}
         
-        /* 普通版头部 */
+        /* 顶部导航-普通版 */
         .header-normal { flex-direction: column; align-items: flex-start; gap: 10px; }
         .header-normal-top { width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: bold; color: var(--accent-color); }
         .search-box { width: 100%; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
         
-        /* 怀旧版头部 */
+        /* 顶部导航-怀旧版 */
         .header-classic { padding: 10px 16px; }
         .header-left { display: flex; align-items: center; cursor: pointer; }
-        .header-avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; overflow: hidden; display: flex; justify-content: center; align-items: center; color: #fff; font-size: 14px; border: 1px solid #444;}
+        .header-avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; overflow: hidden; display: flex; justify-content: center; align-items: center; color: #fff; border: 1px solid #444;}
         .header-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .header-title-center { font-size: 16px; font-weight: bold; color: #fff; flex: 1; text-align: center; margin-left: 10px;}
+        .header-title-center { font-size: 16px; font-weight: bold; color: #fff; flex: 1; text-align: center;}
         .header-right { display: flex; align-items: center; gap: 12px; }
         .layout-btn { font-size: 11px; background: transparent; padding: 4px 8px; border-radius: 12px; cursor: pointer; border: 1px solid var(--border-color); color: var(--text-sub);}
-        .header-add-btn { font-size: 20px; color: var(--accent-color); cursor: pointer; font-weight: bold; line-height: 1;}
+        .header-add-btn { font-size: 20px; color: var(--accent-color); cursor: pointer; font-weight: bold; }
 
-        /* ======== 底部导航（普通版） ======== */
+        /* 底部导航（普通版） */
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; height: 60px; background: rgba(24,24,24,0.95); border-top: 1px solid var(--border-color); justify-content: space-around; align-items: center; z-index: 200; }
         .bottom-nav.show { display: flex; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sub); cursor: pointer; flex: 1; }
         .nav-item.active { color: var(--accent-color); }
-        .nav-btn-add { background: var(--accent-color); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-top: -20px; cursor: pointer; font-size: 24px; font-weight: bold; }
+        .nav-btn-add { background: var(--accent-color); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-top: -20px; cursor: pointer; font-size: 24px; }
 
-        /* ======== 左侧抽屉菜单（怀旧版） ======== */
+        /* 侧边栏（怀旧版） */
         .drawer-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 400; display: none; opacity: 0; transition: opacity 0.3s; }
         .drawer-overlay.active { display: block; opacity: 1; }
         .sidebar-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #151515; z-index: 401; border-right: 1px solid var(--border-color); transition: left 0.3s ease; display: flex; flex-direction: column;}
@@ -79,32 +70,25 @@
         .drawer-user-name { font-size: 16px; font-weight: bold; color: #fff; }
         .drawer-user-handle { font-size: 13px; color: var(--text-sub); }
         .drawer-stats { display: flex; gap: 15px; margin-top: 10px; font-size: 13px; color: var(--text-sub); }
-        .drawer-stats b { color: #fff; }
         .drawer-nav { flex: 1; padding: 10px 0; overflow-y: auto; }
-        .drawer-nav-item { display: flex; align-items: center; gap: 16px; padding: 16px 20px; font-size: 16px; color: #fff; cursor: pointer; transition: background 0.2s; font-weight: bold;}
-        .drawer-nav-item:hover { background: var(--hover-bg); }
+        .drawer-nav-item { display: flex; align-items: center; gap: 16px; padding: 16px 20px; font-size: 16px; color: #fff; cursor: pointer; font-weight: bold;}
         .drawer-nav-item.active { color: var(--accent-color); }
         .drawer-nav-item .icon { font-size: 20px; width: 24px; text-align: center;}
         .drawer-footer { padding: 20px; border-top: 1px solid var(--border-color); }
-        .drawer-logout-btn { width: 100%; padding: 12px; border-radius: 24px; background: transparent; border: 1px solid #ff4757; color: #ff4757; font-weight: bold; font-size: 15px; cursor: pointer;}
+        .drawer-logout-btn { width: 100%; padding: 12px; border-radius: 24px; background: transparent; border: 1px solid #ff4757; color: #ff4757; font-weight: bold; cursor: pointer;}
 
-        /* ======== 标签、公告等通用 ======== */
+        /* 通用帖子样式 */
         .announcement-bar { margin: 12px 16px; background: rgba(255, 123, 156, 0.1); border: 1px solid var(--accent-color); border-radius: 12px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; }
-        .announcement-icon { font-size: 18px; }
-        .announcement-content { flex: 1; font-size: 14px; color: var(--text-main); white-space: pre-wrap; word-break: break-all;}
-        .announcement-edit { font-size: 12px; color: var(--accent-color); cursor: pointer; padding: 2px 6px; border: 1px solid var(--accent-color); border-radius: 4px;}
+        .announcement-content { flex: 1; font-size: 14px; white-space: pre-wrap; word-break: break-all;}
         .role-tag { font-size: 11px; background: rgba(255, 123, 156, 0.2); color: var(--accent-color); padding: 1px 6px; border-radius: 4px; }
         .admin-tag { font-size: 11px; background: #ff4757; color: #fff; padding: 1px 6px; border-radius: 4px; font-weight: bold; }
-        .action-icon { display: flex; align-items: center; gap: 6px; cursor: pointer; }
-        .action-icon.active { color: var(--accent-color); }
-
-        /* ======== 普通版样式 ======== */
-        .post-card-new { background: var(--bg-color); padding: 16px; border-bottom: 8px solid #000; animation: slideDown 0.4s ease-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* 普通版帖子 */
+        .post-card-new { background: var(--bg-color); padding: 16px; border-bottom: 8px solid #000; }
         .post-new-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .post-new-user { display: flex; align-items: center; }
-        .post-new-user .avatar { width: 40px; height: 40px; margin-right: 10px; border-radius: 50%; background: #333; display: flex; justify-content: center; align-items: center; color:#fff;}
-        .post-new-user .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%;}
+        .post-new-user .avatar { width: 40px; height: 40px; margin-right: 10px; border-radius: 50%; background: #333; display: flex; justify-content: center; align-items: center; color:#fff; overflow: hidden;}
+        .post-new-user .avatar img { width: 100%; height: 100%; object-fit: cover;}
         .post-new-name { display: flex; flex-direction: column; }
         .post-new-name .username { font-weight: 500; font-size: 15px; display: flex; align-items: center; gap: 6px;}
         .post-new-name .time { font-size: 12px; color: var(--text-sub); }
@@ -112,71 +96,67 @@
         .post-content.cosplay-text { font-style: italic; color: #b0c4de; background: #1a1a1a; padding: 10px; border-radius: 8px; border-left: 3px solid var(--accent-color); }
         .post-media { width: 100%; max-height: 300px; border-radius: 8px; margin-bottom: 12px; object-fit: cover; background: #000; }
         .post-new-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; padding-top: 8px; border-top: 1px solid var(--border-color); }
-        
-        /* 普通版个人主页 */
+        .action-item { cursor: pointer; display: flex; align-items: center; gap: 4px;}
+        .action-item.active { color: var(--accent-color); }
+
+        /* 怀旧版帖子 */
+        .post-classic { display: flex; padding: 12px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+        .post-classic-avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; overflow: hidden; background: #333; display: flex; justify-content: center; align-items: center;}
+        .post-classic-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .post-classic-main { flex: 1; min-width: 0; }
+        .post-classic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+        .post-classic-name-group { display: flex; align-items: center; gap: 4px; }
+        .post-classic-name { font-size: 15px; font-weight: bold; color: #fff; }
+        .post-classic-time { font-size: 14px; color: var(--text-sub); }
+        .post-classic-content { font-size: 15px; margin-bottom: 10px; white-space: pre-wrap; }
+        .post-classic-media { width: 100%; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 10px; max-height: 400px; object-fit: cover; }
+        .post-classic-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; max-width: 380px; }
+        .action-icon { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+        .action-icon.active { color: var(--accent-color); }
+
+        /* 个人主页 */
         .profile-cover-new { height: 120px; background: #333 center/cover no-repeat; width: 100%; }
         .profile-header-new { padding: 0 16px 20px; text-align: center; border-bottom: 1px solid var(--border-color); }
         .profile-avatar-new { width: 80px; height: 80px; border-radius: 50%; margin: -40px auto 12px; display: flex; justify-content: center; align-items: center; font-size: 32px; color: #fff; overflow: hidden; position: relative; border: 4px solid var(--bg-color); background: #222;}
         .profile-avatar-new img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-bio-new { font-size: 14px; color: #b0c4de; margin: 10px auto; max-width: 80%; line-height: 1.4; word-wrap: break-word;}
+        .profile-bio-new { font-size: 14px; color: #b0c4de; margin: 10px auto; max-width: 80%; line-height: 1.4; }
         .profile-stats-new { display: flex; justify-content: center; gap: 30px; margin-top: 15px; margin-bottom: 20px;}
         .stat-item-new { display: flex; flex-direction: column; align-items: center; }
-        .stat-num-new { font-weight: bold; font-size: 18px; color: var(--text-main); }
+        .stat-num-new { font-weight: bold; font-size: 18px; }
         .stat-label-new { font-size: 12px; color: var(--text-sub); }
-        .profile-actions-new { display: flex; justify-content: center; gap: 15px; }
-        .btn-outline-new { background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 14px;}
+        .btn-outline-new { background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 20px; border-radius: 20px; cursor: pointer; }
 
-        /* ======== 怀旧版样式 ======== */
-        .post-classic { display: flex; padding: 12px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.2s; }
-        .post-classic:active { background: var(--hover-bg); }
-        .post-classic-avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; overflow: hidden; background: #333; display: flex; justify-content: center; align-items: center; color: #fff; font-weight: bold;}
-        .post-classic-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .post-classic-main { flex: 1; min-width: 0; }
-        .post-classic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
-        .post-classic-name-group { display: flex; align-items: center; gap: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
-        .post-classic-name { font-size: 15px; font-weight: bold; color: #fff; }
-        .post-classic-time { font-size: 14px; color: var(--text-sub); white-space: nowrap;}
-        .post-classic-content { font-size: 15px; color: var(--text-main); margin-bottom: 10px; word-break: break-word; white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
-        .post-classic-media { width: 100%; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 10px; max-height: 400px; object-fit: cover; }
-        .post-classic-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; max-width: 380px; }
-        
-        /* 怀旧版个人主页 */
         .profile-cover-classic { height: 120px; background: #333 center/cover no-repeat; width: 100%; }
         .profile-info-container-classic { padding: 0 16px 16px; position: relative; }
-        .profile-avatar-wrapper-classic { width: 84px; height: 84px; border-radius: 50%; border: 4px solid var(--bg-color); background: #222; margin-top: -42px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; font-size: 36px; color: #fff;}
+        .profile-avatar-wrapper-classic { width: 84px; height: 84px; border-radius: 50%; border: 4px solid var(--bg-color); background: #222; margin-top: -42px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;}
         .profile-avatar-wrapper-classic img { width: 100%; height: 100%; object-fit: cover; }
         .profile-actions-row-classic { display: flex; justify-content: flex-end; gap: 10px; margin-top: -36px; margin-bottom: 16px;}
-        .btn-outline-classic { background: transparent; color: #eff3f4; border: 1px solid #536471; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;}
+        .btn-outline-classic { background: transparent; color: #eff3f4; border: 1px solid #536471; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer;}
         .profile-name-classic { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 2px;}
         .profile-handle-classic { font-size: 15px; color: var(--text-sub); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;}
         .tag-platform { background: #2f3336; color: #e0e0e0; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
-        .profile-bio-classic { font-size: 15px; color: #eff3f4; margin-bottom: 12px; line-height: 1.4;}
+        .profile-bio-classic { font-size: 15px; margin-bottom: 12px; }
         .profile-stats-row-classic { display: flex; gap: 20px; font-size: 14px; color: var(--text-sub); margin-bottom: 16px;}
         .profile-stats-row-classic b { color: #eff3f4; }
-        .profile-tabs-classic { display: flex; border-bottom: 1px solid var(--border-color); }
-        .profile-tab-classic { flex: 1; text-align: center; padding: 16px 0; font-size: 15px; color: var(--text-sub); font-weight: bold; cursor: pointer; position: relative;}
-        .profile-tab-classic.active { color: #eff3f4; }
-        .profile-tab-classic.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 56px; height: 4px; background: var(--accent-color); border-radius: 2px;}
 
-        /* ======== 详情页 ======== */
+        /* 详情页 */
         #detail-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 250; display: none; flex-direction: column; max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
-        .detail-header { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: rgba(18,18,18,0.85); backdrop-filter: blur(12px); z-index: 10;}
+        .detail-header { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
         .back-btn { font-size: 20px; cursor: pointer; margin-right: 20px; color: #fff;}
         .detail-content-area { flex: 1; overflow-y: auto; padding-bottom: 60px; }
-        .detail-post-main { display: flex; flex-direction: column; padding: 16px; border-bottom: 1px solid var(--border-color); }
+        .detail-post-main { padding: 16px; border-bottom: 1px solid var(--border-color); }
         .detail-user-info { display: flex; align-items: center; margin-bottom: 12px;}
         .detail-avatar { width: 48px; height: 48px; border-radius: 50%; margin-right: 12px; overflow: hidden; background: #333;}
         .detail-avatar img { width: 100%; height: 100%; object-fit: cover;}
-        .detail-name-block { display: flex; flex-direction: column; }
-        .detail-name { font-size: 16px; font-weight: bold; color: #fff; }
-        .detail-handle { font-size: 14px; color: var(--text-sub); }
-        .detail-post-content { font-size: 18px; color: #fff; line-height: 1.5; margin-bottom: 16px; white-space: pre-wrap; word-break: break-word;}
-        .detail-post-media { width: 100%; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); }
-        .detail-post-time { font-size: 14px; color: var(--text-sub); margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);}
-        .detail-actions { display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); color: var(--text-sub); }
-        
-        .comment-list-classic { padding: 16px; }
-        .comment-thread { display: flex; flex-direction: column; margin-bottom: 20px;}
+        .detail-post-content { font-size: 18px; color: #fff; line-height: 1.5; margin-bottom: 16px; white-space: pre-wrap; }
+        .detail-post-media { width: 100%; border-radius: 16px; margin-bottom: 16px; }
+        .detail-bottom-bar { position: absolute; bottom: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color); padding: 12px 16px; display: flex; align-items: center; gap: 12px;}
+        .detail-input { flex: 1; background: #161616; border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 16px; color: #fff; outline: none;}
+        .detail-send-btn { background: var(--accent-color); color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer;}
+
+        /* 评论 */
+        .comment-list { padding: 16px; }
+        .comment-thread { margin-bottom: 20px;}
         .comment-main { display: flex; gap: 12px; }
         .comment-main .avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #333;}
         .comment-main .avatar img { width: 100%; height: 100%; object-fit: cover;}
@@ -184,11 +164,11 @@
         .comment-header { display: flex; align-items: center; gap: 4px; margin-bottom: 4px;}
         .comment-name { font-size: 15px; font-weight: bold; color: #fff; }
         .comment-time { font-size: 14px; color: var(--text-sub); }
-        .comment-text { font-size: 15px; color: #eff3f4; margin-bottom: 8px; line-height: 1.4;}
+        .comment-text { font-size: 15px; color: #eff3f4; margin-bottom: 8px; }
         .comment-actions { display: flex; gap: 20px; font-size: 13px; color: var(--text-sub); }
         .comment-actions span { cursor: pointer; }
-        .comment-replies { margin-left: 20px; padding-left: 20px; border-left: 2px solid var(--border-color); margin-top: 12px; display: flex; flex-direction: column; gap: 16px;}
-        .reply-item { display: flex; gap: 10px; }
+        .comment-replies { margin-left: 20px; padding-left: 20px; border-left: 2px solid var(--border-color); margin-top: 12px; }
+        .reply-item { display: flex; gap: 10px; margin-bottom: 12px;}
         .reply-item .avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #333;}
         .reply-item .avatar img { width: 100%; height: 100%; object-fit: cover;}
         .reply-body { flex: 1; }
@@ -196,24 +176,14 @@
         .reply-name { font-size: 14px; font-weight: bold; color: #fff;}
         .reply-target { font-size: 14px; color: var(--accent-color);}
         .reply-text { font-size: 14px; color: #eff3f4; margin-bottom: 4px;}
-        .detail-bottom-bar { position: absolute; bottom: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color); padding: 12px 16px; display: flex; align-items: center; gap: 12px;}
-        .detail-input { flex: 1; background: #161616; border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 16px; color: #fff; outline: none;}
-        .detail-send-btn { background: var(--accent-color); color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer;}
 
-        /* ======== 弹窗通用 ======== */
+        /* 弹窗 */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 500; display: none; justify-content: center; align-items: flex-end; }
         .modal-content { background: var(--bg-color); width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; display: flex; flex-direction: column; border: 1px solid var(--border-color); border-bottom: none; max-height: 90vh; overflow-y: auto;}
         .modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: bold; font-size: 18px; color: #fff;}
         .modal-textarea { width: 100%; height: 120px; background: transparent; border: none; border-bottom: 1px solid var(--border-color); padding: 12px 0; color: #fff; font-size: 18px; resize: none; outline: none; margin-bottom: 12px; }
         .modal-submit { width: 100%; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 20px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;}
         
-        .media-tools { display: flex; gap: 10px; margin-bottom: 12px; align-items: center;}
-        .upload-btn { background: rgba(255, 123, 156, 0.1); color: var(--accent-color); padding: 8px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; border: 1px solid var(--accent-color);}
-        .preview-container { display: none; position: relative; margin-bottom: 12px; }
-        .preview-media { width: 100%; max-height: 200px; border-radius: 12px; object-fit: cover; }
-        .remove-media { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold;}
-
-        /* 编辑资料弹窗 */
         .edit-section { display: flex; align-items: center; justify-content: space-between; background: #1e1e1e; padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border-color);}
         .edit-section-info { display: flex; align-items: center; gap: 12px; }
         .edit-section-label { font-size: 15px; color: #fff; font-weight: bold;}
@@ -248,38 +218,36 @@
     </div>
 </div>
 
-<!-- 主应用页 -->
+<!-- 主应用 -->
 <div id="app">
     <header id="header-container"></header>
-    <main id="main-content"></main>
+    <main id="main-content">
+        <div style="text-align: center; padding: 50px; color: #888;">数据加载中...</div>
+    </main>
 
-    <!-- 底部导航（普通版专属） -->
     <nav class="bottom-nav" id="bottom-nav">
         <div class="nav-item" data-view="feed" onclick="switchView('feed')">首页</div>
         <div class="nav-item" data-view="story" onclick="switchView('story')">剧情</div>
         <div class="nav-btn-add" onclick="openPostModal()">+</div>
-        <div class="nav-item" data-view="bookmarks" onclick="switchView('bookmarks')">收藏</div>
         <div class="nav-item" data-view="profile" onclick="switchView('profile')">我的</div>
     </nav>
 </div>
 
-<!-- 左侧抽屉菜单（怀旧版专属） -->
+<!-- 侧边栏 -->
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 <div class="sidebar-drawer" id="sidebar-drawer">
     <div class="drawer-header" id="drawer-header-content"></div>
     <div class="drawer-nav">
         <div class="drawer-nav-item" id="nav-feed" onclick="switchView('feed')"><span class="icon">🏠</span>首页</div>
         <div class="drawer-nav-item" id="nav-story" onclick="switchView('story')"><span class="icon">🎭</span>剧情广场</div>
-        <div class="drawer-nav-item" id="nav-bookmarks" onclick="switchView('bookmarks')"><span class="icon">🔖</span>我的收藏</div>
         <div class="drawer-nav-item" id="nav-profile" onclick="switchView('profile')"><span class="icon">👤</span>个人主页</div>
-        <div class="drawer-nav-item" onclick="openEditAnnouncement()" id="nav-edit-announcement" style="display:none;"><span class="icon">📢</span>编辑公告</div>
     </div>
     <div class="drawer-footer">
         <button class="drawer-logout-btn" onclick="logout()">退出登录</button>
     </div>
 </div>
 
-<!-- 帖子详情页 -->
+<!-- 详情页 -->
 <div id="detail-page">
     <div class="detail-header">
         <div class="back-btn" onclick="closeDetailPage()">←</div>
@@ -295,7 +263,7 @@
 <!-- 发帖弹窗 -->
 <div class="modal-overlay" id="post-modal">
     <div class="modal-content">
-        <div class="modal-header"><span>发布新帖子</span><span style="cursor:pointer; padding:5px;" onclick="closePostModal()">✕</span></div>
+        <div class="modal-header"><span>发布新帖子</span><span style="cursor:pointer;" onclick="closePostModal()">✕</span></div>
         <div class="mode-switch" style="display:flex; gap:10px; margin-bottom:12px;">
             <div class="mode-btn active" id="mode-normal" onclick="switchPostMode('normal')" style="flex:1; text-align:center; padding:8px; border-radius:20px; border:1px solid #333; cursor:pointer; background:#222; color:#fff;">日常发帖</div>
             <div class="mode-btn" id="mode-cos" onclick="switchPostMode('cosplay')" style="flex:1; text-align:center; padding:8px; border-radius:20px; border:1px solid #333; cursor:pointer; background:transparent; color:#888;">🎭 剧情演绎</div>
@@ -304,30 +272,28 @@
             <input type="text" class="auth-input" id="post-role" placeholder="扮演角色（如：砂狼白子）" style="margin-bottom: 10px;">
         </div>
         <textarea class="modal-textarea" id="post-input" placeholder="有什么新鲜事？"></textarea>
-        <div class="media-tools">
-            <div class="upload-btn" onclick="document.getElementById('media-uploader').click()">📷 图片/视频</div>
+        
+        <!-- 图片链接输入 -->
+        <div class="input-group" style="margin-top:10px;">
+            <label>附带图片/视频链接 (可选)</label>
+            <input type="text" class="auth-input" id="post-media-url" placeholder="https://... (填入以http开头的图片地址)">
         </div>
-        <input type="file" id="media-uploader" accept="image/*,video/*" style="display: none;" onchange="handleMediaSelect(event)">
-        <div class="preview-container" id="media-preview-container">
-            <img id="preview-img" class="preview-media" style="display:none;">
-            <video id="preview-video" class="preview-media" controls style="display:none;"></video>
-            <div class="remove-media" onclick="clearMedia()">✕</div>
-        </div>
+
         <button class="modal-submit" onclick="submitPost()">发布</button>
     </div>
 </div>
 
-<!-- 升级版编辑资料弹窗 -->
+<!-- 编辑资料弹窗 -->
 <div class="modal-overlay" id="edit-profile-modal">
     <div class="modal-content">
-        <div class="modal-header"><span>个人主页装扮</span><span style="cursor:pointer; padding:5px;" onclick="document.getElementById('edit-profile-modal').style.display='none'">✕</span></div>
+        <div class="modal-header"><span>个人主页装扮</span><span style="cursor:pointer;" onclick="document.getElementById('edit-profile-modal').style.display='none'">✕</span></div>
         
         <div class="edit-section">
             <div class="edit-section-info">
                 <div class="edit-avatar-preview" id="edit-avatar-preview"></div>
                 <div class="edit-section-label">更改头像</div>
             </div>
-            <button class="btn-small" style="background:#333; border:none; color:#fff; padding:6px 12px; border-radius:16px; font-size:13px; cursor:pointer;" onclick="document.getElementById('avatar-uploader').click()">上传</button>
+            <button class="btn-small" style="background:#333; border:none; color:#fff; padding:6px 12px; border-radius:16px; cursor:pointer;" onclick="document.getElementById('avatar-uploader').click()">上传</button>
         </div>
 
         <div class="edit-section">
@@ -335,7 +301,7 @@
                 <div class="edit-cover-preview" id="edit-cover-preview"></div>
                 <div class="edit-section-label">更改主页背景</div>
             </div>
-            <button class="btn-small" style="background:#333; border:none; color:#fff; padding:6px 12px; border-radius:16px; font-size:13px; cursor:pointer;" onclick="document.getElementById('cover-uploader').click()">上传</button>
+            <button class="btn-small" style="background:#333; border:none; color:#fff; padding:6px 12px; border-radius:16px; cursor:pointer;" onclick="document.getElementById('cover-uploader').click()">上传</button>
         </div>
 
         <div class="input-group" style="margin-top:10px;">
@@ -351,16 +317,6 @@
     </div>
 </div>
 
-<!-- 编辑公告弹窗 -->
-<div class="modal-overlay" id="edit-announcement-modal">
-    <div class="modal-content">
-        <div class="modal-header"><span>编辑系统公告</span><span style="cursor:pointer; padding:5px;" onclick="document.getElementById('edit-announcement-modal').style.display='none'">✕</span></div>
-        <textarea class="modal-textarea" id="edit-announcement-input" placeholder="输入公告..." style="height: 100px;"></textarea>
-        <button class="modal-submit" onclick="saveAnnouncement()">发布公告</button>
-    </div>
-</div>
-
-<!-- 隐藏的输入框 -->
 <input type="file" id="avatar-uploader" accept="image/*" style="display: none;" onchange="handleTempUpload(event, 'avatar')">
 <input type="file" id="cover-uploader" accept="image/*" style="display: none;" onchange="handleTempUpload(event, 'cover')">
 
@@ -368,9 +324,7 @@
     const ADMIN_EMAIL = 'admin@kivotos.com'; 
     const SUPABASE_URL = 'https://ycjshhxxqnyizewpswoc.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut'; 
-    let supabaseClient = null;
-
-    try { if (typeof supabase !== 'undefined') supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e) {}
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     function showToast(msg) {
         const toast = document.getElementById('toast');
@@ -379,66 +333,138 @@
         window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 2500);
     }
 
-    function generateSignal() { return `KIV-${Math.floor(100000 + Math.random() * 900000)}`; }
-
-    const PRESET_AVATARS = [
-        'https://api.dicebear.com/7.x/adventurer/svg?seed=Hoshino&backgroundColor=ffd5dc',
-        'https://api.dicebear.com/7.x/adventurer/svg?seed=Shiroko&backgroundColor=b6e3f4',
-        'https://api.dicebear.com/7.x/adventurer/svg?seed=Aris&backgroundColor=c0aede',
-        'https://api.dicebear.com/7.x/adventurer/svg?seed=Aru&backgroundColor=ffdfbf',
-        'https://api.dicebear.com/7.x/adventurer/svg?seed=Yuzu&backgroundColor=d1d4f9'
-    ];
-
-    let MemoryData = JSON.parse(localStorage.getItem('forum_ba_v4')) || {
-        users: [], 
-        announcement: '基沃托斯日讯 v1.8 已上线！帖子已清空，快发布第一条动态吧~',
-        posts: []
-    };
-    
-    if (!MemoryData.announcement) MemoryData.announcement = '欢迎来到基沃托斯日讯！';
-    
-    if(!MemoryData.users.find(u => u.id === 'sys')){
-        MemoryData.users.push({ id: 'sys', name: '联邦学生会', avatar: PRESET_AVATARS[0], followers: 999, followingList: [], bookmarks: [], avatarColor: '#ff7b9c', bio: '基沃托斯官方账号。', signal: 'KIV-000000', cover: '' });
-        MemoryData.users.push({ id: 'sys2', name: '阿罗娜', avatar: PRESET_AVATARS[1], followers: 500, followingList: [], bookmarks: [], avatarColor: '#4a90e2', bio: '老师的小助手。', signal: 'KIV-000001', cover: '' });
-    }
-    MemoryData.users.forEach(u => { 
-        if (!u.signal) u.signal = generateSignal(); 
-        if (!u.cover) u.cover = ''; 
-    });
-
-    let currentUserSessionId = null;
+    // 全局状态
+    let CurrentUserProfile = null;
+    let AllPosts = [];
+    let AllComments = [];
     let isRegisterMode = false;
-    let currentView = 'feed', searchQuery = '', currentPostIdForComment = null;
-    let currentPostMode = 'normal'; 
-    let currentSelectedMedia = null;
+    let currentView = 'feed';
+    let currentPostMode = 'normal';
+    let currentPostIdForComment = null;
     let currentReplyTo = null;
+    let currentLayout = localStorage.getItem('forum_layout') || 'new';
     let tempAvatar = null;
     let tempCover = null;
-    
-    let currentLayout = localStorage.getItem('forum_layout') || 'new'; 
 
-    const DB = {
-        save() { localStorage.setItem('forum_ba_v4', JSON.stringify(MemoryData)); },
-        getCurrentUser() { return MemoryData.users.find(u => u.id === currentUserSessionId) || null; },
-        getUser(id) { return MemoryData.users.find(u => u.id === id) || { name: '未知', avatarColor: '#555', avatar: PRESET_AVATARS[0] }; },
-        formatTime(ts) { 
-            if (currentLayout === 'new') { 
-                const d = Date.now() - ts; return d < 60000 ? '刚刚' : d < 3600000 ? Math.floor(d/60000)+'分钟前' : Math.floor(d/3600000)+'小时前'; 
-            }
-            const d = new Date(ts); return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`; 
-        }
+    function generateSignal() { return `KIV-${Math.floor(100000 + Math.random() * 900000)}`; }
+
+    // ======== 登录注册逻辑 ========
+    window.toggleAuthMode = function() {
+        isRegisterMode = !isRegisterMode;
+        document.getElementById('auth-title').innerText = isRegisterMode ? '基沃托斯日讯-注册' : '基沃托斯日讯-登录';
+        document.getElementById('auth-submit-btn').innerText = isRegisterMode ? '注 册' : '登 录';
+        document.getElementById('auth-switch-text').innerText = isRegisterMode ? '去登录' : '立即注册';
+        document.getElementById('nickname-group').style.display = isRegisterMode ? 'block' : 'none';
     };
 
-    function checkIsAdmin() {
-        const user = DB.getCurrentUser();
-        return user && user.email === ADMIN_EMAIL;
+    window.handleAuth = async function() {
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
+        const nickname = document.getElementById('auth-nickname').value.trim();
+        const btn = document.getElementById('auth-submit-btn');
+        
+        if (!email || !password) return alert('请填写邮箱和密码');
+        if (password.length < 6) return alert('密码至少需要6位');
+
+        const originalText = btn.innerText;
+        btn.innerText = '连接中...'; btn.disabled = true;
+
+        try {
+            if (isRegisterMode) {
+                if (!nickname) { btn.innerText = originalText; btn.disabled = false; return alert('请输入昵称'); }
+                const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { data: { display_name: nickname } } });
+                if (error) throw error;
+                
+                if (data.user) {
+                    // 注册成功，在 profiles 表里生成初始资料
+                    const newSignal = generateSignal();
+                    await supabaseClient.from('profiles').insert([{
+                        id: data.user.id,
+                        name: nickname,
+                        email: email,
+                        signal: newSignal,
+                        avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`,
+                        bio: '这个人很神秘，什么简介都没写。'
+                    }]);
+                    alert('注册成功，正在进入...');
+                    await initUser(data.user);
+                }
+            } else {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                await initUser(data.user);
+            }
+        } catch (err) { 
+            if (err.message.includes('Email not confirmed')) {
+                alert('【账号未激活】\n该账号尚未验证。请去后台 Users 删除该账号，或换邮箱重新注册。');
+            } else {
+                alert('操作失败：' + err.message); 
+            }
+        } finally { 
+            btn.innerText = originalText; btn.disabled = false; 
+        }
     }
 
+    window.logout = async function() {
+        await supabaseClient.auth.signOut();
+        CurrentUserProfile = null;
+        document.getElementById('auth-page').style.display = 'flex'; 
+        document.getElementById('app').style.display = 'none';
+    }
+
+    // ======== 初始化与拉取数据 ========
+    async function checkAuth() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            await initUser(session.user);
+        } else {
+            document.getElementById('auth-page').style.display = 'flex'; 
+            document.getElementById('app').style.display = 'none';
+        }
+    }
+
+    async function initUser(user) {
+        // 拉取个人资料
+        let { data: profile, error } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+        
+        // 如果没建表或没数据，做个兜底
+        if (!profile) {
+            const newName = user.user_metadata?.display_name || user.email.split('@')[0];
+            const newSignal = generateSignal();
+            await supabaseClient.from('profiles').insert([{
+                id: user.id, name: newName, email: user.email, signal: newSignal, 
+                avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${newName}`, bio: ''
+            }]);
+            const res = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+            profile = res.data;
+        }
+        CurrentUserProfile = profile;
+        
+        document.getElementById('auth-page').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        
+        await loadAllData();
+    }
+
+    async function loadAllData() {
+        document.getElementById('main-content').innerHTML = `<div style="text-align:center; padding:50px; color:#888;">拉取云端数据中...</div>`;
+        
+        // 拉取帖子
+        const { data: posts } = await supabaseClient.from('posts').select('*').order('created_at', { ascending: false });
+        AllPosts = posts || [];
+
+        // 拉取评论
+        const { data: comments } = await supabaseClient.from('comments').select('*').order('created_at', { ascending: true });
+        AllComments = comments || [];
+
+        render();
+    }
+
+    // ======== 渲染逻辑 ========
     window.toggleLayout = function() {
         currentLayout = currentLayout === 'new' ? 'classic' : 'new';
         localStorage.setItem('forum_layout', currentLayout);
         render(); 
-        showToast('已切换排版');
     }
 
     window.openDrawer = function() {
@@ -450,149 +476,49 @@
         document.getElementById('sidebar-drawer').classList.remove('active');
     }
 
-    window.toggleAuthMode = function() {
-        isRegisterMode = !isRegisterMode;
-        document.getElementById('auth-title').innerText = isRegisterMode ? '基沃托斯日讯-注册' : '基沃托斯日讯-登录';
-        document.getElementById('auth-submit-btn').innerText = isRegisterMode ? '注 册' : '登 录';
-        document.getElementById('auth-switch-text').innerText = isRegisterMode ? '去登录' : '立即注册';
-        document.getElementById('nickname-group').style.display = isRegisterMode ? 'block' : 'none';
-    };
-
-    window.handleAuth = async function() {
-        if (!supabaseClient) { alert('网络加载失败：未能加载核心组件！请尝试刷新页面。'); return; }
-        const email = document.getElementById('auth-email').value.trim();
-        const password = document.getElementById('auth-password').value;
-        const nickname = document.getElementById('auth-nickname').value.trim();
-        const btn = document.getElementById('auth-submit-btn');
-        if (!email || !password) return alert('请填写邮箱和密码');
-        if (password.length < 6) return alert('密码至少需要6位');
-
-        const originalText = btn.innerText;
-        btn.innerText = '连接中...'; btn.disabled = true;
-
-        try {
-            if (isRegisterMode) {
-                if (!nickname) { btn.innerText = originalText; btn.disabled = false; return alert('请输入昵称'); }
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('请求超时，网络环境不佳')), 5000));
-                const { data, error } = await Promise.race([supabaseClient.auth.signUp({ email, password, options: { data: { display_name: nickname } } }), timeoutPromise]);
-                if (error) throw error;
-                if (data.user && data.user.confirmed_at === null) { alert('注册成功！请去邮箱点击验证。'); toggleAuthMode(); } 
-                else { alert('注册成功，已自动登录！'); loginSuccess(data.user); }
-            } else {
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('请求超时，网络环境不佳')), 5000));
-                const { data, error } = await Promise.race([supabaseClient.auth.signInWithPassword({ email, password }), timeoutPromise]);
-                if (error) throw error;
-                loginSuccess(data.user);
-            }
-        } catch (err) { 
-            if (err.message.includes('Email not confirmed')) {
-                alert('【账号未激活】\n\n该账号是早期测试注册的，尚未激活。\n\n解决方法：\n1. 换一个邮箱重新注册；\n2. 或者联系管理员在后台为你激活。');
-            } else if (err.message.includes('Invalid login')) {
-                alert('【密码错误】\n\n邮箱或密码不正确，请检查后重试。');
-            } else {
-                alert('操作失败：' + err.message); 
-            }
-        } 
-        finally { btn.innerText = originalText; btn.disabled = false; }
-    }
-
-    function loginSuccess(supabaseUser) {
-        const email = supabaseUser.email;
-        let nickname = supabaseUser.user_metadata?.display_name || email.split('@')[0];
-        if (email === ADMIN_EMAIL && nickname === email.split('@')[0]) nickname = '风纪委员';
-        
-        const supaId = supabaseUser.id;
-        let localUser = MemoryData.users.find(u => u.id === supaId);
-        if (!localUser) {
-            localUser = { id: supaId, name: nickname, email: email, avatar: PRESET_AVATARS[Math.floor(Math.random()*PRESET_AVATARS.length)], followers: 0, followingList: [], bookmarks: [], avatarColor: '#' + Math.floor(Math.random()*16777215).toString(16), bio: '', signal: generateSignal(), cover: '' };
-            MemoryData.users.push(localUser); DB.save();
-        }
-        currentUserSessionId = supaId;
-        localStorage.setItem('taoxun_session_id', supaId);
-        
-        document.getElementById('auth-page').style.display = 'none';
-        document.getElementById('app').style.display = 'block';
-        switchView('feed');
-    }
-
-    window.logout = async function() {
-        if(supabaseClient) {
-            await supabaseClient.auth.signOut({ scope: 'global' }); 
-        }
-        currentUserSessionId = null; 
-        localStorage.removeItem('taoxun_session_id');
-        document.getElementById('auth-page').style.display = 'flex'; 
-        document.getElementById('app').style.display = 'none';
-    }
-
-    async function checkAuth() {
-        if (!supabaseClient) {
-            document.getElementById('auth-page').style.display = 'flex'; 
-            document.getElementById('app').style.display = 'none';
-            return;
-        }
-
-        try {
-            const { data: { session }, error } = await supabaseClient.auth.getSession();
-            const savedId = localStorage.getItem('taoxun_session_id');
-
-            if (session && savedId && MemoryData.users.find(u => u.id === savedId)) {
-                currentUserSessionId = savedId;
-                document.getElementById('auth-page').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
-                switchView('feed');
-            } else {
-                currentUserSessionId = null;
-                localStorage.removeItem('taoxun_session_id');
-                document.getElementById('auth-page').style.display = 'flex'; 
-                document.getElementById('app').style.display = 'none';
-            }
-        } catch(e) {
-            document.getElementById('auth-page').style.display = 'flex'; 
-            document.getElementById('app').style.display = 'none';
-        }
-    }
-
     window.switchView = function(viewName) {
         currentView = viewName;
         closeDrawer();
         render();
     }
 
+    function formatTime(ts) { 
+        const d = new Date(ts);
+        if (currentLayout === 'new') {
+            const diff = Date.now() - d.getTime();
+            return diff < 60000 ? '刚刚' : diff < 3600000 ? Math.floor(diff/60000)+'分钟前' : Math.floor(diff/3600000)+'小时前';
+        }
+        return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`; 
+    }
+
     function render() {
-        const currentUser = DB.getCurrentUser();
-        if (!currentUser) return;
-        const isAdmin = checkIsAdmin();
+        if (!CurrentUserProfile) return;
+        const isAdmin = CurrentUserProfile.email === ADMIN_EMAIL;
         
         const headerContainer = document.getElementById('header-container');
         const bottomNav = document.getElementById('bottom-nav');
 
         if (currentLayout === 'new') {
             bottomNav.classList.add('show');
-            let titleText = currentView === 'feed' ? '基沃托斯日讯-首页' : (currentView === 'story' ? '剧情广场' : (currentView === 'bookmarks' ? '我的收藏' : '我的主页'));
-            
+            let titleText = currentView === 'feed' ? '基沃托斯日讯-首页' : (currentView === 'story' ? '剧情广场' : '我的主页');
             headerContainer.innerHTML = `
                 <div class="header header-normal">
                     <div class="header-normal-top">
                         <span>${titleText}</span>
                         <span style="font-size: 12px; color: var(--text-sub); cursor:pointer;" onclick="toggleLayout()">切怀旧版</span>
                     </div>
-                    ${(currentView !== 'profile' && currentView !== 'bookmarks') ? `<input type="text" class="search-box" id="search-input" placeholder="搜索帖子、角色或用户..." oninput="searchQuery = this.value.trim(); renderPostsOnly();">` : ''}
                 </div>
             `;
-            
             document.querySelectorAll('.bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
             const activeNav = document.querySelector(`.bottom-nav .nav-item[data-view="${currentView}"]`);
             if (activeNav) activeNav.classList.add('active');
-
         } else {
             bottomNav.classList.remove('show');
-            let titleText = currentView === 'feed' ? '首页' : (currentView === 'story' ? '剧情广场' : (currentView === 'bookmarks' ? '我的收藏' : '个人主页'));
-            
+            let titleText = currentView === 'feed' ? '首页' : (currentView === 'story' ? '剧情广场' : '个人主页');
             headerContainer.innerHTML = `
                 <div class="header header-classic">
                     <div class="header-left" onclick="openDrawer()">
-                        <div class="header-avatar"><img src="${currentUser.avatar}"></div>
+                        <div class="header-avatar"><img src="${CurrentUserProfile.avatar}"></div>
                     </div>
                     <div class="header-title-center">${titleText}</div>
                     <div class="header-right">
@@ -601,194 +527,305 @@
                     </div>
                 </div>
             `;
-            
             document.getElementById('drawer-header-content').innerHTML = `
                 <div class="drawer-user-info" onclick="switchView('profile')">
-                    <div class="avatar" style="background:${currentUser.avatarColor}"><img src="${currentUser.avatar}"></div>
+                    <div class="avatar"><img src="${CurrentUserProfile.avatar}"></div>
                     <div>
-                        <div class="drawer-user-name">${currentUser.name} ${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}</div>
-                        <div class="drawer-user-handle">@${currentUser.signal}</div>
+                        <div class="drawer-user-name">${CurrentUserProfile.name} ${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}</div>
+                        <div class="drawer-user-handle">@${CurrentUserProfile.signal}</div>
                     </div>
                 </div>
                 <div class="drawer-stats">
-                    <span><b>${currentUser.followingList.length}</b> 关注</span>
-                    <span><b>${currentUser.followers || 0}</b> 粉丝</span>
+                    <span><b>${CurrentUserProfile.following_list?.length || 0}</b> 关注</span>
+                    <span><b>${CurrentUserProfile.followers || 0}</b> 粉丝</span>
                 </div>
             `;
-
             document.querySelectorAll('.drawer-nav-item').forEach(el => el.classList.remove('active'));
             if(document.getElementById('nav-' + currentView)) document.getElementById('nav-' + currentView).classList.add('active');
-            document.getElementById('nav-edit-announcement').style.display = isAdmin ? 'flex' : 'none';
         }
-
+        
         renderPostsOnly();
     }
 
     function renderPostsOnly() {
-        const currentUser = DB.getCurrentUser();
-        if (!currentUser) return;
-        const isAdmin = checkIsAdmin();
+        if (!CurrentUserProfile) return;
+        const isAdmin = CurrentUserProfile.email === ADMIN_EMAIL;
         let html = '';
 
         if (currentView === 'profile') {
-            let totalLikes = 0;
-            MemoryData.posts.forEach(p => { if (p.authorId === currentUser.id) totalLikes += (p.likes || 0); });
-
+            let totalLikes = AllPosts.filter(p => p.author_id === CurrentUserProfile.id).reduce((sum, p) => sum + (p.likes || 0), 0);
+            
             if (currentLayout === 'new') {
                 html += `
-                <div class="profile-cover-new" style="background-image: url('${currentUser.cover}');"></div>
+                <div class="profile-cover-new" style="background-image: url('${CurrentUserProfile.cover || ''}');"></div>
                 <div class="profile-header-new">
-                    <div class="profile-avatar-new" style="background: ${currentUser.avatarColor}">
-                        <img src="${currentUser.avatar}">
-                    </div>
-                    <h2>${currentUser.name} ${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}</h2>
-                    <div class="profile-bio-new">${currentUser.bio || '这个人很神秘，什么简介都没写~'}</div>
-                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
-                        讯号：<span style="color:var(--accent-color); font-family: monospace; font-weight: bold;">${currentUser.signal}</span>
-                    </div>
+                    <div class="profile-avatar-new"><img src="${CurrentUserProfile.avatar}"></div>
+                    <h2>${CurrentUserProfile.name} ${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}</h2>
+                    <div class="profile-bio-new">${CurrentUserProfile.bio || '这个人很神秘，什么都没写。'}</div>
+                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">讯号：<span style="color:var(--accent-color);">${CurrentUserProfile.signal}</span></div>
                     <div class="profile-stats-new">
-                        <div class="stat-item-new"><span class="stat-num-new">${currentUser.followers || 0}</span><span class="stat-label-new">粉丝</span></div>
-                        <div class="stat-item-new"><span class="stat-num-new">${currentUser.followingList.length}</span><span class="stat-label-new">关注</span></div>
+                        <div class="stat-item-new"><span class="stat-num-new">${CurrentUserProfile.followers || 0}</span><span class="stat-label-new">粉丝</span></div>
+                        <div class="stat-item-new"><span class="stat-num-new">${CurrentUserProfile.following_list?.length || 0}</span><span class="stat-label-new">关注</span></div>
                         <div class="stat-item-new"><span class="stat-num-new">${totalLikes}</span><span class="stat-label-new">被赞</span></div>
                     </div>
-                    <div class="profile-actions-new">
-                        <button class="btn-outline-new" onclick="openEditProfile()">编辑资料</button>
-                    </div>
+                    <div><button class="btn-outline-new" onclick="openEditProfile()">编辑资料</button></div>
                 </div><div style="padding: 12px 16px; font-weight: bold;">我发布的帖子</div>`;
             } else {
                 html += `
-                <div class="profile-cover-classic" style="background-image: url('${currentUser.cover}');"></div>
+                <div class="profile-cover-classic" style="background-image: url('${CurrentUserProfile.cover || ''}');"></div>
                 <div class="profile-info-container-classic">
-                    <div class="profile-avatar-wrapper-classic" style="background: ${currentUser.avatarColor}">
-                        <img src="${currentUser.avatar}">
-                    </div>
-                    <div class="profile-actions-row-classic">
-                        <button class="btn-outline-classic" onclick="openEditProfile()">编辑资料</button>
-                    </div>
-                    <div class="profile-name-classic">${currentUser.name} ${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}</div>
-                    <div class="profile-handle-classic">@${currentUser.signal} <span class="tag-platform">平台用户</span></div>
-                    <div class="profile-bio-classic">${currentUser.bio || '这个人很神秘，什么都没写。'}</div>
+                    <div class="profile-avatar-wrapper-classic"><img src="${CurrentUserProfile.avatar}"></div>
+                    <div class="profile-actions-row-classic"><button class="btn-outline-classic" onclick="openEditProfile()">编辑资料</button></div>
+                    <div class="profile-name-classic">${CurrentUserProfile.name} ${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}</div>
+                    <div class="profile-handle-classic">@${CurrentUserProfile.signal} <span class="tag-platform">平台用户</span></div>
+                    <div class="profile-bio-classic">${CurrentUserProfile.bio || '这个人很神秘，什么都没写。'}</div>
                     <div class="profile-stats-row-classic">
-                        <span><b>${currentUser.followingList.length}</b> 关注</span>
-                        <span><b>${currentUser.followers || 0}</b> 粉丝</span>
+                        <span><b>${CurrentUserProfile.following_list?.length || 0}</b> 关注</span>
+                        <span><b>${CurrentUserProfile.followers || 0}</b> 粉丝</span>
                         <span><b>${totalLikes}</b> 获赞</span>
                     </div>
-                </div>
-                <div class="profile-tabs-classic">
-                    <div class="profile-tab-classic active">帖子</div>
                 </div>`;
             }
-            
-            const myPosts = MemoryData.posts.filter(p => p.authorId === currentUser.id).sort((a,b)=>b.time-a.time);
-            if (myPosts.length === 0) html += `<div style="text-align:center; padding:50px; color:#666;">你还没有发布过帖子哦~</div>`;
-            else myPosts.forEach(post => { html += renderPostHTML(post); });
-            
+            AllPosts.filter(p => p.author_id === CurrentUserProfile.id).forEach(post => { html += renderPostHTML(post); });
         } else {
-            html += `<div class="announcement-bar">
-                <div class="announcement-icon">📢</div>
-                <div class="announcement-content">${MemoryData.announcement}</div>
-                ${(isAdmin && currentLayout === 'new') ? `<div class="announcement-edit" onclick="openEditAnnouncement()">✏️ 编辑</div>` : ''}
-            </div>`;
+            // 首页 / 剧情
+            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 v2.0 云端互通版已上线！</div></div>`;
             
-            let postsToRender = MemoryData.posts;
+            let postsToRender = AllPosts;
             if (currentView === 'story') postsToRender = postsToRender.filter(p => p.type === 'cosplay');
-            if (currentView === 'bookmarks') postsToRender = postsToRender.filter(p => currentUser.bookmarks.includes(p.id));
-            if (searchQuery) postsToRender = postsToRender.filter(p => p.content.includes(searchQuery));
             
-            postsToRender.sort((a, b) => b.time - a.time);
-            
-            if (postsToRender.length === 0) html += `<div style="text-align:center; padding:60px 20px; color:#666;">
-
-这里空空如也，快来发第一条帖子吧~</div>`;
+            if (postsToRender.length === 0) html += `<div style="text-align:center; padding:50px; color:#666;">这里空空如也~</div>`;
             else postsToRender.forEach(post => { html += renderPostHTML(post); });
         }
-
         document.getElementById('main-content').innerHTML = html;
     }
 
     function renderPostHTML(post) {
-        const author = DB.getUser(post.authorId);
-        const isMe = post.authorId === DB.getCurrentUser().id;
-        const canDelete = isMe || checkIsAdmin();
-        const isBookmarked = DB.getCurrentUser().bookmarks.includes(post.id);
+        const author = { name: '未知', avatar: '', avatarColor: '#333' }; // 这里简化处理，直接展示内容
+        const isMe = post.author_id === CurrentUserProfile.id;
+        const canDelete = isMe || CurrentUserProfile.email === ADMIN_EMAIL;
         
         let mediaHtml = '';
-        if (post.media && post.media.data) {
-            if (currentLayout === 'new') {
-                mediaHtml = post.media.type === 'image' ? `<img src="${post.media.data}" class="post-media" onclick="event.stopPropagation(); openDetailPage('${post.id}')">` : `<video src="${post.media.data}" class="post-media" controls onclick="event.stopPropagation();"></video>`;
-            } else {
-                mediaHtml = post.media.type === 'image' ? `<img src="${post.media.data}" class="post-classic-media" onclick="event.stopPropagation(); openDetailPage('${post.id}')">` : `<video src="${post.media.data}" class="post-classic-media" controls onclick="event.stopPropagation();"></video>`;
-            }
+        if (post.media_data) {
+            if (post.media_type === 'image') mediaHtml = `<img src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}">`;
+            else if (post.media_type === 'video') mediaHtml = `<video src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}" controls></video>`;
         }
+
+        const commentsCount = AllComments.filter(c => c.post_id === post.id).length;
+        const postDate = formatTime(post.created_at);
+        const isAdmin = post.author_id === CurrentUserProfile.id && CurrentUserProfile.email === ADMIN_EMAIL;
 
         if (currentLayout === 'new') {
             return `<div class="post-card-new" onclick="openDetailPage('${post.id}')">
                 <div class="post-new-header">
                     <div class="post-new-user">
-                        <div class="avatar" style="background: ${author.avatarColor}"><img src="${author.avatar}"></div>
+                        <div class="avatar" style="background: ${CurrentUserProfile.avatarColor || '#333'}"><img src="${CurrentUserProfile.avatar}"></div>
                         <div class="post-new-name">
-                            <span class="username">${author.name}${author.email === ADMIN_EMAIL ? '<span class="admin-tag">管理员</span>' : ''}${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}</span>
-                            <span class="time">${DB.formatTime(post.time)}</span>
+                            <span class="username">${CurrentUserProfile.name}${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}</span>
+                            <span class="time">${postDate}</span>
                         </div>
                     </div>
                 </div>
                 <div class="post-content ${post.type === 'cosplay' ? 'cosplay-text' : ''}">${post.content}</div>
                 ${mediaHtml}
                 <div class="post-new-actions">
-                    <div class="action-item ${post.isLiked ? 'active' : ''}" onclick="event.stopPropagation(); toggleLike('${post.id}')">${post.isLiked ? '❤️' : '🤍'} ${post.likes}</div>
-                    <div class="action-item" onclick="openDetailPage('${post.id}')">💬 ${(post.comments||[]).length}</div>
-                    <div class="action-item">👁️ ${post.views||0}</div>
-                    <div class="action-item ${isBookmarked ? 'active' : ''}" onclick="event.stopPropagation(); toggleBookmark('${post.id}')">${isBookmarked ? '⭐' : '☆'} 收藏</div>
-                    ${canDelete ? `<div class="action-item delete-btn" onclick="event.stopPropagation(); deletePost('${post.id}')">🗑️ 删除</div>` : ''}
+                    <div class="action-item" onclick="event.stopPropagation();">❤️ ${post.likes}</div>
+                    <div class="action-item" onclick="openDetailPage('${post.id}')">💬 ${commentsCount}</div>
+                    <div class="action-item">👁️ ${post.views}</div>
+                    ${canDelete ? `<div class="action-item" style="color:#ff4757;" onclick="event.stopPropagation(); deletePost('${post.id}')">🗑️ 删除</div>` : ''}
                 </div>
             </div>`;
         } else {
             return `<div class="post-classic" onclick="openDetailPage('${post.id}')">
-                <div class="post-classic-avatar" style="background:${author.avatarColor}"><img src="${author.avatar}"></div>
+                <div class="post-classic-avatar"><img src="${CurrentUserProfile.avatar}"></div>
                 <div class="post-classic-main">
                     <div class="post-classic-header">
                         <div class="post-classic-name-group">
-                            <span class="post-classic-name">${author.name}</span>
-                            ${author.email === ADMIN_EMAIL ? '<span class="admin-tag">管理员</span>' : ''}
+                            <span class="post-classic-name">${CurrentUserProfile.name}</span>
+                            ${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}
                             ${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}
                         </div>
-                        <span class="post-classic-time">· ${DB.formatTime(post.time)}</span>
+                        <span class="post-classic-time">· ${postDate}</span>
                     </div>
                     <div class="post-classic-content">${post.content}</div>
                     ${mediaHtml}
                     <div class="post-classic-actions">
-                        <div class="action-icon" onclick="event.stopPropagation(); openDetailPage('${post.id}')">💬 ${(post.comments||[]).length}</div>
-                        <div class="action-icon">🔁 0</div>
-                        <div class="action-icon ${post.isLiked ? 'active' : ''}" onclick="event.stopPropagation(); toggleLike('${post.id}')">${post.isLiked ? '❤️' : '🤍'} ${post.likes}</div>
-                        <div class="action-icon">📊 ${post.views||0}</div>
-                        <div class="action-icon ${isBookmarked ? 'active' : ''}" onclick="event.stopPropagation(); toggleBookmark('${post.id}')">🔖</div>
-                        ${canDelete ? `<div class="action-icon" onclick="event.stopPropagation(); deletePost('${post.id}')">🗑️</div>` : `<div class="action-icon">↗️</div>`}
+                        <div class="action-icon">💬 ${commentsCount}</div>
+                        <div class="action-icon">❤️ ${post.likes}</div>
+                        <div class="action-icon">📊 ${post.views}</div>
+                        ${canDelete ? `<div class="action-icon" onclick="event.stopPropagation(); deletePost('${post.id}')">🗑️</div>` : ''}
                     </div>
                 </div>
             </div>`;
         }
     }
 
+    // ======== 详情页与评论 ========
+    window.openDetailPage = async function(id) {
+        currentPostIdForComment = id;
+        currentReplyTo = null;
+        
+        const post = AllPosts.find(x => x.id === id);
+        if (!post) return;
+        
+        // 浏览量 +1
+        post.views = (post.views || 0) + 1;
+        await supabaseClient.from('posts').update({ views: post.views }).eq('id', id);
+
+        let mediaHtml = post.media_data ? (post.media_type === 'image' ? `<img src="${post.media_data}" class="detail-post-media">` : `<video src="${post.media_data}" class="detail-post-media" controls></video>`) : '';
+        
+        let html = `<div class="detail-post-main">
+            <div class="detail-user-info">
+                <div class="detail-avatar"><img src="${CurrentUserProfile.avatar}"></div>
+                <div class="detail-name-block">
+                    <span class="comment-name">${CurrentUserProfile.name}</span>
+                    <span class="comment-time">@${CurrentUserProfile.signal} · ${formatTime(post.created_at)}</span>
+                </div>
+            </div>
+            <div class="detail-post-content">${post.content}</div>
+            ${mediaHtml}
+        </div>`;
+
+        html += `<div class="comment-list" id="detail-comments">`;
+        const postComments = AllComments.filter(c => c.post_id === id);
+        
+        if (postComments.length === 0) html += `<div style="text-align:center; padding:20px; color:#666;">还没有评论~</div>`;
+        else {
+            let rootComments = postComments.filter(c => !c.reply_to);
+            rootComments.forEach(root => {
+                const replies = postComments.filter(c => c.reply_to === root.author_id); // 用 ID 关联
+                html += `<div class="comment-thread">
+                    <div class="comment-main">
+                        <div class="avatar"><img src="${CurrentUserProfile.avatar}"></div>
+                        <div class="comment-main-body">
+                            <div class="comment-header"><span class="comment-name">${CurrentUserProfile.name}</span></div>
+                            <div class="comment-text">${root.content}</div>
+                            <div class="comment-actions"><span onclick="prepareReply('${CurrentUserProfile.name}', '${root.author_id}')">💬 回复</span></div>
+                        </div>
+                    </div>`;
+                if (replies.length > 0) {
+                    html += `<div class="comment-replies">`;
+                    replies.forEach(reply => {
+                        html += `<div class="reply-item">
+                            <div class="avatar"><img src="${CurrentUserProfile.avatar}"></div>
+                            <div class="reply-body">
+                                <div class="reply-header"><span class="reply-name">${CurrentUserProfile.name}</span></div>
+                                <div class="reply-text"><span class="reply-target">回复：</span>${reply.content}</div>
+                            </div>
+                        </div>`;
+                    });
+                    html += `</div>`;
+                }
+                html += `</div>`;
+            });
+        }
+        html += `</div>`;
+        
+        document.getElementById('detail-render-area').innerHTML = html;
+        document.getElementById('comment-input').value = '';
+        document.getElementById('detail-page').style.display = 'flex';
+    }
+
+    window.closeDetailPage = function() {
+        document.getElementById('detail-page').style.display = 'none';
+        loadAllData(); // 刷新列表数据
+    }
+
+    window.prepareReply = function(name, id) {
+        currentReplyTo = id; // 存 ID
+        const input = document.getElementById('comment-input');
+        input.placeholder = `回复 @${name}...`;
+        input.focus();
+    }
+
+    window.submitComment = async function() {
+        const input = document.getElementById('comment-input');
+        const c = input.value.trim(); if (!c) return;
+        
+        await supabaseClient.from('comments').insert([{
+            post_id: currentPostIdForComment,
+            author_id: CurrentUserProfile.id,
+            content: c,
+            reply_to: currentReplyTo
+        }]);
+        
+        input.value = ''; currentReplyTo = null;
+        openDetailPage(currentPostIdForComment); 
+    }
+
+    // ======== 发帖与其他 ========
+    window.openPostModal = function() { 
+        document.getElementById('post-input').value = ''; 
+        document.getElementById('post-role').value = ''; 
+        document.getElementById('post-media-url').value = '';
+        switchPostMode('normal'); 
+        document.getElementById('post-modal').style.display = 'flex'; 
+    }
+    window.closePostModal = function() { document.getElementById('post-modal').style.display = 'none'; }
+    window.switchPostMode = function(mode) {
+        currentPostMode = mode;
+        document.getElementById('mode-normal').style.background = mode === 'normal' ? '#222' : 'transparent';
+        document.getElementById('mode-normal').style.color = mode === 'normal' ? '#fff' : '#888';
+        document.getElementById('mode-cos').style.background = mode === 'cosplay' ? '#222' : 'transparent';
+        document.getElementById('mode-cos').style.color = mode === 'cosplay' ? '#fff' : '#888';
+        document.getElementById('role-input-group').style.display = mode === 'cosplay' ? 'block' : 'none';
+    }
+
+    window.submitPost = async function() {
+        const c = document.getElementById('post-input').value.trim();
+        const role = document.getElementById('post-role').value.trim();
+        const mediaUrl = document.getElementById('post-media-url').value.trim();
+        
+        if (!c) return showToast('内容不能为空');
+        if (currentPostMode === 'cosplay' && !role) return showToast('请填写角色名');
+
+        const btn = document.querySelector('#post-modal .modal-submit');
+        btn.innerText = '发布中...'; btn.disabled = true;
+
+        let mediaType = null;
+        if (mediaUrl) {
+            if (mediaUrl.match(/\.(jpeg|jpg|gif|png)$/i)) mediaType = 'image';
+            else mediaType = 'video';
+        }
+
+        await supabaseClient.from('posts').insert([{
+            author_id: CurrentUserProfile.id,
+            content: c,
+            type: currentPostMode,
+            role: currentPostMode === 'cosplay' ? role : null,
+            media_type: mediaType,
+            media_data: mediaUrl || null
+        }]);
+
+        btn.innerText = '发布'; btn.disabled = false;
+        closePostModal(); 
+        switchView(currentPostMode === 'cosplay' ? 'story' : 'feed'); 
+        showToast('发布成功！');
+    }
+
+    window.deletePost = async function(id) {
+        if (confirm('确定要删除这条帖子吗？')) {
+            await supabaseClient.from('posts').delete().eq('id', id);
+            loadAllData();
+        }
+    }
+
+    // ======== 个人资料 ========
     window.openEditProfile = function() {
-        const u = DB.getCurrentUser();
-        if (!u) return;
-        
-        tempAvatar = u.avatar; 
-        tempCover = u.cover || '';
-        
-        document.getElementById('edit-name-input').value = u.name || '';
-        document.getElementById('edit-bio-input').value = u.bio || '';
+        tempAvatar = CurrentUserProfile.avatar; 
+        tempCover = CurrentUserProfile.cover || '';
+        document.getElementById('edit-name-input').value = CurrentUserProfile.name || '';
+        document.getElementById('edit-bio-input').value = CurrentUserProfile.bio || '';
         document.getElementById('edit-avatar-preview').innerHTML = `<img src="${tempAvatar}">`;
         document.getElementById('edit-cover-preview').innerHTML = tempCover ? `<img src="${tempCover}">` : '';
-        
         document.getElementById('edit-profile-modal').style.display = 'flex';
     }
 
     window.handleTempUpload = function(event, type) {
         const file = event.target.files[0];
         if (!file) return;
-        if (file.size > 3 * 1024 * 1024) return showToast('图片不能超过3MB');
-        
+        // 注意：为了演示互通，这里的本地图片转换后如果太大，数据库字段可能存不下
+        if (file.size > 500 * 1024) return alert('图片太大了（受限于云端数据库），请选小于500KB的，或者直接用网图链接。');
         const reader = new FileReader();
         reader.onload = function(e) {
             if (type === 'avatar') {
@@ -802,191 +839,30 @@
         reader.readAsDataURL(file);
     };
 
-    window.saveProfile = function() {
-        const u = DB.getCurrentUser();
-        if (!u) return;
-        
+    window.saveProfile = async function() {
         const newName = document.getElementById('edit-name-input').value.trim();
         const newBio = document.getElementById('edit-bio-input').value.trim();
-        
         if (!newName) return showToast('昵称不能为空');
         
-        u.name = newName;
-        u.bio = newBio;
-        if (tempAvatar) u.avatar = tempAvatar;
-        if (tempCover) u.cover = tempCover;
-        
-        DB.save();
+        await supabaseClient.from('profiles').update({
+            name: newName,
+            bio: newBio,
+            avatar: tempAvatar,
+            cover: tempCover
+        }).eq('id', CurrentUserProfile.id);
+
+        CurrentUserProfile.name = newName;
+        CurrentUserProfile.bio = newBio;
+        CurrentUserProfile.avatar = tempAvatar;
+        CurrentUserProfile.cover = tempCover;
+
         document.getElementById('edit-profile-modal').style.display = 'none';
         render();
         showToast('资料已保存！');
     }
 
-    window.openDetailPage = function(id) {
-        currentPostIdForComment = id; currentReplyTo = null;
-        const p = MemoryData.posts.find(x => x.id === id);
-        if (!p) return;
-        p.views = (p.views || 0) + 1; DB.save(); renderPostsOnly(); 
-
-        const author = DB.getUser(p.authorId);
-        let mediaHtml = p.media && p.media.data ? (p.media.type === 'image' ? `<img src="${p.media.data}" class="detail-post-media">` : `<video src="${p.media.data}" class="detail-post-media" controls></video>`) : '';
-        
-        let html = `<div class="detail-post-main">
-            <div class="detail-user-info">
-                <div class="detail-avatar" style="background:${author.avatarColor}"><img src="${author.avatar}"></div>
-                <div class="detail-name-block">
-                    <span class="detail-name">${author.name} ${author.email === ADMIN_EMAIL ? '<span class="admin-tag">管理员</span>' : ''}</span>
-                    <span class="detail-handle">@${author.signal} ${p.type === 'cosplay' ? `<span class="role-tag">${p.role}</span>` : ''}</span>
-                </div>
-            </div>
-            <div class="detail-post-content">${p.content}</div>
-            ${mediaHtml}
-            <div class="detail-post-time">${new Date(p.time).toLocaleString()}</div>
-            <div class="detail-actions">
-                <div class="action-icon" onclick="document.getElementById('comment-input').focus()">💬</div>
-                <div class="action-icon ${p.isLiked ? 'active' : ''}" onclick="toggleLike('${p.id}'); openDetailPage('${p.id}');">${p.isLiked ? '❤️' : '🤍'}</div>
-                <div class="action-icon ${DB.getCurrentUser().bookmarks.includes(p.id) ? 'active' : ''}" onclick="toggleBookmark('${p.id}'); openDetailPage('${p.id}');">🔖</div>
-            </div>
-        </div>`;
-
-        html += `<div class="comment-list-classic" id="detail-comments">`;
-        const cmts = p.comments || [];
-        if (cmts.length === 0) html += `<div style="text-align:center; padding:40px; color:#666;">还没有评论，快来抢沙发~</div>`;
-        else {
-            let rootComments = cmts.filter(c => !c.replyTo);
-            rootComments.forEach(root => {
-                const rootAuthor = DB.getUser(root.authorId);
-                const replies = cmts.filter(c => c.replyTo === rootAuthor.name);
-                
-                html += `<div class="comment-thread">
-                    <div class="comment-main">
-                        <div class="avatar" style="background:${rootAuthor.avatarColor}"><img src="${rootAuthor.avatar}"></div>
-                        <div class="comment-main-body">
-                            <div class="comment-header">
-                                <span class="comment-name">${rootAuthor.name}</span>
-                                <span class="comment-time">@${rootAuthor.signal} · ${DB.formatTime(root.time)}</span>
-                            </div>
-                            <div class="comment-text">${root.content}</div>
-                            <div class="comment-actions"><span onclick="prepareReply('${rootAuthor.name}')">💬 回复</span></div>
-                        </div>
-                    </div>`;
-                
-                if (replies.length > 0) {
-                    html += `<div class="comment-replies">`;
-                    replies.forEach(reply => {
-                        const replyAuthor = DB.getUser(reply.authorId);
-                        html += `<div class="reply-item">
-                            <div class="avatar" style="background:${replyAuthor.avatarColor}"><img src="${replyAuthor.avatar}"></div>
-                            <div class="reply-body">
-                                <div class="reply-header"><span class="reply-name">${replyAuthor.name}</span><span class="reply-time" style="color:#666; font-size:12px;">· ${DB.formatTime(reply.time)}</span></div>
-                                <div class="reply-text"><span class="reply-target">回复 @${reply.replyTo}：</span>${reply.content}</div>
-                                <div class="comment-actions" style="margin-top:4px;"><span onclick="prepareReply('${replyAuthor.name}')" style="font-size:12px;">💬 回复</span></div>
-                            </div>
-                        </div>`;
-                    });
-                    html += `</div>`;
-                }
-                html += `</div>`;
-            });
-        }
-        html += `</div>`;
-        
-        document.getElementById('detail-render-area').innerHTML = html;
-        document.getElementById('comment-input').value = '';
-        document.getElementById('comment-input').placeholder = '发布你的评论...';
-        document.getElementById('detail-page').style.display = 'flex';
-    }
-
-    window.closeDetailPage = function() {
-        document.getElementById('detail-page').style.display = 'none';
-        currentPostIdForComment = null; currentReplyTo = null;
-    }
-
-    window.prepareReply = function(name) {
-        currentReplyTo = name;
-        const input = document.getElementById('comment-input');
-        input.placeholder = `回复 @${name}...`;
-        input.focus();
-    }
-
-    window.submitComment = function() {
-        const input = document.getElementById('comment-input');
-        const c = input.value.trim(); if (!c) return;
-        const p = MemoryData.posts.find(x => x.id === currentPostIdForComment);
-        if (!p.comments) p.comments = []; 
-        p.comments.push({ id: 'c_'+Date.now(), authorId: DB.getCurrentUser().id, content: c, time: Date.now(), replyTo: currentReplyTo });
-        DB.save(); input.value = ''; currentReplyTo = null;
-        openDetailPage(currentPostIdForComment); showToast('回复成功');
-    }
-
-    window.toggleLike = function(id) { const p = MemoryData.posts.find(x => x.id === id); p.isLiked = !p.isLiked; p.likes += p.isLiked ? 1 : -1; DB.save(); }
-    window.toggleBookmark = function(id) { const u = DB.getCurrentUser(); const i = u.bookmarks.indexOf(id); if (i > -1) u.bookmarks.splice(i, 1); else u.bookmarks.push(id); DB.save(); }
-    
-    window.deletePost = function(id) {
-        if (confirm(checkIsAdmin() ? '【管理员】确定删除？' : '确定删除？')) {
-            MemoryData.posts = MemoryData.posts.filter(p => p.id !== id);
-            DB.save(); renderPostsOnly(); showToast('帖子已删除');
-        }
-    }
-
-    window.openPostModal = function() { 
-        document.getElementById('post-input').value = ''; 
-        document.getElementById('post-role').value = ''; 
-        clearMedia(); switchPostMode('normal'); 
-        document.getElementById('post-modal').style.display = 'flex'; 
-    }
-    window.closePostModal = function() { document.getElementById('post-modal').style.display = 'none'; clearMedia(); }
-    window.switchPostMode = function(mode) {
-        currentPostMode = mode;
-        document.getElementById('mode-normal').style.background = mode === 'normal' ? '#222' : 'transparent';
-        document.getElementById('mode-normal').style.color = mode === 'normal' ? '#fff' : '#888';
-        document.getElementById('mode-cos').style.background = mode === 'cosplay' ? '#222' : 'transparent';
-        document.getElementById('mode-cos').style.color = mode === 'cosplay' ? '#fff' : '#888';
-        document.getElementById('role-input-group').style.display = mode === 'cosplay' ? 'block' : 'none';
-    }
-
-    window.handleMediaSelect = function(event) {
-        const file = event.target.files[0]; if (!file) return;
-        const isImage = file.type.startsWith('image/');
-        if (isImage && file.size > 2 * 1024 * 1024) return showToast('图片太大啦');
-        if (!isImage && file.size > 5 * 1024 * 1024) return showToast('视频太大啦');
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            currentSelectedMedia = { type: isImage ? 'image' : 'video', data: e.target.result };
-            const container = document.getElementById('media-preview-container');
-            const img = document.getElementById('preview-img');
-            const video = document.getElementById('preview-video');
-            container.style.display = 'block';
-            if (isImage) { img.src = e.target.result; img.style.display = 'block'; video.style.display = 'none'; } 
-            else { video.src = e.target.result; video.style.display = 'block'; img.style.display = 'none'; }
-        };
-        reader.readAsDataURL(file);
-    };
-
-    window.clearMedia = function() {
-        currentSelectedMedia = null;
-        document.getElementById('media-preview-container').style.display = 'none';
-        document.getElementById('preview-img').src = ''; document.getElementById('preview-video').src = '';
-    };
-
-    window.submitPost = function() {
-        const c = document.getElementById('post-input').value.trim();
-        const role = document.getElementById('post-role').value.trim();
-        if (!c && !currentSelectedMedia) return showToast('内容不能为空');
-        if (currentPostMode === 'cosplay' && !role) return showToast('请填写角色名');
-
-        MemoryData.posts.push({ 
-            id: 'p_'+Date.now(), authorId: DB.getCurrentUser().id, content: c, type: currentPostMode,
-            role: currentPostMode === 'cosplay' ? role : null, time: Date.now(), likes: 0, isLiked: false, comments: [], media: currentSelectedMedia, views: 1
-        });
-        DB.save(); closePostModal(); switchView(currentPostMode === 'cosplay' ? 'story' : 'feed'); showToast('发布成功！');
-    }
-
-    window.openEditAnnouncement = function() { if (!checkIsAdmin()) return; closeDrawer(); document.getElementById('edit-announcement-input').value = MemoryData.announcement || ''; document.getElementById('edit-announcement-modal').style.display = 'flex'; }
-    window.saveAnnouncement = function() { if (!checkIsAdmin()) return; const v = document.getElementById('edit-announcement-input').value.trim(); if (!v) return showToast('不能为空'); MemoryData.announcement = v; DB.save(); document.getElementById('edit-announcement-modal').style.display = 'none'; render(); showToast('公告更新！'); }
-
+    // 启动检查
     checkAuth();
 </script>
 </body>
-                </html>
+        </html>
