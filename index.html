@@ -2,19 +2,181 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>点击测试</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>基沃托斯日讯-v2.7 绝对防卡版</title>
+    
+    <!-- 国内极速节点 -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/supabase-js/2.39.7/supabase.min.js"></script>
+
     <style>
-        body { background: #121212; color: white; padding: 20px; text-align: center; font-family: sans-serif; }
-        .box { border: 2px solid #ff7b9c; padding: 20px; border-radius: 10px; margin-top: 50px;}
-        button { padding: 15px; width: 100%; font-size: 18px; background: #ff7b9c; color: white; border: none; border-radius: 8px; margin-top: 20px;}
+        :root { 
+            --bg-color: #121212; 
+            --text-main: #e0e0e0; 
+            --accent-color: #ff7b9c; 
+            --border-color: #333333; 
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden;}
+        
+        /* 悬浮提示 */
+        #toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); color: #fff; padding: 14px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--accent-color); width: 85%; max-width: 320px; font-weight: 500;}
+        
+        /* 登录注册 */
+        #auth-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background: #121212; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
+        .auth-box { width: 100%; max-width: 360px; background: #1e1e1e; padding: 30px 20px; border-radius: 16px; border: 1px solid #333; }
+        .auth-title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 24px; color: var(--accent-color); }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 13px; color: #888; margin-bottom: 6px; }
+        .auth-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #121212; color: var(--text-main); font-size: 15px; outline: none; }
+        .auth-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--accent-color); color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .auth-btn:disabled { opacity: 0.6; }
+        .auth-switch { text-align: center; font-size: 14px; color: #888; margin-top: 20px; cursor: pointer; padding: 15px; }
+        .auth-switch span { color: var(--accent-color); font-weight: bold; }
+        
+        /* 主应用 (隐藏) */
+        #app { display: none; }
     </style>
 </head>
 <body>
-    <h1>按钮防卡死测试</h1>
-    <div class="box">
-        <p>请点击下面的按钮，看看会不会弹窗：</p>
-        <button onclick="alert('按钮能点动！网页没有死机！')">点击我测试</button>
+<div id="toast">提示信息</div>
+
+<!-- 登录页 -->
+<div id="auth-page">
+    <div class="auth-box">
+        <div class="auth-title" id="auth-title">基沃托斯日讯-登录</div>
+        <div class="input-group" id="nickname-group" style="display: none;">
+            <label>昵称</label>
+            <input type="text" class="auth-input" id="auth-nickname" placeholder="给自己起个名字">
+        </div>
+        <div class="input-group">
+            <label>邮箱</label>
+            <input type="email" class="auth-input" id="auth-email" placeholder="example@mail.com">
+        </div>
+        <div class="input-group">
+            <label>密码</label>
+            <input type="password" class="auth-input" id="auth-password" placeholder="至少 6 位字符">
+        </div>
+        <button class="auth-btn" id="auth-submit-btn">登 录</button>
+        <div class="auth-switch" id="auth-switch-btn">
+            还没有账号？<span id="auth-switch-text">立即注册</span>
+        </div>
     </div>
+</div>
+
+<script>
+    // 1. 基础配置
+    const SUPABASE_URL = 'https://ycjshhxxqnyizewpswoc.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut'; 
+    let supabaseClient = null;
+
+    try {
+        if (typeof supabase !== 'undefined') {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+    } catch(e) {}
+
+    // 2. 悬浮提示
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.innerText = msg; 
+        toast.style.display = 'block';
+        clearTimeout(window.toastTimer);
+        window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    // 3. 状态
+    let isRegisterMode = false;
+    let isLoggingIn = false;
+
+    // 4. 绑定事件 (等页面加载完再绑，绝对不会失效)
+    document.addEventListener("DOMContentLoaded", () => {
+        // 绑定切换按钮
+        document.getElementById('auth-switch-btn').addEventListener('click', () => {
+            isRegisterMode = !isRegisterMode;
+            document.getElementById('auth-title').innerText = isRegisterMode ? '基沃托斯日讯-注册' : '基沃托斯日讯-登录';
+            document.getElementById('auth-submit-btn').innerText = isRegisterMode ? '注 册' : '登 录';
+            document.getElementById('auth-switch-text').innerText = isRegisterMode ? '去登录' : '立即注册';
+            document.getElementById('nickname-group').style.display = isRegisterMode ? 'block' : 'none';
+            // 测试用提示
+            showToast(isRegisterMode ? '已切换到注册模式' : '已切换到登录模式');
+        });
+
+        // 绑定登录/注册按钮
+        document.getElementById('auth-submit-btn').addEventListener('click', async () => {
+            if (isLoggingIn) return; // 防连点
+            if (!supabaseClient) return showToast('网络组件加载失败，请刷新页面');
+
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value;
+            const nickname = document.getElementById('auth-nickname').value.trim();
+            const btn = document.getElementById('auth-submit-btn');
+
+            if (!email || !password) return showToast('请填写邮箱和密码');
+            if (password.length < 6) return showToast('密码至少需要6位');
+            if (isRegisterMode && !nickname) return showToast('请输入昵称');
+
+            isLoggingIn = true;
+            const originalText = btn.innerText;
+            btn.innerText = '处理中...'; 
+            btn.disabled = true;
+
+            // 超时机制：8秒强制断开
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('网络连接超时，请检查网络或稍后再试')), 8000)
+            );
+
+            try {
+                if (isRegisterMode) {
+                    const { data, error } = await Promise.race([
+                        supabaseClient.auth.signUp({ email, password, options: { data: { display_name: nickname } } }),
+                        timeoutPromise
+                    ]);
+                    if (error) throw error;
+                    
+                    if (data.user) {
+                        // 注册成功后，顺便把资料写进 profiles 表
+                        await Promise.race([
+                            supabaseClient.from('profiles').insert([{
+                                id: data.user.id, name: nickname, email: email, 
+                                signal: `KIV-${Math.floor(100000 + Math.random() * 900000)}`, 
+                                avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`, bio: ''
+                            }]),
+                            timeoutPromise
+                        ]);
+                        showToast('注册成功！请直接登录。');
+                        // 自动切回登录模式
+                        document.getElementById('auth-switch-btn').click();
+                    }
+                } else {
+                    const { data, error } = await Promise.race([
+                        supabaseClient.auth.signInWithPassword({ email, password }),
+                        timeoutPromise
+                    ]);
+                    if (error) throw error;
+                    
+                    showToast('登录成功！正在进入...');
+                    // 如果你有大段代码，这里可以写跳转逻辑
+                    setTimeout(() => {
+                        alert('登录成功了！由于这是测试页，我先把主界面隐藏了，确认你能点按钮后，我再把完整版发给你。');
+                    }, 500);
+                }
+            } catch (err) { 
+                if (err.message.includes('Email not confirmed')) {
+                    showToast('账号未激活！请换一个邮箱重新注册。');
+                } else if (err.message.includes('Invalid login')) {
+                    showToast('邮箱或密码错误，请重试。');
+                } else if (err.message.includes('连接超时')) {
+                    showToast('网络连接超时！请切换WiFi/流量重试。');
+                } else {
+                    showToast('操作失败：' + err.message); 
+                }
+            } finally { 
+                isLoggingIn = false;
+                btn.innerText = originalText; 
+                btn.disabled = false; 
+            }
+        });
+    });
+</script>
 </body>
 </html>
