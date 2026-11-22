@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-云端互通版v2.2</title>
+    <title>基沃托斯日讯-云端互通极速版v2.3</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -342,7 +342,7 @@
     let tempAvatar = null;
     let tempCover = null;
     
-    // ====== 分页变量 ======
+    // ====== 分页与缓存变量 ======
     let pageOffset = 0;
     const PAGE_SIZE = 10;
     let hasMorePosts = true;
@@ -405,6 +405,9 @@
     window.logout = async function() {
         await supabaseClient.auth.signOut();
         CurrentUserProfile = null;
+        // 退出登录时清空本地缓存，保证安全
+        localStorage.removeItem('cached_profile');
+        localStorage.removeItem('cached_posts');
         document.getElementById('auth-page').style.display = 'flex'; 
         document.getElementById('app').style.display = 'none';
     }
@@ -413,6 +416,23 @@
     async function checkAuth() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
+            // 如果本地有用户缓存，先秒开界面
+            const cachedProfile = localStorage.getItem('cached_profile');
+            if (cachedProfile) {
+                CurrentUserProfile = JSON.parse(cachedProfile);
+                document.getElementById('auth-page').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                
+                // 瞬间显示本地缓存的帖子
+                const cachedPosts = localStorage.getItem('cached_posts');
+                if (cachedPosts) {
+                    AllPosts = JSON.parse(cachedPosts);
+                    render();
+                } else {
+                    document.getElementById('main-content').innerHTML = `<div class="loading-container"><div class="spinner"></div><div>同步云端动态中...</div></div>`;
+                }
+            }
+            // 后台静默去拉取最新数据
             await initUser(session.user);
         } else {
             document.getElementById('auth-page').style.display = 'flex'; 
@@ -434,37 +454,57 @@
             profile = res.data;
         }
         CurrentUserProfile = profile;
+        localStorage.setItem('cached_profile', JSON.stringify(profile));
         
         document.getElementById('auth-page').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         
+        // 数据拉取完毕后更新界面和缓存
         await resetAndLoadPosts();
     }
 
     async function resetAndLoadPosts() {
         pageOffset = 0;
         hasMorePosts = true;
-        AllPosts = [];
-        await loadMorePosts();
+        
+        // 如果没有缓存，才显示转圈；如果有缓存，就悄悄在后台拉
+        if (AllPosts.length === 0) {
+            document.getElementById('main-content').innerHTML = `<div class="loading-container"><div class="spinner"></div><div>同步云端动态中...</div></div>`;
+        }
+
+        const { data: posts, error } = await supabaseClient.from('posts')
+            .select(`*, profiles ( name, avatar, signal, email )`)
+            .order('created_at', { ascending: false })
+            .range(0, PAGE_SIZE - 1);
+
+        if (error) {
+            console.error(error);
+            if (AllPosts.length === 0) showToast('网络延迟，加载失败，请检查网络');
+            return;
+        }
+
+        AllPosts = posts || [];
+        hasMorePosts = AllPosts.length >= PAGE_SIZE;
+        pageOffset = PAGE_SIZE;
+        
+        // 存入本地缓存
+        localStorage.setItem('cached_posts', JSON.stringify(AllPosts));
+
+        render();
     }
 
     async function loadMorePosts() {
         if (isLoadingPosts || !hasMorePosts) return;
         isLoadingPosts = true;
 
-        if (pageOffset === 0) {
-            document.getElementById('main-content').innerHTML = `<div class="loading-container"><div class="spinner"></div><div>加载基沃托斯动态中...</div></div>`;
-        } else {
-            // 底部显示加载更多的菊花
-            let loadMoreDiv = document.getElementById('load-more-indicator');
-            if (!loadMoreDiv) {
-                loadMoreDiv = document.createElement('div');
-                loadMoreDiv.id = 'load-more-indicator';
-                loadMoreDiv.style.padding = '15px';
-                loadMoreDiv.style.textAlign = 'center';
-                loadMoreDiv.innerHTML = `<div class="spinner" style="margin: 0 auto; width: 20px; height: 20px;"></div>`;
-                document.getElementById('main-content').appendChild(loadMoreDiv);
-            }
+        let loadMoreDiv = document.getElementById('load-more-indicator');
+        if (!loadMoreDiv) {
+            loadMoreDiv = document.createElement('div');
+            loadMoreDiv.id = 'load-more-indicator';
+            loadMoreDiv.style.padding = '15px';
+            loadMoreDiv.style.textAlign = 'center';
+            loadMoreDiv.innerHTML = `<div class="spinner" style="margin: 0 auto; width: 20px; height: 20px;"></div>`;
+            document.getElementById('main-content').appendChild(loadMoreDiv);
         }
 
         const { data: newPosts, error } = await supabaseClient.from('posts')
@@ -473,36 +513,24 @@
             .range(pageOffset, pageOffset + PAGE_SIZE - 1);
 
         if (error) {
-            console.error(error);
-            showToast('网络延迟，加载失败');
             isLoadingPosts = false;
             return;
         }
 
         if (newPosts.length < PAGE_SIZE) hasMorePosts = false;
 
-        // 追加数据
         AllPosts = [...AllPosts, ...newPosts];
         pageOffset += PAGE_SIZE;
         isLoadingPosts = false;
 
-        if (currentView === 'profile') {
-            // 如果是在个人主页，只重新渲染该页面
-            render(); 
-        } else {
-            renderPostsOnly();
-        }
+        renderPostsOnly();
     }
 
-    // 监听滚动到底部加载更多
     window.addEventListener('scroll', () => {
-        if (currentView === 'profile') return; // 个人主页不需要无限滚动
+        if (currentView === 'profile') return;
         if (isLoadingPosts || !hasMorePosts) return;
-
         const scrollBottom = document.documentElement.scrollHeight - window.innerHeight - document.documentElement.scrollTop;
-        if (scrollBottom < 100) {
-            loadMorePosts();
-        }
+        if (scrollBottom < 100) loadMorePosts();
     });
 
     // ======== 渲染逻辑 ========
@@ -617,7 +645,7 @@
             }
             AllPosts.filter(p => p.author_id === CurrentUserProfile.id).forEach(post => { html += renderPostHTML(post); });
         } else {
-            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 v2.2 极速分页版已上线！滑到底部自动加载下一页~</div></div>`;
+            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 v2.3 极速缓存版已上线！</div></div>`;
             
             let postsToRender = AllPosts;
             if (currentView === 'story') postsToRender = postsToRender.filter(p => p.type === 'cosplay');
@@ -625,7 +653,6 @@
             if (postsToRender.length === 0) html += `<div style="text-align:center; padding:50px; color:#666;">这里空空如也~</div>`;
             else postsToRender.forEach(post => { html += renderPostHTML(post); });
             
-            // 如果全部加载完了，显示底
             if (!hasMorePosts && postsToRender.length > 0) {
                 html += `<div style="text-align:center; padding:20px; color:#666; font-size:12px;">— 已经到底啦 —</div>`;
             }
@@ -641,7 +668,7 @@
         
         let mediaHtml = '';
         if (post.media_data) {
-            if (post.media_type === 'image') mediaHtml = `<img src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}">`;
+            if (post.media_type === 'image') mediaHtml = `<img src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}" loading="lazy">`;
             else if (post.media_type === 'video') mediaHtml = `<video src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}" controls></video>`;
         }
 
@@ -651,7 +678,7 @@
             return `<div class="post-card-new" onclick="openDetailPage('${post.id}')">
                 <div class="post-new-header">
                     <div class="post-new-user">
-                        <div class="avatar"><img src="${authorProfile.avatar}"></div>
+                        <div class="avatar"><img src="${authorProfile.avatar}" loading="lazy"></div>
                         <div class="post-new-name">
                             <span class="username">${authorProfile.name}${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}</span>
                             <span class="time">${postDate}</span>
@@ -669,7 +696,7 @@
             </div>`;
         } else {
             return `<div class="post-classic" onclick="openDetailPage('${post.id}')">
-                <div class="post-classic-avatar"><img src="${authorProfile.avatar}"></div>
+                <div class="post-classic-avatar"><img src="${authorProfile.avatar}" loading="lazy"></div>
                 <div class="post-classic-main">
                     <div class="post-classic-header">
                         <div class="post-classic-name-group">
@@ -712,11 +739,11 @@
             .order('created_at', { ascending: true });
 
         const authorProfile = post.profiles || { name: '未知', avatar: '' };
-        let mediaHtml = post.media_data ? (post.media_type === 'image' ? `<img src="${post.media_data}" class="detail-post-media">` : `<video src="${post.media_data}" class="detail-post-media" controls></video>`) : '';
+        let mediaHtml = post.media_data ? (post.media_type === 'image' ? `<img src="${post.media_data}" class="detail-post-media" loading="lazy">` : `<video src="${post.media_data}" class="detail-post-media" controls></video>`) : '';
         
         let html = `<div class="detail-post-main">
             <div class="detail-user-info">
-                <div class="detail-avatar"><img src="${authorProfile.avatar}"></div>
+                <div class="detail-avatar"><img src="${authorProfile.avatar}" loading="lazy"></div>
                 <div class="detail-name-block">
                     <span class="comment-name">${authorProfile.name}</span>
                     <span class="comment-time">@${authorProfile.signal}</span>
@@ -737,7 +764,7 @@
                 
                 html += `<div class="comment-thread">
                     <div class="comment-main">
-                        <div class="avatar"><img src="${rootAuthor.avatar}"></div>
+                        <div class="avatar"><img src="${rootAuthor.avatar}" loading="lazy"></div>
                         <div class="comment-main-body">
                             <div class="comment-header"><span class="comment-name">${rootAuthor.name}</span></div>
                             <div class="comment-text">${root.content}</div>
@@ -749,7 +776,7 @@
                     replies.forEach(reply => {
                         const replyAuthor = reply.profiles || { name: '未知', avatar: '' };
                         html += `<div class="reply-item">
-                            <div class="avatar"><img src="${replyAuthor.avatar}"></div>
+                            <div class="avatar"><img src="${replyAuthor.avatar}" loading="lazy"></div>
                             <div class="reply-body">
                                 <div class="reply-header"><span class="reply-name">${replyAuthor.name}</span></div>
                                 <div class="reply-text"><span class="reply-target">回复：</span>${reply.content}</div>
@@ -861,8 +888,8 @@
         tempCover = CurrentUserProfile.cover || '';
         document.getElementById('edit-name-input').value = CurrentUserProfile.name || '';
         document.getElementById('edit-bio-input').value = CurrentUserProfile.bio || '';
-        document.getElementById('edit-avatar-preview').innerHTML = `<img src="${tempAvatar}">`;
-        document.getElementById('edit-cover-preview').innerHTML = tempCover ? `<img src="${tempCover}">` : '';
+        document.getElementById('edit-avatar-preview').innerHTML = `<img src="${tempAvatar}" loading="lazy">`;
+        document.getElementById('edit-cover-preview').innerHTML = tempCover ? `<img src="${tempCover}" loading="lazy">` : '';
         document.getElementById('edit-profile-modal').style.display = 'flex';
     }
 
@@ -874,10 +901,10 @@
         reader.onload = function(e) {
             if (type === 'avatar') {
                 tempAvatar = e.target.result;
-                document.getElementById('edit-avatar-preview').innerHTML = `<img src="${tempAvatar}">`;
+                document.getElementById('edit-avatar-preview').innerHTML = `<img src="${tempAvatar}" loading="lazy">`;
             } else if (type === 'cover') {
                 tempCover = e.target.result;
-                document.getElementById('edit-cover-preview').innerHTML = `<img src="${tempCover}">`;
+                document.getElementById('edit-cover-preview').innerHTML = `<img src="${tempCover}" loading="lazy">`;
             }
         };
         reader.readAsDataURL(file);
@@ -902,6 +929,9 @@
         CurrentUserProfile.bio = newBio;
         CurrentUserProfile.avatar = tempAvatar;
         CurrentUserProfile.cover = tempCover;
+        
+        // 更新本地缓存
+        localStorage.setItem('cached_profile', JSON.stringify(CurrentUserProfile));
 
         btn.innerText = '保存资料'; btn.disabled = false;
         document.getElementById('edit-profile-modal').style.display = 'none';
@@ -912,4 +942,4 @@
     checkAuth();
 </script>
 </body>
-            </html>
+    </html>
