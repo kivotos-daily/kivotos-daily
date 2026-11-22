@@ -527,4 +527,336 @@
                     <div class="profile-stats-new">
                         <div class="stat-item-new"><span class="stat-num-new">${currentUser.followers || 0}</span><span class="stat-label-new">粉丝</span></div>
                         <div class="stat-item-new"><span class="stat-num-new">${currentUser.followingList.length}</span><span class="stat-label-new">关注</span></div>
-                        <div class="stat-item-new"><span class="stat-num-new">${
+                        <div class="stat-item-new"><span class="stat-num-new">${totalLikes}</span><span class="stat-label-new">被赞</span></div>
+                    </div>
+                    <div class="profile-actions-new">
+                        <button class="btn-outline-new" onclick="openEditProfile()">编辑资料</button>
+                    </div>
+                </div><div style="padding: 12px 16px; font-weight: bold;">我发布的帖子</div>`;
+            } else {
+                html += `<div class="profile-cover-classic"></div>
+                <div class="profile-info-container-classic">
+                    <div class="profile-avatar-wrapper-classic" style="background: ${currentUser.avatarColor}">
+                        <img src="${currentUser.avatar}">
+                        <div class="profile-avatar-upload-classic" onclick="document.getElementById('avatar-uploader').click()">更换</div>
+                    </div>
+                    <div class="profile-actions-row-classic">
+                        <button class="btn-outline-classic" onclick="openEditProfile()">编辑资料</button>
+                    </div>
+                    <div class="profile-name-classic">${currentUser.name} ${isAdmin ? '<span class="admin-tag">管理员</span>' : ''}</div>
+                    <div class="profile-handle-classic">@${currentUser.signal} <span class="tag-platform">平台用户</span></div>
+                    <div class="profile-bio-classic">${currentUser.bio || '这个人很神秘，什么都没写。'}</div>
+                    <div class="profile-stats-row-classic">
+                        <span><b>${currentUser.followingList.length}</b> 关注</span>
+                        <span><b>${currentUser.followers || 0}</b> 粉丝</span>
+                        <span><b>${totalLikes}</b> 获赞</span>
+                    </div>
+                </div>
+                <div class="profile-tabs-classic">
+                    <div class="profile-tab-classic active">帖子</div>
+                </div>`;
+            }
+            
+            const myPosts = MemoryData.posts.filter(p => p.authorId === currentUser.id).sort((a,b)=>b.time-a.time);
+            if (myPosts.length === 0) {
+                html += `<div style="text-align:center; padding:50px; color:#666;">你还没有发布过帖子哦~</div>`;
+            } else {
+                myPosts.forEach(post => { html += renderPostHTML(post); });
+            }
+            
+        } else {
+            // ======= 列表渲染 =======
+            document.getElementById('header-title').innerText = currentView === 'feed' ? '首页' : (currentView === 'story' ? '剧情广场' : '我的收藏');
+            
+            html += `<div class="announcement-bar">
+                <div class="announcement-icon">📢</div>
+                <div class="announcement-content">${MemoryData.announcement}</div>
+            </div>`;
+            
+            let postsToRender = MemoryData.posts;
+            if (currentView === 'story') postsToRender = postsToRender.filter(p => p.type === 'cosplay');
+            if (currentView === 'bookmarks') postsToRender = postsToRender.filter(p => currentUser.bookmarks.includes(p.id));
+            if (searchQuery) postsToRender = postsToRender.filter(p => p.content.includes(searchQuery));
+            
+            postsToRender.sort((a, b) => b.time - a.time);
+            
+            if (postsToRender.length === 0) {
+                html += `<div style="text-align:center; padding:60px 20px; color:#666;">这里空空如也，快来发第一条帖子吧~</div>`;
+            } else {
+                postsToRender.forEach(post => { html += renderPostHTML(post); });
+            }
+        }
+
+        document.getElementById('main-content').innerHTML = html;
+    }
+
+    // 帖子 HTML 动态生成
+    function renderPostHTML(post) {
+        const author = DB.getUser(post.authorId);
+        const isMe = post.authorId === DB.getCurrentUser().id;
+        const canDelete = isMe || checkIsAdmin();
+        const isBookmarked = DB.getCurrentUser().bookmarks.includes(post.id);
+        
+        let mediaHtml = '';
+        if (post.media && post.media.data) {
+            if (currentLayout === 'new') {
+                mediaHtml = post.media.type === 'image' ? `<img src="${post.media.data}" class="post-media" onclick="event.stopPropagation(); openDetailPage('${post.id}')">` : `<video src="${post.media.data}" class="post-media" controls onclick="event.stopPropagation();"></video>`;
+            } else {
+                mediaHtml = post.media.type === 'image' ? `<img src="${post.media.data}" class="post-classic-media" onclick="event.stopPropagation(); openDetailPage('${post.id}')">` : `<video src="${post.media.data}" class="post-classic-media" controls onclick="event.stopPropagation();"></video>`;
+            }
+        }
+
+        if (currentLayout === 'new') {
+            return `<div class="post-card-new" onclick="openDetailPage('${post.id}')">
+                <div class="post-new-header">
+                    <div class="post-new-user">
+                        <div class="avatar" style="background: ${author.avatarColor}"><img src="${author.avatar}"></div>
+                        <div class="post-new-name">
+                            <span class="username">${author.name}${author.email === ADMIN_EMAIL ? '<span class="admin-tag">管理员</span>' : ''}${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}</span>
+                            <span class="time">${DB.formatTime(post.time)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="post-content ${post.type === 'cosplay' ? 'cosplay-text' : ''}">${post.content}</div>
+                ${mediaHtml}
+                <div class="post-new-actions">
+                    <div class="action-item ${post.isLiked ? 'active' : ''}" onclick="event.stopPropagation(); toggleLike('${post.id}')">${post.isLiked ? '❤️' : '🤍'} ${post.likes}</div>
+                    <div class="action-item" onclick="openDetailPage('${post.id}')">💬 ${(post.comments||[]).length}</div>
+                    <div class="action-item">👁️ ${post.views||0}</div>
+                    <div class="action-item ${isBookmarked ? 'active' : ''}" onclick="event.stopPropagation(); toggleBookmark('${post.id}')">${isBookmarked ? '⭐' : '☆'} 收藏</div>
+                    ${canDelete ? `<div class="action-item delete-btn" onclick="event.stopPropagation(); deletePost('${post.id}')">🗑️ 删除</div>` : ''}
+                </div>
+            </div>`;
+        } else {
+            return `<div class="post-classic" onclick="openDetailPage('${post.id}')">
+                <div class="post-classic-avatar" style="background:${author.avatarColor}"><img src="${author.avatar}"></div>
+                <div class="post-classic-main">
+                    <div class="post-classic-header">
+                        <div class="post-classic-name-group">
+                            <span class="post-classic-name">${author.name}</span>
+                            ${author.email === ADMIN_EMAIL ? '<span class="admin-tag">管理员</span>' : ''}
+                            ${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}
+                        </div>
+                        <span class="post-classic-time">· ${DB.formatTime(post.time)}</span>
+                    </div>
+                    <div class="post-classic-content">${post.content}</div>
+                    ${mediaHtml}
+                    <div class="post-classic-actions">
+                        <div class="action-icon" onclick="event.stopPropagation(); openDetailPage('${post.id}')">💬 ${(post.comments||[]).length}</div>
+                        <div class="action-icon">🔁 0</div>
+                        <div class="action-icon ${post.isLiked ? 'active' : ''}" onclick="event.stopPropagation(); toggleLike('${post.id}')">${post.isLiked ? '❤️' : '🤍'} ${post.likes}</div>
+                        <div class="action-icon">📊 ${post.views||0}</div>
+                        <div class="action-icon ${isBookmarked ? 'active' : ''}" onclick="event.stopPropagation(); toggleBookmark('${post.id}')">🔖</div>
+                        ${canDelete ? `<div class="action-icon" onclick="event.stopPropagation(); deletePost('${post.id}')">🗑️</div>` : `<div class="action-icon">↗️</div>`}
+                    </div>
+                </div>
+            </div>`;
+        }
+    }
+
+    // ======== 详情页逻辑 ========
+    window.openDetailPage = function(id) {
+        currentPostIdForComment = id;
+        currentReplyTo = null;
+        
+        const p = MemoryData.posts.find(x => x.id === id);
+        if (!p) return;
+        
+        p.views = (p.views || 0) + 1;
+        DB.save();
+        render();
+
+        const author = DB.getUser(p.authorId);
+        let mediaHtml = p.media && p.media.data ? (p.media.type === 'image' ? `<img src="${p.media.data}" class="detail-post-media">` : `<video src="${p.media.data}" class="detail-post-media" controls></video>`) : '';
+        
+        let html = `<div class="detail-post-main">
+            <div class="detail-user-info">
+                <div class="detail-avatar" style="background:${author.avatarColor}"><img src="${author.avatar}"></div>
+                <div class="detail-name-block">
+                    <span class="detail-name">${author.name} ${author.email === ADMIN_EMAIL ? '<span class="admin-tag">管理员</span>' : ''}</span>
+                    <span class="detail-handle">@${author.signal} ${p.type === 'cosplay' ? `<span class="role-tag">${p.role}</span>` : ''}</span>
+                </div>
+            </div>
+            <div class="detail-post-content">${p.content}</div>
+            ${mediaHtml}
+            <div class="detail-post-time">${new Date(p.time).toLocaleString()}</div>
+            <div class="detail-actions">
+                <div class="action-icon" onclick="document.getElementById('comment-input').focus()">💬</div>
+                <div class="action-icon ${p.isLiked ? 'active' : ''}" onclick="toggleLike('${p.id}'); openDetailPage('${p.id}');">${p.isLiked ? '❤️' : '🤍'}</div>
+                <div class="action-icon ${DB.getCurrentUser().bookmarks.includes(p.id) ? 'active' : ''}" onclick="toggleBookmark('${p.id}'); openDetailPage('${p.id}');">🔖</div>
+            </div>
+        </div>`;
+
+        html += `<div class="comment-list-classic" id="detail-comments">`;
+        const cmts = p.comments || [];
+        if (cmts.length === 0) {
+            html += `<div style="text-align:center; padding:40px; color:#666;">还没有评论，快来抢沙发~</div>`;
+        } else {
+            let rootComments = cmts.filter(c => !c.replyTo);
+            rootComments.forEach(root => {
+                const rootAuthor = DB.getUser(root.authorId);
+                const replies = cmts.filter(c => c.replyTo === rootAuthor.name);
+                
+                html += `<div class="comment-thread">
+                    <div class="comment-main">
+                        <div class="avatar" style="background:${rootAuthor.avatarColor}"><img src="${rootAuthor.avatar}"></div>
+                        <div class="comment-main-body">
+                            <div class="comment-header">
+                                <span class="comment-name">${rootAuthor.name}</span>
+                                <span class="comment-time">@${rootAuthor.signal} · ${DB.formatTime(root.time)}</span>
+                            </div>
+                            <div class="comment-text">${root.content}</div>
+                            <div class="comment-actions">
+                                <span onclick="prepareReply('${rootAuthor.name}')">💬 回复</span>
+                            </div>
+                        </div>
+                    </div>`;
+                
+                if (replies.length > 0) {
+                    html += `<div class="comment-replies">`;
+                    replies.forEach(reply => {
+                        const replyAuthor = DB.getUser(reply.authorId);
+                        html += `<div class="reply-item">
+                            <div class="avatar" style="background:${replyAuthor.avatarColor}"><img src="${replyAuthor.avatar}"></div>
+                            <div class="reply-body">
+                                <div class="reply-header">
+                                    <span class="reply-name">${replyAuthor.name}</span>
+                                    <span class="reply-time" style="color:#666; font-size:12px;">· ${DB.formatTime(reply.time)}</span>
+                                </div>
+                                <div class="reply-text"><span class="reply-target">回复 @${reply.replyTo}：</span>${reply.content}</div>
+                                <div class="comment-actions" style="margin-top:4px;">
+                                    <span onclick="prepareReply('${replyAuthor.name}')" style="font-size:12px;">💬 回复</span>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+                    html += `</div>`;
+                }
+                html += `</div>`;
+            });
+        }
+        html += `</div>`;
+        
+        document.getElementById('detail-render-area').innerHTML = html;
+        document.getElementById('comment-input').value = '';
+        document.getElementById('comment-input').placeholder = '发布你的评论...';
+        document.getElementById('detail-page').style.display = 'flex';
+    }
+
+    window.closeDetailPage = function() {
+        document.getElementById('detail-page').style.display = 'none';
+        currentPostIdForComment = null;
+        currentReplyTo = null;
+    }
+
+    window.prepareReply = function(name) {
+        currentReplyTo = name;
+        const input = document.getElementById('comment-input');
+        input.placeholder = `回复 @${name}...`;
+        input.focus();
+    }
+
+    window.submitComment = function() {
+        const input = document.getElementById('comment-input');
+        const c = input.value.trim(); 
+        if (!c) return;
+        
+        const p = MemoryData.posts.find(x => x.id === currentPostIdForComment);
+        if (!p.comments) p.comments = []; 
+        
+        p.comments.push({ id: 'c_'+Date.now(), authorId: DB.getCurrentUser().id, content: c, time: Date.now(), replyTo: currentReplyTo });
+        DB.save(); 
+        
+        input.value = '';
+        currentReplyTo = null;
+        openDetailPage(currentPostIdForComment);
+        showToast('回复成功');
+    }
+
+    // ======== 通用功能 ========
+    window.handleAvatarUpload = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) return showToast('图片太大了');
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const currentUser = DB.getCurrentUser();
+            if (currentUser) { currentUser.avatar = e.target.result; DB.save(); render(); showToast('头像更新！'); }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.toggleLike = function(id) { const p = MemoryData.posts.find(x => x.id === id); p.isLiked = !p.isLiked; p.likes += p.isLiked ? 1 : -1; DB.save(); }
+    window.toggleBookmark = function(id) { const u = DB.getCurrentUser(); const i = u.bookmarks.indexOf(id); if (i > -1) u.bookmarks.splice(i, 1); else u.bookmarks.push(id); DB.save(); }
+    
+    window.deletePost = function(id) {
+        if (confirm(checkIsAdmin() ? '【管理员】确定删除？' : '确定删除？')) {
+            MemoryData.posts = MemoryData.posts.filter(p => p.id !== id);
+            DB.save(); render(); showToast('帖子已删除');
+        }
+    }
+
+    window.openPostModal = function() { 
+        document.getElementById('post-input').value = ''; 
+        document.getElementById('post-role').value = ''; 
+        clearMedia(); switchPostMode('normal'); 
+        document.getElementById('post-modal').style.display = 'flex'; 
+    }
+    window.closePostModal = function() { document.getElementById('post-modal').style.display = 'none'; clearMedia(); }
+    window.switchPostMode = function(mode) {
+        currentPostMode = mode;
+        document.getElementById('mode-normal').style.background = mode === 'normal' ? '#222' : 'transparent';
+        document.getElementById('mode-normal').style.color = mode === 'normal' ? '#fff' : '#888';
+        document.getElementById('mode-cos').style.background = mode === 'cosplay' ? '#222' : 'transparent';
+        document.getElementById('mode-cos').style.color = mode === 'cosplay' ? '#fff' : '#888';
+        document.getElementById('role-input-group').style.display = mode === 'cosplay' ? 'block' : 'none';
+    }
+
+    window.handleMediaSelect = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const isImage = file.type.startsWith('image/');
+        if (isImage && file.size > 2 * 1024 * 1024) return showToast('图片太大啦');
+        if (!isImage && file.size > 5 * 1024 * 1024) return showToast('视频太大啦');
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            currentSelectedMedia = { type: isImage ? 'image' : 'video', data: e.target.result };
+            const container = document.getElementById('media-preview-container');
+            const img = document.getElementById('preview-img');
+            const video = document.getElementById('preview-video');
+            container.style.display = 'block';
+            if (isImage) { img.src = e.target.result; img.style.display = 'block'; video.style.display = 'none'; } 
+            else { video.src = e.target.result; video.style.display = 'block'; img.style.display = 'none'; }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.clearMedia = function() {
+        currentSelectedMedia = null;
+        document.getElementById('media-preview-container').style.display = 'none';
+        document.getElementById('preview-img').src = ''; document.getElementById('preview-video').src = '';
+    };
+
+    window.submitPost = function() {
+        const c = document.getElementById('post-input').value.trim();
+        const role = document.getElementById('post-role').value.trim();
+        if (!c && !currentSelectedMedia) return showToast('内容不能为空');
+        if (currentPostMode === 'cosplay' && !role) return showToast('请填写角色名');
+
+        MemoryData.posts.push({ 
+            id: 'p_'+Date.now(), authorId: DB.getCurrentUser().id, content: c, type: currentPostMode,
+            role: currentPostMode === 'cosplay' ? role : null, time: Date.now(), likes: 0, isLiked: false, comments: [], media: currentSelectedMedia, views: 1
+        });
+        DB.save(); closePostModal(); switchView(currentPostMode === 'cosplay' ? 'story' : 'feed'); showToast('发布成功！');
+    }
+
+    window.openEditAnnouncement = function() { if (!checkIsAdmin()) return; closeDrawer(); document.getElementById('edit-announcement-input').value = MemoryData.announcement || ''; document.getElementById('edit-announcement-modal').style.display = 'flex'; }
+    window.saveAnnouncement = function() { if (!checkIsAdmin()) return; const v = document.getElementById('edit-announcement-input').value.trim(); if (!v) return showToast('不能为空'); MemoryData.announcement = v; DB.save(); document.getElementById('edit-announcement-modal').style.display = 'none'; render(); showToast('公告更新！'); }
+    window.openEditProfile = function() { const u = DB.getCurrentUser(); if (u) { document.getElementById('edit-bio-input').value = u.bio || ''; document.getElementById('edit-profile-modal').style.display = 'flex'; } }
+    window.saveProfile = function() { const u = DB.getCurrentUser(); const v = document.getElementById('edit-bio-input').value.trim(); if (u) { u.bio = v; DB.save(); document.getElementById('edit-profile-modal').style.display = 'none'; render(); showToast('资料已更新'); } }
+
+    checkAuth();
+</script>
+</body>
+    </html>
