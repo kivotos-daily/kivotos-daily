@@ -5,7 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>基沃托斯日讯-云端互通极速版v2.3</title>
     
+    <!-- 核心库：三重 CDN 保险加载 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        if (typeof supabase === 'undefined') {
+            document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>');
+        }
+    </script>
+    <script>
+        if (typeof supabase === 'undefined') {
+            document.write('<script src="https://cdn.bootcdn.net/ajax/libs/supabase-js/2.39.7/supabase.min.js"><\/script>');
+        }
+    </script>
 
     <style>
         :root { 
@@ -20,6 +31,9 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; overflow-x: hidden;}
         #toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--accent-color); width: 80%; max-width: 300px;}
+        
+        /* 网络错误提示罩 */
+        .network-error { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #121212; color: #ff4757; z-index: 99999; text-align: center; padding-top: 40vh; font-size: 16px; font-weight: bold; line-height: 2; }
         
         /* 加载动画 */
         .loading-container { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 40vh; color: var(--text-sub); }
@@ -195,6 +209,7 @@
 </head>
 <body>
 <div id="toast">提示信息</div>
+<div id="network-error-msg" class="network-error">网络加载失败！<br>未能连接至核心服务器。<br>请更换网络（比如关闭WiFi用流量）或更换浏览器。</div>
 
 <!-- 登录页 -->
 <div id="auth-page">
@@ -319,10 +334,20 @@
 <input type="file" id="cover-uploader" accept="image/*" style="display: none;" onchange="handleTempUpload(event, 'cover')">
 
 <script>
+    // 检查核心库是否彻底加载失败
+    if (typeof supabase === 'undefined') {
+        document.getElementById('network-error-msg').style.display = 'block';
+    }
+
     const ADMIN_EMAIL = 'admin@kivotos.com'; 
     const SUPABASE_URL = 'https://ycjshhxxqnyizewpswoc.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut'; 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let supabaseClient = null;
+    try {
+        if (typeof supabase !== 'undefined') {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+    } catch(e) {}
 
     function showToast(msg) {
         const toast = document.getElementById('toast');
@@ -342,7 +367,6 @@
     let tempAvatar = null;
     let tempCover = null;
     
-    // ====== 分页与缓存变量 ======
     let pageOffset = 0;
     const PAGE_SIZE = 10;
     let hasMorePosts = true;
@@ -350,7 +374,6 @@
 
     function generateSignal() { return `KIV-${Math.floor(100000 + Math.random() * 900000)}`; }
 
-    // ======== 登录注册逻辑 ========
     window.toggleAuthMode = function() {
         isRegisterMode = !isRegisterMode;
         document.getElementById('auth-title').innerText = isRegisterMode ? '基沃托斯日讯-注册' : '基沃托斯日讯-登录';
@@ -360,6 +383,7 @@
     };
 
     window.handleAuth = async function() {
+        if (!supabaseClient) { alert('网络组件未加载，请刷新页面'); return; }
         const email = document.getElementById('auth-email').value.trim();
         const password = document.getElementById('auth-password').value;
         const nickname = document.getElementById('auth-nickname').value.trim();
@@ -403,27 +427,24 @@
     }
 
     window.logout = async function() {
-        await supabaseClient.auth.signOut();
+        if(supabaseClient) await supabaseClient.auth.signOut();
         CurrentUserProfile = null;
-        // 退出登录时清空本地缓存，保证安全
         localStorage.removeItem('cached_profile');
         localStorage.removeItem('cached_posts');
         document.getElementById('auth-page').style.display = 'flex'; 
         document.getElementById('app').style.display = 'none';
     }
 
-    // ======== 初始化与拉取数据 ========
     async function checkAuth() {
+        if (!supabaseClient) return;
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
-            // 如果本地有用户缓存，先秒开界面
             const cachedProfile = localStorage.getItem('cached_profile');
             if (cachedProfile) {
                 CurrentUserProfile = JSON.parse(cachedProfile);
                 document.getElementById('auth-page').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
                 
-                // 瞬间显示本地缓存的帖子
                 const cachedPosts = localStorage.getItem('cached_posts');
                 if (cachedPosts) {
                     AllPosts = JSON.parse(cachedPosts);
@@ -432,7 +453,6 @@
                     document.getElementById('main-content').innerHTML = `<div class="loading-container"><div class="spinner"></div><div>同步云端动态中...</div></div>`;
                 }
             }
-            // 后台静默去拉取最新数据
             await initUser(session.user);
         } else {
             document.getElementById('auth-page').style.display = 'flex'; 
@@ -459,7 +479,6 @@
         document.getElementById('auth-page').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         
-        // 数据拉取完毕后更新界面和缓存
         await resetAndLoadPosts();
     }
 
@@ -467,7 +486,6 @@
         pageOffset = 0;
         hasMorePosts = true;
         
-        // 如果没有缓存，才显示转圈；如果有缓存，就悄悄在后台拉
         if (AllPosts.length === 0) {
             document.getElementById('main-content').innerHTML = `<div class="loading-container"><div class="spinner"></div><div>同步云端动态中...</div></div>`;
         }
@@ -478,16 +496,13 @@
             .range(0, PAGE_SIZE - 1);
 
         if (error) {
-            console.error(error);
-            if (AllPosts.length === 0) showToast('网络延迟，加载失败，请检查网络');
+            if (AllPosts.length === 0) showToast('网络延迟，加载失败');
             return;
         }
 
         AllPosts = posts || [];
         hasMorePosts = AllPosts.length >= PAGE_SIZE;
         pageOffset = PAGE_SIZE;
-        
-        // 存入本地缓存
         localStorage.setItem('cached_posts', JSON.stringify(AllPosts));
 
         render();
@@ -533,7 +548,6 @@
         if (scrollBottom < 100) loadMorePosts();
     });
 
-    // ======== 渲染逻辑 ========
     window.toggleLayout = function() {
         currentLayout = currentLayout === 'new' ? 'classic' : 'new';
         localStorage.setItem('forum_layout', currentLayout);
@@ -719,7 +733,6 @@
         }
     }
 
-    // ======== 详情页与评论 (按需加载) ========
     window.openDetailPage = async function(id) {
         currentPostIdForComment = id;
         currentReplyTo = null;
@@ -824,7 +837,6 @@
         openDetailPage(currentPostIdForComment); 
     }
 
-    // ======== 发帖与其他 ========
     window.openPostModal = function() { 
         document.getElementById('post-input').value = ''; 
         document.getElementById('post-role').value = ''; 
@@ -882,7 +894,6 @@
         }
     }
 
-    // ======== 个人资料 ========
     window.openEditProfile = function() {
         tempAvatar = CurrentUserProfile.avatar; 
         tempCover = CurrentUserProfile.cover || '';
@@ -930,7 +941,6 @@
         CurrentUserProfile.avatar = tempAvatar;
         CurrentUserProfile.cover = tempCover;
         
-        // 更新本地缓存
         localStorage.setItem('cached_profile', JSON.stringify(CurrentUserProfile));
 
         btn.innerText = '保存资料'; btn.disabled = false;
