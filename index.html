@@ -3,24 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v3.1</title>
+    <title>基沃托斯日讯-测试版v3.2</title>
     
-    <!-- 四重 CDN 保险 -->
-    <script src="https://cdn.bootcdn.net/ajax/libs/supabase-js/2.39.7/supabase.min.js"></script>
-    <script>
-        if (typeof supabase === 'undefined') document.write('<script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/supabase-js/2.39.7/supabase.min.js"><\/script>');
-    </script>
-    <script>
-        if (typeof supabase === 'undefined') document.write('<script src="https://cdn.staticfile.org/supabase-js/2.39.7/supabase.min.js"><\/script>');
-    </script>
-
     <style>
-        :root { --bg-color: #121212; --text-main: #e0e0e0; --text-sub: #888888; --accent-color: #ff7b9c; --border-color: #333333; }
+        :root { --bg-color: #121212; --text-main: #e0e0e0; --accent-color: #ff7b9c; --border-color: #333333; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden;}
         
-        #error-box { position: fixed; top: 0; left: 0; width: 100%; background: rgba(255,0,0,0.95); color: white; padding: 15px; font-weight: bold; z-index: 99999; display: none; font-size: 14px; text-align: center;}
-
+        /* 顶部红条报错 */
+        #error-box { position: fixed; top: 0; left: 0; width: 100%; background: rgba(255,0,0,0.95); color: white; padding: 15px; font-weight: bold; z-index: 99999; display: none; font-size: 14px; text-align: center; line-height: 1.5;}
+        
         /* 登录页 */
         #auth-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background: #121212; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
         .auth-box { width: 100%; max-width: 360px; background: #1e1e1e; padding: 30px 20px; border-radius: 16px; border: 1px solid #333; }
@@ -32,8 +24,9 @@
         .auth-switch { text-align: center; font-size: 14px; color: #888; margin-top: 20px; cursor: pointer; padding: 15px; border: 1px dashed #444; border-radius: 8px; }
         .auth-switch span { color: var(--accent-color); font-weight: bold; }
         
-        /* 主应用及排版样式 */
+        /* 主应用 */
         #app { display: none; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; background: var(--bg-color); }
+        
         .header { position: sticky; top: 0; background: rgba(18,18,18,0.85); backdrop-filter: blur(12px); padding: 10px 16px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; z-index: 100;}
         .header-normal { flex-direction: column; align-items: flex-start; gap: 10px; }
         .header-normal-top { width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: bold; color: var(--accent-color); }
@@ -45,13 +38,13 @@
         .header-right { display: flex; align-items: center; gap: 12px; }
         .layout-btn { font-size: 11px; background: transparent; padding: 4px 8px; border-radius: 12px; cursor: pointer; border: 1px solid var(--border-color); color: var(--text-sub);}
         .header-add-btn { font-size: 24px; color: var(--accent-color); cursor: pointer; font-weight: bold; line-height: 1;}
+
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; height: 60px; background: rgba(24,24,24,0.95); border-top: 1px solid var(--border-color); justify-content: space-around; align-items: center; z-index: 200; }
         .bottom-nav.show { display: flex; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sub); cursor: pointer; flex: 1; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; flex: 1; }
         .nav-item.active { color: var(--accent-color); }
         .nav-btn-add { background: var(--accent-color); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-top: -20px; cursor: pointer; font-size: 24px; }
-        
-        /* 侧边栏 */
+
         .drawer-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 400; display: none; opacity: 0; transition: opacity 0.3s; }
         .drawer-overlay.active { display: block; opacity: 1; }
         .sidebar-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #151515; z-index: 401; border-right: 1px solid var(--border-color); transition: left 0.3s ease; display: flex; flex-direction: column;}
@@ -61,7 +54,7 @@
         .drawer-user-info .avatar { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; background: #333; }
         .drawer-user-info .avatar img { width: 100%; height: 100%; object-fit: cover; }
         .drawer-user-name { font-size: 16px; font-weight: bold; color: #fff; }
-        .drawer-user-handle { font-size: 13px; color: var(--text-sub); }
+        .drawer-user-handle { font-size: 13px; color: #888; }
         .drawer-nav { flex: 1; padding: 10px 0; overflow-y: auto; }
         .drawer-nav-item { display: flex; align-items: center; gap: 16px; padding: 16px 20px; font-size: 16px; color: #fff; cursor: pointer; font-weight: bold;}
         .drawer-nav-item.active { color: var(--accent-color); }
@@ -69,10 +62,10 @@
         .drawer-footer { padding: 20px; border-top: 1px solid var(--border-color); }
         .drawer-logout-btn { width: 100%; padding: 12px; border-radius: 24px; background: transparent; border: 1px solid #ff4757; color: #ff4757; font-weight: bold; cursor: pointer;}
 
-        /* 通用及帖子 */
         .announcement-bar { margin: 12px 16px; background: rgba(255, 123, 156, 0.1); border: 1px solid var(--accent-color); border-radius: 12px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; }
         .announcement-content { flex: 1; font-size: 14px; }
         .role-tag { font-size: 11px; background: rgba(255, 123, 156, 0.2); color: var(--accent-color); padding: 1px 6px; border-radius: 4px; }
+        
         .post-card-new { background: var(--bg-color); padding: 16px; border-bottom: 8px solid #000; }
         .post-new-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .post-new-user { display: flex; align-items: center; }
@@ -80,13 +73,13 @@
         .post-new-user .avatar img { width: 100%; height: 100%; object-fit: cover;}
         .post-new-name { display: flex; flex-direction: column; }
         .post-new-name .username { font-weight: 500; font-size: 15px; display: flex; align-items: center; gap: 6px;}
-        .post-new-name .time { font-size: 12px; color: var(--text-sub); }
+        .post-new-name .time { font-size: 12px; color: #888; }
         .post-content { font-size: 15px; margin-bottom: 12px; word-break: break-word; white-space: pre-wrap; }
         .post-content.cosplay-text { font-style: italic; color: #b0c4de; background: #1a1a1a; padding: 10px; border-radius: 8px; border-left: 3px solid var(--accent-color); }
         .post-media { width: 100%; max-height: 300px; border-radius: 8px; margin-bottom: 12px; object-fit: cover; background: #000; }
-        .post-new-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; padding-top: 8px; border-top: 1px solid var(--border-color); }
+        .post-new-actions { display: flex; justify-content: space-between; color: #888; font-size: 13px; padding-top: 8px; border-top: 1px solid var(--border-color); }
         .action-item { cursor: pointer; display: flex; align-items: center; gap: 4px;}
-        
+
         .post-classic { display: flex; padding: 12px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
         .post-classic-avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; overflow: hidden; background: #333; display: flex; justify-content: center; align-items: center;}
         .post-classic-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -94,13 +87,12 @@
         .post-classic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
         .post-classic-name-group { display: flex; align-items: center; gap: 4px; }
         .post-classic-name { font-size: 15px; font-weight: bold; color: #fff; }
-        .post-classic-time { font-size: 14px; color: var(--text-sub); }
+        .post-classic-time { font-size: 14px; color: #888; }
         .post-classic-content { font-size: 15px; margin-bottom: 10px; white-space: pre-wrap; }
         .post-classic-media { width: 100%; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 10px; max-height: 400px; object-fit: cover; }
-        .post-classic-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; max-width: 380px; }
+        .post-classic-actions { display: flex; justify-content: space-between; color: #888; font-size: 13px; max-width: 380px; }
         .action-icon { display: flex; align-items: center; gap: 4px; cursor: pointer; }
 
-        /* 个人主页 */
         .profile-cover-new { height: 120px; background: #333 center/cover no-repeat; width: 100%; }
         .profile-header-new { padding: 0 16px 20px; text-align: center; border-bottom: 1px solid var(--border-color); }
         .profile-avatar-new { width: 80px; height: 80px; border-radius: 50%; margin: -40px auto 12px; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; border: 4px solid var(--bg-color); background: #222;}
@@ -115,9 +107,8 @@
         .profile-actions-row-classic { display: flex; justify-content: flex-end; gap: 10px; margin-top: -36px; margin-bottom: 16px;}
         .btn-outline-classic { background: transparent; color: #eff3f4; border: 1px solid #536471; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer;}
         .profile-name-classic { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 2px;}
-        .profile-handle-classic { font-size: 15px; color: var(--text-sub); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;}
+        .profile-handle-classic { font-size: 15px; color: #888; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;}
 
-        /* 详情页 */
         #detail-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 250; display: none; flex-direction: column; max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
         .detail-header { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
         .back-btn { font-size: 20px; cursor: pointer; margin-right: 20px; color: #fff;}
@@ -132,7 +123,6 @@
         .detail-input { flex: 1; background: #161616; border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 16px; color: #fff; outline: none;}
         .detail-send-btn { background: var(--accent-color); color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer;}
         
-        /* 评论及弹窗 */
         .comment-list { padding: 16px; }
         .comment-thread { margin-bottom: 20px;}
         .comment-main { display: flex; gap: 12px; }
@@ -141,9 +131,9 @@
         .comment-main-body { flex: 1; }
         .comment-header { display: flex; align-items: center; gap: 4px; margin-bottom: 4px;}
         .comment-name { font-size: 15px; font-weight: bold; color: #fff; }
-        .comment-time { font-size: 14px; color: var(--text-sub); }
+        .comment-time { font-size: 14px; color: #888; }
         .comment-text { font-size: 15px; color: #eff3f4; margin-bottom: 8px; }
-        .comment-actions { display: flex; gap: 20px; font-size: 13px; color: var(--text-sub); }
+        .comment-actions { display: flex; gap: 20px; font-size: 13px; color: #888; }
         .comment-actions span { cursor: pointer; }
         .comment-replies { margin-left: 20px; padding-left: 20px; border-left: 2px solid var(--border-color); margin-top: 12px; }
         .reply-item { display: flex; gap: 10px; margin-bottom: 12px;}
@@ -172,9 +162,10 @@
 
 <div id="error-box"></div>
 
+<!-- 登录页 -->
 <div id="auth-page">
     <div class="auth-box">
-        <div class="auth-title" id="auth-title">基沃托斯日讯-测试版v3.1</div>
+        <div class="auth-title" id="auth-title">基沃托斯日讯-测试版v3.2</div>
         <div class="input-group" id="nickname-group" style="display: none;">
             <label>昵称</label>
             <input type="text" class="auth-input" id="auth-nickname" placeholder="给自己起个名字">
@@ -194,9 +185,11 @@
     </div>
 </div>
 
+<!-- 主应用 -->
 <div id="app">
     <header id="header-container"></header>
     <main id="main-content"></main>
+
     <nav class="bottom-nav" id="bottom-nav">
         <div class="nav-item" data-view="feed" onclick="switchView('feed')">首页</div>
         <div class="nav-item" data-view="story" onclick="switchView('story')">剧情</div>
@@ -205,6 +198,7 @@
     </nav>
 </div>
 
+<!-- 侧边栏 -->
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 <div class="sidebar-drawer" id="sidebar-drawer">
     <div class="drawer-header" id="drawer-header-content"></div>
@@ -218,6 +212,7 @@
     </div>
 </div>
 
+<!-- 详情页 -->
 <div id="detail-page">
     <div class="detail-header">
         <div class="back-btn" onclick="closeDetailPage()">←</div>
@@ -230,6 +225,7 @@
     </div>
 </div>
 
+<!-- 发帖弹窗 -->
 <div class="modal-overlay" id="post-modal">
     <div class="modal-content">
         <div class="modal-header"><span>发布新帖子</span><span style="cursor:pointer;" onclick="closePostModal()">✕</span></div>
@@ -249,6 +245,7 @@
     </div>
 </div>
 
+<!-- 编辑资料弹窗 -->
 <div class="modal-overlay" id="edit-profile-modal">
     <div class="modal-content">
         <div class="modal-header"><span>个人主页装扮</span><span style="cursor:pointer;" onclick="document.getElementById('edit-profile-modal').style.display='none'">✕</span></div>
@@ -276,27 +273,31 @@
 <input type="file" id="cover-uploader" accept="image/*" style="display: none;" onchange="handleTempUpload(event, 'cover')">
 
 <script>
-    window.onerror = function(msg) {
-        var errBox = document.getElementById('error-box');
-        errBox.style.display = 'block';
-        errBox.innerHTML = "⚠️ 代码报错: " + msg;
-        return false;
-    };
+    // 动态加载 CDN，一旦失败自动切换下一个
+    function loadScript(src, fallbackSrc) {
+        var script = document.createElement('script');
+        script.src = src;
+        script.onerror = function() {
+            if (fallbackSrc) {
+                loadScript(fallbackSrc, null);
+            } else {
+                document.getElementById('error-box').style.display = 'block';
+                document.getElementById('error-box').innerText = "❌ 致命错误：网络拦截了所有 CDN，请更换浏览器或关闭广告拦截！";
+            }
+        };
+        script.onload = function() {
+            // 加载成功后初始化应用
+            initApp();
+        };
+        document.head.appendChild(script);
+    }
 
+    // 启动加载（主用 unpkg，失败用 jsdelivr）
+    loadScript('https://unpkg.com/@supabase/supabase-js@2', 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
+
+    let supabaseClient = null;
     const SUPABASE_URL = 'https://ycjshhxxqnyizewpswoc.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut'; 
-    let supabaseClient = null;
-
-    try {
-        if (typeof supabase !== 'undefined') {
-            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        } else {
-            throw new Error("CDN加载失败，请刷新或切换浏览器");
-        }
-    } catch(e) {
-        document.getElementById('error-box').style.display = 'block';
-        document.getElementById('error-box').innerText = "❌ 初始化失败：" + e.message;
-    }
 
     let CurrentUserProfile = null;
     let AllPosts = []; 
@@ -312,7 +313,11 @@
 
     function generateSignal() { return `KIV-${Math.floor(100000 + Math.random() * 900000)}`; }
 
-    document.addEventListener("DOMContentLoaded", function() {
+    // 初始化应用
+    function initApp() {
+        if (typeof supabase === 'undefined') return;
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         document.getElementById('switch-btn').onclick = function() {
             if (isLoggingIn) return;
             isRegisterMode = !isRegisterMode;
@@ -381,7 +386,9 @@
                 btn.disabled = false; 
             }
         };
-    });
+
+        checkAuth();
+    }
 
     async function initUser(user) {
         let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
@@ -413,7 +420,6 @@
         render();
     }
 
-    // ===== 补全的 checkAuth 函数 =====
     async function checkAuth() {
         if (!supabaseClient) return;
         try {
@@ -477,7 +483,7 @@
                 <div class="header header-normal">
                     <div class="header-normal-top">
                         <span>${titleText}</span>
-                        <span style="font-size: 12px; color: var(--text-sub); cursor:pointer;" onclick="toggleLayout()">切怀旧版</span>
+                        <span style="font-size: 12px; color: #888; cursor:pointer;" onclick="toggleLayout()">切怀旧版</span>
                     </div>
                 </div>
             `;
@@ -526,7 +532,7 @@
                     <div class="profile-avatar-new"><img src="${CurrentUserProfile.avatar}"></div>
                     <h2>${CurrentUserProfile.name}</h2>
                     <div class="profile-bio-new">${CurrentUserProfile.bio || '这个人很神秘，什么都没写。'}</div>
-                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">讯号：<span style="color:var(--accent-color);">${CurrentUserProfile.signal}</span></div>
+                    <div style="font-size:12px; color:#888; margin-top:4px;">讯号：<span style="color:var(--accent-color);">${CurrentUserProfile.signal}</span></div>
                     <div><button class="btn-outline-new" onclick="openEditProfile()">编辑资料</button></div>
                 </div><div style="padding: 12px 16px; font-weight: bold;">我发布的帖子</div>`;
             } else {
@@ -536,13 +542,13 @@
                     <div class="profile-avatar-wrapper-classic"><img src="${CurrentUserProfile.avatar}"></div>
                     <div class="profile-actions-row-classic"><button class="btn-outline-classic" onclick="openEditProfile()">编辑资料</button></div>
                     <div class="profile-name-classic">${CurrentUserProfile.name}</div>
-                    <div class="profile-handle-classic">@${CurrentUserProfile.signal} <span class="tag-platform">平台用户</span></div>
+                    <div class="profile-handle-classic">@${CurrentUserProfile.signal}</div>
                     <div class="profile-bio-classic">${CurrentUserProfile.bio || '这个人很神秘，什么都没写。'}</div>
                 </div>`;
             }
             AllPosts.filter(p => p.author_id === CurrentUserProfile.id).forEach(post => { html += renderPostHTML(post); });
         } else {
-            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 测试版v3.1 已上线！</div></div>`;
+            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 测试版v3.2 已上线！</div></div>`;
             let postsToRender = AllPosts;
             if (currentView === 'story') postsToRender = postsToRender.filter(p => p.type === 'cosplay');
             
@@ -768,9 +774,6 @@
         document.getElementById('edit-profile-modal').style.display = 'none';
         render();
     }
-
-    // 真正启动程序
-    checkAuth();
 </script>
 </body>
-</html>
+    </html>
