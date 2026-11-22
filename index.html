@@ -43,10 +43,7 @@
         
         /* 帖子 */
         .post-card { background: var(--bg-color); padding: 16px; border-bottom: 8px solid #000; animation: slideDown 0.4s ease-out; }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         .post-main-area { cursor: pointer; }
         .post-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .user-info { display: flex; align-items: center; }
@@ -59,12 +56,10 @@
         .time { font-size: 12px; color: var(--text-sub); }
         .post-content { font-size: 15px; margin-bottom: 12px; word-break: break-all; white-space: pre-wrap; }
         .post-content.cosplay-text { font-style: italic; color: #b0c4de; background: #1a1a1a; padding: 10px; border-radius: 8px; border-left: 3px solid var(--accent-color); }
-        
-        /* 媒体展示 */
         .post-media { width: 100%; max-height: 300px; border-radius: 8px; margin-bottom: 12px; object-fit: cover; background: #000; }
         
         .action-bar { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; padding-top: 8px; border-top: 1px solid var(--border-color); }
-        .action-item { cursor: pointer; padding: 6px 10px; display: flex; align-items: center; gap: 4px;}
+        .action-item { cursor: pointer; padding: 6px 4px; display: flex; align-items: center; gap: 4px;}
         .delete-btn { color: #e74c3c; font-weight: bold; }
         
         /* 个人主页 */
@@ -73,12 +68,10 @@
         .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .avatar-upload { position: absolute; bottom: -5px; right: -5px; background: var(--accent-color); width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; border: 2px solid var(--bg-color); font-size: 14px;}
         .profile-bio { font-size: 14px; color: #b0c4de; margin: 10px auto; max-width: 80%; line-height: 1.4; word-wrap: break-word;}
-        
         .profile-stats { display: flex; justify-content: center; gap: 30px; margin-top: 15px; margin-bottom: 20px;}
         .stat-item { display: flex; flex-direction: column; align-items: center; }
         .stat-num { font-weight: bold; font-size: 18px; color: var(--text-main); }
         .stat-label { font-size: 12px; color: var(--text-sub); }
-        
         .profile-actions { display: flex; justify-content: center; gap: 15px; }
         .btn-outline { background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 14px;}
         .logout-btn { background: transparent; border: 1px solid #e74c3c; color: #e74c3c; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 14px;}
@@ -89,14 +82,10 @@
         .modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: bold; }
         .modal-textarea { width: 100%; height: 100px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; color: var(--text-main); font-size: 15px; resize: none; outline: none; margin-bottom: 12px; }
         .modal-submit { width: 100%; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        
-        /* 发帖模式切换 */
         .mode-switch { display: flex; margin-bottom: 12px; gap: 10px; }
         .mode-btn { flex: 1; padding: 8px; text-align: center; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-sub); border-radius: 8px; cursor: pointer; font-size: 14px; }
         .mode-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: rgba(255, 123, 156, 0.1); }
         .role-input-group { display: none; margin-bottom: 12px; }
-        
-        /* 媒体上传按钮与预览 */
         .media-tools { display: flex; gap: 10px; margin-bottom: 12px; align-items: center;}
         .upload-btn { background: #2a2a2a; color: #aaa; padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid #444;}
         .preview-container { display: none; position: relative; margin-bottom: 12px; }
@@ -137,9 +126,7 @@
         <input type="text" class="search-box" id="search-input" placeholder="搜索帖子、角色或用户...">
     </header>
     
-    <main id="main-content">
-        <!-- 公告栏由JS动态插入 -->
-    </main>
+    <main id="main-content"></main>
     
     <nav class="bottom-nav">
         <div class="nav-item active" data-view="feed" onclick="switchView('feed')">首页</div>
@@ -154,30 +141,24 @@
 <div class="modal-overlay" id="post-modal">
     <div class="modal-content">
         <div class="modal-header"><span>发布新帖子</span><span style="cursor:pointer; padding:5px;" onclick="closePostModal()">✕</span></div>
-        
         <div class="mode-switch">
             <div class="mode-btn active" id="mode-normal" onclick="switchPostMode('normal')">日常发帖</div>
             <div class="mode-btn" id="mode-cos" onclick="switchPostMode('cosplay')">🎭 剧情演绎</div>
         </div>
-
         <div class="role-input-group" id="role-input-group">
             <input type="text" class="auth-input" id="post-role" placeholder="扮演角色（如：砂狼白子、老师）" style="margin-bottom: 10px;">
         </div>
-
         <textarea class="modal-textarea" id="post-input" placeholder="分享你此刻的想法..."></textarea>
-        
         <div class="media-tools">
             <div class="upload-btn" onclick="document.getElementById('media-uploader').click()">📷 添加图片 / 视频</div>
             <span style="font-size:12px; color:#888;">(最大 2MB图 / 5MB视频)</span>
         </div>
         <input type="file" id="media-uploader" accept="image/*,video/*" style="display: none;" onchange="handleMediaSelect(event)">
-        
         <div class="preview-container" id="media-preview-container">
             <img id="preview-img" class="preview-media" style="display:none;">
             <video id="preview-video" class="preview-media" controls style="display:none;"></video>
             <div class="remove-media" onclick="clearMedia()">✕</div>
         </div>
-
         <button class="modal-submit" onclick="submitPost()" style="margin-top: 10px;">发布</button>
     </div>
 </div>
@@ -220,7 +201,15 @@
     const ADMIN_EMAIL = 'admin@kivotos.com'; 
     const SUPABASE_URL = 'https://ycjshhxxqnyizewpswoc.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut'; 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let supabaseClient = null;
+
+    try {
+        if (typeof supabase !== 'undefined') {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+    } catch(e) {
+        console.error(e);
+    }
     // ==========================================
 
     function showToast(msg) {
@@ -248,15 +237,19 @@
         users: [], 
         announcement: '欢迎来到基沃托斯日讯！测试版v1.5现已上线，支持发表带图/视频的帖子，管理员可在此处发布公告。',
         posts: [
-            { id: 'p1', authorId: 'sys', content: '【夏莱通知】老师，什亭之匣网络测试已完成，现在可以自由交流了。', type: 'normal', time: Date.now(), likes: 128, isLiked: false, comments: [], media: null },
-            { id: 'p2', authorId: 'sys', content: '*全息投影闪烁了一下，阿罗娜出现在半空中* 老师，今天的基沃托斯依然和平呢！但是...好像有新的帖子出现了！', type: 'cosplay', role: '阿罗娜', time: Date.now() - 100000, likes: 256, isLiked: false, comments: [], media: null }
+            { id: 'p1', authorId: 'sys', content: '【夏莱通知】老师，什亭之匣网络测试已完成，现在可以自由交流了。', type: 'normal', time: Date.now(), likes: 128, isLiked: false, comments: [], media: null, views: 128 },
+            { id: 'p2', authorId: 'sys', content: '*全息投影闪烁了一下，阿罗娜出现在半空中* 老师，今天的基沃托斯依然和平呢！但是...好像有新的帖子出现了！', type: 'cosplay', role: '阿罗娜', time: Date.now() - 100000, likes: 256, isLiked: false, comments: [], media: null, views: 256 }
         ]
     };
     
-    // 兼容老版本数据：如果没有公告字段，给个默认的
     if (!MemoryData.announcement) {
         MemoryData.announcement = '欢迎来到基沃托斯日讯！';
     }
+
+    // 兼容老数据，给没有浏览量的帖子初始化为0
+    MemoryData.posts.forEach(p => {
+        if (p.views === undefined) p.views = 0;
+    });
 
     if(!MemoryData.users.find(u => u.id === 'sys')){
         MemoryData.users.push({ 
@@ -297,13 +290,18 @@
     };
 
     window.handleAuth = async function() {
+        if (!supabaseClient) {
+            alert('网络加载失败：未能加载核心组件！请刷新页面，或者更换浏览器（不要在微信内打开）。');
+            return;
+        }
+
         const email = document.getElementById('auth-email').value.trim();
         const password = document.getElementById('auth-password').value;
         const nickname = document.getElementById('auth-nickname').value.trim();
         const btn = document.getElementById('auth-submit-btn');
         
-        if (!email || !password) return showToast('请填写邮箱和密码');
-        if (password.length < 6) return showToast('密码至少需要6位');
+        if (!email || !password) return alert('请填写邮箱和密码');
+        if (password.length < 6) return alert('密码至少需要6位');
 
         const originalText = btn.innerText;
         btn.innerText = '连接服务器中...';
@@ -313,10 +311,10 @@
             if (isRegisterMode) {
                 if (!nickname) { 
                     btn.innerText = originalText; btn.disabled = false;
-                    return showToast('请输入昵称'); 
+                    return alert('请输入昵称'); 
                 }
                 
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('请求超时：网络可能无法直连')), 8000));
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('请求超时，你的网络可能无法连接海外服务器')), 5000));
                 
                 const { data, error } = await Promise.race([
                     supabaseClient.auth.signUp({
@@ -328,14 +326,14 @@
                 if (error) throw error;
 
                 if (data.user && data.user.confirmed_at === null) {
-                    showToast('注册成功！请去邮箱点击验证链接。');
+                    alert('注册成功！请去邮箱点击验证链接。');
                     toggleAuthMode(); 
                 } else {
-                    showToast('注册成功，已自动登录！');
+                    alert('注册成功，已自动登录！');
                     loginSuccess(data.user);
                 }
             } else {
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('请求超时：网络可能无法直连')), 8000));
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('请求超时，你的网络可能无法连接海外服务器')), 5000));
                 
                 const { data, error } = await Promise.race([
                     supabaseClient.auth.signInWithPassword({ email: email, password: password }),
@@ -346,7 +344,7 @@
                 loginSuccess(data.user);
             }
         } catch (err) {
-            showToast('错误提示：' + err.message);
+            alert('操作失败！原因：' + err.message + '\n\n如果你在微信内打开，请点击右上角“在浏览器中打开”。');
         } finally {
             btn.innerText = originalText;
             btn.disabled = false;
@@ -387,7 +385,7 @@
     }
 
     window.logout = async function() {
-        await supabaseClient.auth.signOut();
+        if(supabaseClient) await supabaseClient.auth.signOut();
         currentUserSessionId = null;
         localStorage.removeItem('taoxun_session_id');
         showToast('已退出登录');
@@ -450,7 +448,6 @@
 
         let html = '';
 
-        // 渲染公告栏（在所有主视图顶部显示，除了搜索时）
         if (!searchQuery) {
             html += `<div class="announcement-bar">
                 <div class="announcement-icon">📢</div>
@@ -500,7 +497,6 @@
                 const isFollowed = currentUser.followingList.includes(post.authorId);
                 const isBookmarked = currentUser.bookmarks.includes(post.id);
                 const isCos = post.type === 'cosplay';
-                
                 const canDelete = isMe || isAdmin;
 
                 let mediaHtml = '';
@@ -538,6 +534,7 @@
                     <div class="action-bar">
                         <div class="action-item ${post.isLiked ? 'color:#ff7b9c' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? '❤️' : '🤍'} ${post.likes}</div>
                         <div class="action-item" onclick="openDetailModal('${post.id}')">💬 ${(post.comments || []).length}</div>
+                        <div class="action-item">👁️ ${post.views || 0}</div>
                         <div class="action-item ${isBookmarked ? 'color:#ff7b9c' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? '⭐' : '☆'} 收藏</div>
                         ${canDelete ? `<div class="action-item delete-btn" onclick="event.stopPropagation(); deletePost('${post.id}')">🗑️ 删除</div>` : ''}
                     </div>
@@ -547,7 +544,6 @@
         document.getElementById('main-content').innerHTML = html;
     }
 
-    // ====== 公告编辑逻辑 ======
     window.openEditAnnouncement = function() {
         if (!checkIsAdmin()) return;
         document.getElementById('edit-announcement-input').value = MemoryData.announcement || '';
@@ -565,9 +561,7 @@
         render();
         showToast('公告更新成功！');
     }
-    // ========================
 
-    // 编辑资料
     window.openEditProfile = function() {
         const currentUser = DB.getCurrentUser();
         if (currentUser) {
@@ -588,7 +582,6 @@
         }
     }
 
-    // 头像上传
     window.handleAvatarUpload = function(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -614,7 +607,6 @@
     window.toggleBookmark = function(id) { const u = DB.getCurrentUser(); const i = u.bookmarks.indexOf(id); if (i > -1) u.bookmarks.splice(i, 1); else u.bookmarks.push(id); DB.save(); render(); }
     window.toggleFollow = function(authorId) { const u = DB.getCurrentUser(); const i = u.followingList.indexOf(authorId); if (i > -1) u.followingList.splice(i, 1); else u.followingList.push(authorId); DB.save(); render(); }
 
-    // 删除帖子功能
     window.deletePost = function(id) {
         const isAdmin = checkIsAdmin();
         const msg = isAdmin ? '【管理员权限】确定要删除这条帖子吗？' : '确定要删除这条帖子吗？';
@@ -627,7 +619,6 @@
         }
     }
 
-    // 发帖相关
     window.openPostModal = function() { 
         document.getElementById('post-input').value = ''; 
         document.getElementById('post-role').value = ''; 
@@ -655,7 +646,6 @@
         }
     }
 
-    // 处理媒体选择
     window.handleMediaSelect = function(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -718,7 +708,8 @@
             likes: 0, 
             isLiked: false, 
             comments: [],
-            media: currentSelectedMedia 
+            media: currentSelectedMedia,
+            views: 1 // 自己发帖自带1个浏览量
         });
         
         DB.save(); 
@@ -728,8 +719,18 @@
     }
 
     window.openDetailModal = function(id) {
-        currentPostIdForComment = id; const p = MemoryData.posts.find(x => x.id === id);
-        let h = ''; const cmts = p.comments || [];
+        currentPostIdForComment = id; 
+        const p = MemoryData.posts.find(x => x.id === id);
+        
+        // 增加浏览量
+        if (p) {
+            p.views = (p.views || 0) + 1;
+            DB.save();
+            render(); // 实时刷新外面的数字
+        }
+
+        let h = ''; 
+        const cmts = p.comments || [];
         if (cmts.length === 0) h = `<div style="text-align:center; padding:20px; color:#666;">还没有评论</div>`;
         else cmts.forEach(c => { 
             const a = DB.getUser(c.authorId); 
@@ -759,4 +760,4 @@
     checkAuth();
 </script>
 </body>
-    </html>
+            </html>
