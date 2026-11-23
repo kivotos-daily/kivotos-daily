@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v5.0</title>
+    <title>基沃托斯日讯-测试版v5.1</title>
     
     <!-- 👇 加载 Supabase 的核心引擎 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -273,7 +273,7 @@
         toast.innerText = msg;
         toast.style.display = 'block';
         clearTimeout(window.toastTimer);
-        window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 4000); // 延长显示时间，方便看错误
+        window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 4000); 
     }
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -301,27 +301,23 @@
             
             try {
                 if (isRegisterMode) {
-                    // 1. 注册账号
                     const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { data: { display_name: nickname } } });
                     if (error) throw error;
                     
                     if (data.user) {
-                        // 2. 写入 profiles 表
                         const { error: profileErr } = await supabaseClient.from('profiles').insert([{ 
                             id: data.user.id, name: nickname, email: email, signal: generateSignal(), 
                             avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`, bio: '' 
                         }]);
                         if (profileErr) throw new Error("创建档案失败：" + profileErr.message);
                         
-                        // 3. 自动登录 (如果后台没开启邮箱验证)
                         const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({ email, password });
-                        if (loginError) throw new Error("注册成功，但自动登录失败（请检查Supabase后台是否关闭了邮箱验证）：" + loginError.message);
+                        if (loginError) throw new Error("注册成功，但自动登录失败：" + loginError.message);
                         
                         await initUser(loginData.user);
                         showToast('注册并登录成功！');
                     }
                 } else {
-                    // 直接登录
                     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                     if (error) throw error;
                     
@@ -331,7 +327,6 @@
                     }
                 }
             } catch (err) { 
-                // 将报错强行弹出来
                 showToast('失败: ' + err.message); 
             } finally { 
                 isLoggingIn = false; 
@@ -367,14 +362,27 @@
     }
 
     async function initUser(user) {
-        // 加上了严格的错误捕获
-        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+        // 【关键修复】使用 maybeSingle() 防止查不到数据时报错
+        let { data: profile, error: profileError } = await supabaseClient.from('profiles').select('*').eq('id', user.id).maybeSingle();
         
         if (profileError) {
             throw new Error("读取个人资料失败，请检查 profiles 表是否存在: " + profileError.message);
         }
+        
+        // 【关键修复】如果没查到档案，自动给老账号补建一个
         if (!profile) {
-            throw new Error("找不到该用户的个人资料");
+            const fallbackName = user.email.split('@')[0];
+            const { data: newProfile, error: createErr } = await supabaseClient.from('profiles').insert([{
+                id: user.id, 
+                name: fallbackName, 
+                email: user.email, 
+                signal: generateSignal(), 
+                avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${fallbackName}`, 
+                bio: '这个用户很懒，什么都没写。'
+            }]).select().single();
+            
+            if (createErr) throw new Error("自动补建档案失败: " + createErr.message);
+            profile = newProfile;
         }
 
         CurrentUserProfile = profile;
@@ -468,7 +476,7 @@
 
         if (currentView === 'feed') {
             headerTitle.innerText = '首页';
-            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 v5.0 已上线！</div></div>`;
+            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 v5.1 已上线！</div></div>`;
         } 
         else if (currentView === 'story') {
             headerTitle.innerText = '剧情广场';
