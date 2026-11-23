@@ -3,33 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v8.0</title>
+    <title>基沃托斯日讯-测试版v8.2</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        :root { --bg-color: #0f0f0f; --text-main: #e0e0e0; --text-sub: #888888; --accent-color: #ff7b9c; --border-color: #2a2a2a; --card-bg: #181818; }
+        /* 默认深色主题 */
+        :root { 
+            --bg-color: #0f0f0f; 
+            --text-main: #e0e0e0; 
+            --text-sub: #888888; 
+            --accent-color: #ff7b9c; 
+            --border-color: #2a2a2a; 
+            --card-bg: #181818; 
+        }
+        /* 浅色主题 */
+        body.light-theme {
+            --bg-color: #f5f5f5; 
+            --text-main: #111111; 
+            --text-sub: #666666; 
+            --accent-color: #ff7b9c; 
+            --border-color: #dcdcdc; 
+            --card-bg: #ffffff; 
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden;}
+        body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; transition: background-color 0.3s, color 0.3s;}
 
         /* 动画效果 */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes modalPop {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes modalPop { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
         /* 点击反馈 */
-        button, .action-icon, .tab, .sidebar-item, .search-user-item {
-            transition: transform 0.1s ease, background-color 0.2s;
-            cursor: pointer;
-        }
-        button:active, .action-icon:active, .tab:active, .sidebar-item:active {
-            transform: scale(0.92);
-        }
+        button, .action-icon, .tab, .sidebar-item, .search-user-item { transition: transform 0.1s ease, background-color 0.2s; cursor: pointer; }
+        button:active, .action-icon:active, .tab:active, .sidebar-item:active { transform: scale(0.92); }
 
         #error-box { position: fixed; top: 0; left: 0; width: 100%; background: rgba(255,0,0,0.95); color: white; padding: 15px; font-weight: bold; z-index: 99999; display: none; font-size: 14px; text-align: center; line-height: 1.5;}
         #toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--border-color); font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.5);}
@@ -37,33 +44,37 @@
         /* 登录页 */
         #auth-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background: var(--bg-color); position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
         .auth-box { width: 100%; max-width: 360px; background: #1e1e1e; padding: 30px 20px; border-radius: 16px; border: 1px solid #333; }
+        body.light-theme .auth-box { background: #fff; border-color: #ddd; }
         .auth-title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 24px; color: var(--accent-color); }
         .input-group { margin-bottom: 16px; }
-        .input-group label { display: block; font-size: 13px; color: #888; margin-bottom: 6px; }
-        .auth-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #121212; color: var(--text-main); font-size: 15px; outline: none; }
+        .input-group label { display: block; font-size: 13px; color: var(--text-sub); margin-bottom: 6px; }
+        .auth-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 15px; outline: none; }
         .auth-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--accent-color); color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .auth-switch { text-align: center; font-size: 14px; color: #888; margin-top: 20px; cursor: pointer; padding: 15px; border: 1px dashed #444; border-radius: 8px; }
+        .auth-switch { text-align: center; font-size: 14px; color: var(--text-sub); margin-top: 20px; cursor: pointer; padding: 15px; border: 1px dashed var(--border-color); border-radius: 8px; }
         .auth-switch span { color: var(--accent-color); font-weight: bold; }
 
         /* 主应用 */
         #app { display: none; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; background: var(--bg-color); border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);}
         
         /* 顶部导航区 */
-        .header { position: sticky; top: 0; background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 100;}
+        .header { position: sticky; top: 0; background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 100; transition: background 0.3s;}
+        body.light-theme .header { background: rgba(245,245,245,0.95); }
         .header-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; height: 56px;}
         
         .header-left { display: flex; align-items: center; gap: 12px; }
-        .header-icon { width: 22px; height: 22px; fill: #fff; cursor: pointer; }
-        .header-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid #444;}
-        .header-title { font-size: 18px; font-weight: bold; color: #fff; display: none; }
+        .header-icon { width: 22px; height: 22px; fill: var(--text-main); cursor: pointer; }
+        .header-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid var(--border-color);}
+        .header-title { font-size: 18px; font-weight: bold; color: var(--text-main); display: none; }
         
-        .back-home-btn { display: none; cursor: pointer; color: #fff; align-items: center; justify-content: center; padding: 4px; margin-right: 4px;}
+        /* 全局返回按钮 */
+        .back-home-btn { display: none; cursor: pointer; color: var(--text-main); align-items: center; justify-content: center; padding: 4px; margin-right: 4px; animation: fadeInUp 0.2s ease;}
         .back-home-btn svg { width: 20px; height: 20px; fill: currentColor; }
         
         .header-right { display: flex; align-items: center; gap: 12px; }
-        .header-msg-btn { position: relative; cursor: pointer; display: flex; align-items: center; }
-        .header-msg-btn svg { width: 22px; height: 22px; fill: #fff; }
-        .red-dot { position: absolute; top: -4px; right: -4px; background: #ff4757; color: #fff; font-size: 10px; font-weight: bold; padding: 1px 4px; border-radius: 10px; min-width: 16px; text-align: center; display: none;}
+        .header-btn { position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;}
+        .header-btn:hover { background: var(--border-color); }
+        .header-btn svg { width: 22px; height: 22px; fill: var(--text-main); }
+        .red-dot { position: absolute; top: -2px; right: -2px; background: #ff4757; color: #fff; font-size: 10px; font-weight: bold; padding: 1px 4px; border-radius: 10px; min-width: 16px; text-align: center; display: none;}
         
         .btn-post-main { background: var(--accent-color); color: #fff; border: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; display: none;}
         .layout-btn { font-size: 12px; color: var(--text-sub); cursor:pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 20px; white-space: nowrap;}
@@ -80,22 +91,22 @@
         .post-classic-user { display: flex; align-items: center; gap: 10px; cursor: pointer;}
         .post-classic-avatar { width: 40px; height: 40px; border-radius: 50%; background: #333; overflow: hidden; flex-shrink: 0;}
         .post-classic-avatar img { width: 100%; height: 100%; object-fit: cover;}
-        .post-classic-name { font-size: 15px; font-weight: bold; color: #fff; display: flex; align-items: center; gap: 6px;}
+        .post-classic-name { font-size: 15px; font-weight: bold; color: var(--text-main); display: flex; align-items: center; gap: 6px;}
         .post-classic-time { font-size: 13px; color: var(--text-sub); display: flex; align-items: center; gap: 4px;}
-        .post-classic-content { font-size: 15px; margin-bottom: 16px; white-space: pre-wrap; word-break: break-word; cursor: pointer; color: #eee; line-height: 1.5;}
-        .post-classic-media { width: 100%; border-radius: 12px; margin-bottom: 16px; max-height: 300px; object-fit: cover; cursor: pointer; border: 1px solid #333;}
+        .post-classic-content { font-size: 15px; margin-bottom: 16px; white-space: pre-wrap; word-break: break-word; cursor: pointer; color: var(--text-main); line-height: 1.5;}
+        .post-classic-media { width: 100%; border-radius: 12px; margin-bottom: 16px; max-height: 300px; object-fit: cover; cursor: pointer; border: 1px solid var(--border-color);}
 
-        .post-card-new { margin: 12px 16px; padding: 16px; border: 1px solid #2a2a2a; border-radius: 12px; background: #181818; animation: fadeInUp 0.3s ease; }
+        .post-card-new { margin: 12px 16px; padding: 16px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--card-bg); animation: fadeInUp 0.3s ease; }
         .post-card-new .post-new-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
         .post-card-new .post-new-user { display: flex; align-items: center; }
         .post-card-new .post-new-user .avatar { width: 40px; height: 40px; margin-right: 10px; border-radius: 50%; overflow: hidden;}
         .post-card-new .post-new-name { display: flex; flex-direction: column; cursor: pointer;}
-        .post-card-new .post-new-name .username { font-weight: bold; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 6px;}
+        .post-card-new .post-new-name .username { font-weight: bold; font-size: 15px; color: var(--text-main); display: flex; align-items: center; gap: 6px;}
         .post-card-new .post-new-name .time { font-size: 13px; color: var(--text-sub); }
         .post-card-new .post-content { font-size: 15px; margin-bottom: 16px; white-space: pre-wrap; line-height: 1.5;}
         .post-card-new .post-media { width: 100%; max-height: 300px; border-radius: 12px; margin-bottom: 16px; object-fit: cover; border: 1px solid var(--border-color); }
 
-        .action-bar { display: flex; justify-content: space-between; align-items: center; color: #888; font-size: 13px; margin-top: 12px;}
+        .action-bar { display: flex; justify-content: space-between; align-items: center; color: var(--text-sub); font-size: 13px; margin-top: 12px;}
         .action-group { display: flex; align-items: center; gap: 20px;}
         .action-icon { display: flex; align-items: center; gap: 4px; cursor: pointer; fill: none; stroke: currentColor; stroke-width: 1.5; padding: 4px; transition: all 0.2s;}
         .action-icon svg { width: 18px; height: 18px; }
@@ -115,13 +126,13 @@
         .sidebar-header { padding: 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer;}
         .sidebar-header img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover;}
         .sidebar-item { display: flex; align-items: center; padding: 16px 24px; font-size: 16px; font-weight: bold; color: var(--text-main); cursor: pointer; transition: background 0.2s;}
-        .sidebar-item:hover { background: var(--hover-color); }
+        .sidebar-item:hover { background: var(--card-bg); }
 
         /* 详情页 */
         #detail-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 250; display: none; flex-direction: column; max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
         .detail-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); background: var(--bg-color); position: sticky; top: 0; z-index: 10;}
         .detail-header-left { display: flex; align-items: center; gap: 16px;}
-        .back-btn { cursor: pointer; color: #fff; display: flex; align-items: center; padding: 4px; }
+        .back-btn { cursor: pointer; color: var(--text-main); display: flex; align-items: center; padding: 4px; }
         .back-btn svg { width: 20px; height: 20px; fill: currentColor;}
         .detail-header-title { font-size: 16px; font-weight: bold; }
         
@@ -131,9 +142,9 @@
         .detail-user-left { display: flex; align-items: center; gap: 10px;}
         .detail-avatar { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: #333;}
         .detail-avatar img { width: 100%; height: 100%; object-fit: cover;}
-        .detail-name { font-size: 15px; font-weight: bold; color: #fff;}
+        .detail-name { font-size: 15px; font-weight: bold; color: var(--text-main);}
         .detail-time { font-size: 13px; color: var(--text-sub); margin-left: auto;}
-        .detail-post-content { font-size: 16px; color: #fff; line-height: 1.5; margin-bottom: 16px; white-space: pre-wrap; }
+        .detail-post-content { font-size: 16px; color: var(--text-main); line-height: 1.5; margin-bottom: 16px; white-space: pre-wrap; }
         .detail-post-media { width: 100%; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);}
         .detail-actions-bar { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border-color);}
         
@@ -144,13 +155,13 @@
         .comment-left { display: flex; flex-direction: column; align-items: center; width: 36px; flex-shrink: 0;}
         .comment-avatar { width: 36px; height: 36px; border-radius: 50%; background: #fff; overflow: hidden; z-index: 2;}
         .comment-avatar img { width: 100%; height: 100%; object-fit: cover;}
-        .comment-thread.has-replies .comment-left::after { content: ''; flex: 1; width: 2px; background: #333; margin-top: 4px; margin-bottom: -16px; z-index: 1;}
-        .comment-bubble { flex: 1; background: var(--card-bg); border-radius: 12px; padding: 12px; border: 1px solid #2a2a2a;}
+        .comment-thread.has-replies .comment-left::after { content: ''; flex: 1; width: 2px; background: var(--border-color); margin-top: 4px; margin-bottom: -16px; z-index: 1;}
+        .comment-bubble { flex: 1; background: var(--card-bg); border-radius: 12px; padding: 12px; border: 1px solid var(--border-color);}
         .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;}
-        .comment-name { font-size: 14px; font-weight: bold; color: #fff; cursor: pointer;}
+        .comment-name { font-size: 14px; font-weight: bold; color: var(--text-main); cursor: pointer;}
         .comment-time { font-size: 12px; color: var(--text-sub);}
-        .comment-text { font-size: 14px; color: #ddd; line-height: 1.4; margin-bottom: 12px; word-break: break-word;}
-        .comment-actions { display: flex; gap: 16px; font-size: 12px; color: #888; align-items: center;}
+        .comment-text { font-size: 14px; color: var(--text-main); line-height: 1.4; margin-bottom: 12px; word-break: break-word;}
+        .comment-actions { display: flex; gap: 16px; font-size: 12px; color: var(--text-sub); align-items: center;}
         .comment-actions span { display: flex; align-items: center; gap: 4px; cursor: pointer;}
         .comment-actions span:hover { color: var(--accent-color);}
         .reply-list { padding-left: 0; margin-top: 12px; display: flex; flex-direction: column; gap: 12px;}
@@ -159,7 +170,7 @@
         .reply-node .comment-left { width: 30px;}
 
         .detail-bottom-bar { position: absolute; bottom: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color); padding: 12px 16px; display: flex; align-items: center; gap: 12px;}
-        .detail-input { flex: 1; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 16px; color: #fff; outline: none; font-size: 14px;}
+        .detail-input { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 16px; color: var(--text-main); outline: none; font-size: 14px;}
         .detail-input:focus { border-color: var(--accent-color);}
         .detail-send-btn { background: var(--accent-color); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px;}
 
@@ -169,12 +180,12 @@
         .profile-avatar-wrapper { width: 86px; height: 86px; border-radius: 50%; border: 3px solid var(--bg-color); background: #333; margin-top: -43px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;}
         .profile-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .profile-actions-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: -30px; margin-bottom: 16px;}
-        .btn-outline { background: transparent; color: #eff3f4; border: 1px solid #536471; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;}
-        .btn-fill { background: #eff3f4; color: #000; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;}
-        .profile-name { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px;}
+        .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--text-sub); padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;}
+        .btn-fill { background: var(--text-main); color: var(--bg-color); border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;}
+        .profile-name { font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;}
         .profile-handle { font-size: 14px; color: var(--text-sub); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;}
-        .platform-tag { background: #2a2a2a; color: #aaa; font-size: 11px; padding: 2px 6px; border-radius: 4px;}
-        .profile-bio { font-size: 15px; margin-bottom: 16px; line-height: 1.5; color: #ddd;}
+        .platform-tag { background: var(--border-color); color: var(--text-sub); font-size: 11px; padding: 2px 6px; border-radius: 4px;}
+        .profile-bio { font-size: 15px; margin-bottom: 16px; line-height: 1.5; color: var(--text-main);}
         .profile-stats-row { display: flex; gap: 20px; font-size: 14px; color: var(--text-sub); margin-bottom: 16px;}
         .profile-stats-row b { color: var(--accent-color); font-weight: normal; margin-right: 4px; cursor: pointer;}
         .profile-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
@@ -182,45 +193,57 @@
         /* 弹窗统一样式 */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 500; display: none; justify-content: center; align-items: center; }
         .modal-overlay.open { display: flex; }
-        .modal-content { background: #161616; width: 90%; max-width: 360px; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; border: 1px solid #333; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: bold; font-size: 16px; color: var(--accent-color); padding-bottom: 12px; border-bottom: 1px solid #2a2a2a;}
-        .modal-close { cursor: pointer; color: #888; font-size: 20px; line-height: 1; }
-        .modal-close:hover { color: #fff; }
-        .modal-textarea { width: 100%; height: 120px; background: #1e1e1e; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; color: #fff; font-size: 15px; resize: none; outline: none; margin-bottom: 16px; }
+        .modal-content { background: var(--bg-color); width: 90%; max-width: 360px; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; border: 1px solid var(--border-color); max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: bold; font-size: 16px; color: var(--accent-color); padding-bottom: 12px; border-bottom: 1px solid var(--border-color);}
+        .modal-close { cursor: pointer; color: var(--text-sub); font-size: 20px; line-height: 1; }
+        .modal-close:hover { color: var(--text-main); }
+        .modal-textarea { width: 100%; height: 120px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; color: var(--text-main); font-size: 15px; resize: none; outline: none; margin-bottom: 16px; }
         .modal-textarea:focus { border-color: var(--accent-color); }
         .modal-submit { width: 100%; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 20px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 8px;}
         
         .modal-input-group { margin-bottom: 12px; }
-        .modal-input-group label { display: block; font-size: 12px; color: #888; margin-bottom: 6px;}
-        .modal-input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: #1e1e1e; color: #fff; font-size: 14px; outline: none;}
+        .modal-input-group label { display: block; font-size: 12px; color: var(--text-sub); margin-bottom: 6px;}
+        .modal-input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-size: 14px; outline: none;}
         .modal-input:focus { border-color: var(--accent-color);}
 
         /* 图片上传专用 */
         .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%;}
-        .file-upload-btn { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px dashed var(--border-color); background: #1e1e1e; color: var(--text-sub); font-size: 14px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
-        .file-upload-btn:hover { border-color: var(--accent-color); color: #fff;}
+        .file-upload-btn { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px dashed var(--border-color); background: var(--card-bg); color: var(--text-sub); font-size: 14px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
+        .file-upload-btn:hover { border-color: var(--accent-color); color: var(--text-main);}
         .file-upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
         .preview-img { max-width: 100%; max-height: 100px; border-radius: 8px; margin-top: 8px; display: none; object-fit: cover;}
 
         /* 全屏搜索 */
         #search-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 450; display: none; flex-direction: column; }
         .search-header { display: flex; align-items: center; padding: 10px 16px; gap: 10px; border-bottom: 1px solid var(--border-color);}
-        .search-box { flex: 1; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
+        .search-box { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
         .search-results { flex: 1; overflow-y: auto; }
-        .search-user-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #222; cursor: pointer;}
+        .search-user-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer;}
         
         /* 消息通知样式 */
-        .noti-tabs { display: flex; padding: 0 0 12px 0; gap: 10px; border-bottom: 1px solid #2a2a2a; margin-bottom: 12px; overflow-x: auto;}
-        .noti-tab { font-size: 13px; color: #888; cursor: pointer; padding: 4px 10px; border-radius: 20px; white-space: nowrap;}
-        .noti-tab.active { background: #2a2a2a; color: #fff;}
+        .noti-tabs { display: flex; padding: 0 0 12px 0; gap: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 12px; overflow-x: auto;}
+        .noti-tab { font-size: 13px; color: var(--text-sub); cursor: pointer; padding: 4px 10px; border-radius: 20px; white-space: nowrap;}
+        .noti-tab.active { background: var(--border-color); color: var(--text-main);}
         .noti-item { display: flex; gap: 12px; margin-bottom: 16px;}
         .noti-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;}
         .noti-item-right { flex: 1;}
         .noti-user-line { display: flex; align-items: center; gap: 6px; margin-bottom: 4px;}
-        .noti-username { font-size: 14px; color: #fff; font-weight: bold;}
-        .noti-action-text { font-size: 13px; color: #ccc;}
-        .noti-quote-box { background: #222; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: #aaa; margin-bottom: 6px; border: 1px solid #333;}
-        .noti-time-text { font-size: 11px; color: #666;}
+        .noti-username { font-size: 14px; color: var(--text-main); font-weight: bold;}
+        .noti-action-text { font-size: 13px; color: var(--text-sub);}
+        .noti-quote-box { background: var(--card-bg); padding: 8px 12px; border-radius: 8px; font-size: 13px; color: var(--text-sub); margin-bottom: 6px; border: 1px solid var(--border-color);}
+        .noti-time-text { font-size: 11px; color: var(--text-sub);}
+
+        /* 设置开关样式 */
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color);}
+        .setting-item:last-child { border-bottom: none; }
+        .setting-label { font-size: 15px; color: var(--text-main); }
+        .setting-desc { font-size: 12px; color: var(--text-sub); margin-top: 4px;}
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 26px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
     </style>
 </head>
 <body>
@@ -261,9 +284,13 @@
             </div>
             
             <div class="header-right">
-                <div class="header-msg-btn" onclick="openNotiModal()">
+                <div class="header-btn" onclick="openNotiModal()">
                     <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
                     <div class="red-dot" id="header-noti-dot">0</div>
+                </div>
+                <!-- 新增：设置按钮 -->
+                <div class="header-btn" onclick="openSettingsModal()">
+                    <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
                 </div>
                 <button class="btn-post-main" id="header-post-btn" onclick="openPostModal()">发布动态</button>
                 <span class="layout-btn" id="layout-btn" onclick="toggleLayout()">切怀旧版</span>
@@ -292,6 +319,41 @@
         <input type="text" class="search-box" id="search-input" placeholder="搜索帖子或用户..." oninput="handleSearch(this.value)">
     </div>
     <div class="search-results" id="search-results"></div>
+</div>
+
+<!-- 设置弹窗 -->
+<div class="modal-overlay" id="settings-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>设置</span>
+            <span class="modal-close" onclick="document.getElementById('settings-modal').classList.remove('open')">×</span>
+        </div>
+        
+        <div class="setting-item">
+            <div>
+                <div class="setting-label">切换浅色主题</div>
+                <div class="setting-desc">开启后将变为白底黑字</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="theme-toggle" onchange="toggleTheme()">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="setting-item" style="cursor:pointer;" onclick="clearCache()">
+            <div>
+                <div class="setting-label" style="color:#ff4757;">清理本地缓存</div>
+                <div class="setting-desc">遇到Bug时尝试清理并刷新</div>
+            </div>
+        </div>
+
+        <div class="setting-item" style="cursor:pointer;" onclick="alert('基沃托斯日讯 v8.2\n\n由AI协助开发打造。\n\n功能包含：发帖、评论、图片自动压缩、多主题切换等。')">
+            <div>
+                <div class="setting-label">关于本站</div>
+                <div class="setting-desc">查看版本信息与说明</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- 弹窗区域 -->
@@ -446,6 +508,40 @@
         window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3000); 
     }
 
+    // ================= 主题切换逻辑 =================
+    function applyTheme(isLight) {
+        if (isLight) {
+            document.body.classList.add('light-theme');
+            document.getElementById('theme-toggle').checked = true;
+        } else {
+            document.body.classList.remove('light-theme');
+            document.getElementById('theme-toggle').checked = false;
+        }
+    }
+
+    // 页面加载时检查主题
+    if (localStorage.getItem('theme') === 'light') {
+        applyTheme(true);
+    }
+
+    window.toggleTheme = function() {
+        const isLight = document.getElementById('theme-toggle').checked;
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        applyTheme(isLight);
+    }
+
+    window.openSettingsModal = function() {
+        document.getElementById('settings-modal').classList.add('open');
+    }
+
+    window.clearCache = function() {
+        if(confirm('确定要清空本地缓存并刷新吗？')) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+
+    // ================= 图片处理逻辑 =================
     window.previewImage = function(input, previewId) {
         const preview = document.getElementById(previewId);
         if (input.files && input.files[0]) {
@@ -620,8 +716,10 @@
         AllUsers = users || [];
         
         await loadNotifications();
-        await resetAndLoadPosts();
+        
+        // 【修复初始化不显示帖子的Bug】先更新UI，再拉取数据渲染
         updateUIForLayout();
+        await resetAndLoadPosts(); 
     }
 
     window.logout = async function() {
@@ -670,7 +768,7 @@
             <div class="sidebar-header" onclick="switchView('profile_self'); closeSidebar();">
                 <img src="${CurrentUserProfile.avatar}">
                 <div>
-                    <div style="font-weight:bold; font-size:16px; color:#fff;">${CurrentUserProfile.name}</div>
+                    <div style="font-weight:bold; font-size:16px; color:var(--text-main);">${CurrentUserProfile.name}</div>
                     <div style="font-size:14px; color:var(--text-sub);">@${CurrentUserProfile.signal}</div>
                 </div>
             </div>
@@ -729,7 +827,7 @@
                     <img class="noti-avatar" src="https://ui-avatars.com/api/?name=公&background=ff7b9c&color=fff&size=128">
                     <div class="noti-item-right">
                         <div class="noti-user-line"><span class="noti-username" style="color:var(--accent-color);">系统公告</span></div>
-                        <div style="font-size:13px; color:#ddd; margin-bottom:8px;">v8.0流畅版已上线！修复了连点问题，优化了动画流畅度，修复了获赞数显示。</div>
+                        <div style="font-size:13px; color:var(--text-main); margin-bottom:8px;">v8.2主题版已上线！新增设置弹窗与浅色主题，修复了初次进入不渲染帖子的Bug。</div>
                         <div class="noti-time-text">置顶</div>
                     </div>
                 </div>
@@ -740,7 +838,7 @@
         let list = window.UserNotifications || [];
         if (filterType !== 'all') list = list.filter(n => n.type === filterType);
         if (list.length === 0) {
-            box.innerHTML = `<div style="text-align:center; padding:20px; color:#666; font-size:13px;">暂无通知</div>`;
+            box.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-sub); font-size:13px;">暂无通知</div>`;
             return;
         }
         let html = '';
@@ -776,9 +874,9 @@
             document.getElementById('user-list-title').innerText = '关注者';
         }
 
-        let html = list.length === 0 ? `<div style="text-align:center;padding:40px;color:#666;">暂无用户</div>` : '';
+        let html = list.length === 0 ? `<div style="text-align:center;padding:40px;color:var(--text-sub);">暂无用户</div>` : '';
         list.forEach(u => {
-            html += `<div class="search-user-item" onclick="document.getElementById('user-list-modal').style.display='none'; viewUser('${u.id}')"><div class="avatar" style="width:40px;height:40px;margin-right:12px;border-radius:50%;overflow:hidden;"><img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;"></div><div style="font-weight:bold;color:#fff;">${u.name}</div></div>`;
+            html += `<div class="search-user-item" onclick="document.getElementById('user-list-modal').style.display='none'; viewUser('${u.id}')"><div class="avatar" style="width:40px;height:40px;margin-right:12px;border-radius:50%;overflow:hidden;"><img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;"></div><div style="font-weight:bold;color:var(--text-main);">${u.name}</div></div>`;
         });
         
         document.getElementById('user-list-content').innerHTML = html;
@@ -794,10 +892,10 @@
         if (matchedUsers.length > 0) {
             let html = '';
             matchedUsers.forEach(u => {
-                html += `<div class="search-user-item" onclick="viewUser('${u.id}'); closeSearch();"><div class="avatar" style="width:40px;height:40px;margin-right:12px;border-radius:50%;overflow:hidden;"><img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;"></div><div style="font-weight:bold;color:#fff;">${u.name}</div></div>`;
+                html += `<div class="search-user-item" onclick="viewUser('${u.id}'); closeSearch();"><div class="avatar" style="width:40px;height:40px;margin-right:12px;border-radius:50%;overflow:hidden;"><img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;"></div><div style="font-weight:bold;color:var(--text-main);">${u.name}</div></div>`;
             });
             resBox.innerHTML = html;
-        } else { resBox.innerHTML = `<div style="text-align:center;padding:20px;color:#666;">没有找到相关用户</div>`; }
+        } else { resBox.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-sub);">没有找到相关用户</div>`; }
     }
 
     window.switchTab = function(el) {
@@ -842,7 +940,8 @@
         let html = '';
         let postsToRender = AllPosts;
 
-        if (currentView === 'profile_self' || currentView === 'profile_other') {
+        // 非首页状态显示返回键
+        if (currentView !== 'feed') {
             backBtn.style.display = 'flex';
             searchIcon.style.display = 'none';
         } else {
@@ -878,7 +977,6 @@
             const followingCount = targetUser.following_list ? targetUser.following_list.length : 0;
             const isFollowed = CurrentUserProfile.following_list && CurrentUserProfile.following_list.includes(targetUser.id);
             
-            // 【修复】真实计算获赞数
             let likesCount = 0;
             AllPosts.forEach(p => {
                 if(p.author_id === targetUser.id) likesCount += (p.likes || 0);
@@ -999,9 +1097,7 @@
         }
     }
 
-    // ================= 交互逻辑优化 (加锁防重复，防连点) =================
-    
-    // 防连点工具
+    // ================= 交互逻辑优化 =================
     function canClick(id) {
         const now = Date.now();
         if (clickCooldowns[id] && now - clickCooldowns[id] < 800) return false; 
@@ -1010,8 +1106,7 @@
     }
 
     window.toggleLike = async function(id) {
-        if (!canClick('like_' + id)) return; // 800ms冷却
-
+        if (!canClick('like_' + id)) return; 
         const post = AllPosts.find(x => x.id === id);
         if (!post) return;
         
@@ -1021,17 +1116,14 @@
 
         try {
             if(post.isLiked && post.author_id !== CurrentUserProfile.id) {
-                await supabaseClient.from('notifications').insert([{ user_id: post.author_id, sender_id: CurrentUserProfile.id, type: 'like', post_id: post.id }]);
+                supabaseClient.from('notifications').insert([{ user_id: post.author_id, sender_id: CurrentUserProfile.id, type: 'like', post_id: post.id }]).then();
             }
-            await supabaseClient.from('posts').update({ likes: post.likes }).eq('id', id);
-        } catch (err) {
-            console.error("点赞同步失败", err);
-        }
+            supabaseClient.from('posts').update({ likes: post.likes }).eq('id', id).then();
+        } catch (err) { console.error("点赞同步失败", err); }
     }
 
     window.toggleBookmark = async function(id) {
         if (!canClick('bookmark_' + id)) return;
-
         if (!CurrentUserProfile.bookmarks) CurrentUserProfile.bookmarks = [];
         const idx = CurrentUserProfile.bookmarks.indexOf(id);
         
@@ -1043,15 +1135,12 @@
         render(); 
 
         try {
-            await supabaseClient.from('profiles').update({ bookmarks: CurrentUserProfile.bookmarks }).eq('id', CurrentUserProfile.id);
-        } catch (err) {
-            console.error("收藏同步失败", err);
-        }
+            supabaseClient.from('profiles').update({ bookmarks: CurrentUserProfile.bookmarks }).eq('id', CurrentUserProfile.id).then();
+        } catch (err) { console.error("收藏同步失败", err); }
     }
 
     window.toggleFollow = async function(targetId) {
         if (!canClick('follow_' + targetId)) return;
-
         const targetUser = AllUsers.find(u => u.id === targetId);
         if (!targetUser) return;
         
@@ -1071,13 +1160,11 @@
 
         try {
             if (idx === -1 && targetId !== CurrentUserProfile.id) {
-                await supabaseClient.from('notifications').insert([{ user_id: targetId, sender_id: CurrentUserProfile.id, type: 'follow' }]);
+                supabaseClient.from('notifications').insert([{ user_id: targetId, sender_id: CurrentUserProfile.id, type: 'follow' }]).then();
             }
-            await supabaseClient.from('profiles').update({ following_list: fList }).eq('id', CurrentUserProfile.id);
-            await supabaseClient.from('profiles').update({ followers: targetUser.followers }).eq('id', targetId);
-        } catch (err) {
-            console.error("关注同步失败", err);
-        }
+            supabaseClient.from('profiles').update({ following_list: fList }).eq('id', CurrentUserProfile.id).then();
+            supabaseClient.from('profiles').update({ followers: targetUser.followers }).eq('id', targetId).then();
+        } catch (err) { console.error("关注同步失败", err); }
     }
 
     window.deletePost = async function(id) {
@@ -1095,9 +1182,7 @@
             if (currentView === 'detail' || currentPostIdForComment === id) {
                 closeDetailPage();
             }
-        } catch (err) {
-            showToast('删除失败: ' + err.message);
-        }
+        } catch (err) { showToast('删除失败: ' + err.message); }
     }
 
     window.openDetailPage = async function(id) {
@@ -1143,7 +1228,7 @@
             </div>
         </div>`;
         
-        html += `<div class="comment-section" id="comment-loading-area"><div style="text-align:center; padding:20px; color:#666;">评论区加载中...</div></div>`;
+        html += `<div class="comment-section" id="comment-loading-area"><div style="text-align:center; padding:20px; color:var(--text-sub);">评论区加载中...</div></div>`;
         document.getElementById('detail-render-area').innerHTML = html;
 
         try {
@@ -1226,7 +1311,6 @@
     window.closeDetailPage = function() { document.getElementById('detail-page').style.display = 'none'; resetAndLoadPosts(); }
     window.prepareReply = function(name, id) { currentReplyTo = id; const input = document.getElementById('comment-input'); input.placeholder = `回复 @${name}...`; input.focus(); }
 
-    // ================= 发帖/评论防重复提交 =================
     window.submitComment = async function() {
         if (isProcessing) return;
         const input = document.getElementById('comment-input');
@@ -1406,4 +1490,4 @@
     }
 </script>
 </body>
-                </html>
+    </html>
