@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v6.3</title>
+    <title>基沃托斯日讯-测试版v6.4</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -33,13 +33,11 @@
         .header { position: sticky; top: 0; background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 100;}
         .header-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; height: 56px;}
         
-        /* 左侧：搜索 + 头像 */
         .header-left { display: flex; align-items: center; gap: 12px; }
         .header-icon { width: 22px; height: 22px; fill: #fff; cursor: pointer; }
         .header-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid #444;}
         .header-title { font-size: 18px; font-weight: bold; color: #fff; display: none; }
         
-        /* 右侧：消息 + 发布 */
         .header-right { display: flex; align-items: center; gap: 12px; }
         .header-msg-btn { position: relative; cursor: pointer; display: flex; align-items: center; }
         .header-msg-btn svg { width: 22px; height: 22px; fill: #fff; }
@@ -55,46 +53,46 @@
         .tab.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 40px; height: 3px; background: var(--accent-color); border-radius: 2px; }
 
         /* =========================================
-           怀旧版帖子卡片
+           怀旧版排版 (无边框，极简线条，对应图1)
            ========================================= */
-        .post-classic { margin: 12px 16px; padding: 16px; border: 1px solid #2a2a2a; border-radius: 12px; background: #181818; }
+        .post-classic { padding: 16px; border-bottom: 1px solid var(--border-color); background: transparent; }
         .post-classic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .post-classic-user { display: flex; align-items: center; gap: 10px; cursor: pointer;}
-        .post-classic-avatar { width: 36px; height: 36px; border-radius: 50%; background: #333; overflow: hidden; flex-shrink: 0;}
+        .post-classic-avatar { width: 40px; height: 40px; border-radius: 50%; background: #333; overflow: hidden; flex-shrink: 0;}
         .post-classic-avatar img { width: 100%; height: 100%; object-fit: cover;}
         
         .post-classic-name { font-size: 15px; font-weight: bold; color: #fff; display: flex; align-items: center; gap: 6px;}
         .post-classic-time { font-size: 13px; color: var(--text-sub); display: flex; align-items: center; gap: 4px;}
-        .post-classic-time::before { content: '·'; font-weight: bold;}
         
         .post-classic-content { font-size: 15px; margin-bottom: 16px; white-space: pre-wrap; word-break: break-word; cursor: pointer; color: #eee; line-height: 1.5;}
         .post-classic-media { width: 100%; border-radius: 12px; margin-bottom: 16px; max-height: 300px; object-fit: cover; cursor: pointer; border: 1px solid #333;}
         
-        .post-classic-actions { display: flex; justify-content: space-between; align-items: center; color: #888; font-size: 13px;}
+        /* =========================================
+           普通版卡片 (带边框，深色背景，对应图2)
+           ========================================= */
+        .post-card-new { margin: 12px 16px; padding: 16px; border: 1px solid #2a2a2a; border-radius: 12px; background: #181818; }
+        .post-card-new .post-new-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
+        .post-card-new .post-new-user { display: flex; align-items: center; }
+        .post-card-new .post-new-user .avatar { width: 40px; height: 40px; margin-right: 10px; border-radius: 50%; overflow: hidden;}
+        .post-card-new .post-new-name { display: flex; flex-direction: column; cursor: pointer;}
+        .post-card-new .post-new-name .username { font-weight: bold; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 6px;}
+        .post-card-new .post-new-name .time { font-size: 13px; color: var(--text-sub); }
+        .post-card-new .post-content { font-size: 15px; margin-bottom: 16px; white-space: pre-wrap; line-height: 1.5;}
+        .post-card-new .post-media { width: 100%; max-height: 300px; border-radius: 12px; margin-bottom: 16px; object-fit: cover; border: 1px solid var(--border-color); }
+
+        /* 通用操作栏 */
+        .action-bar { display: flex; justify-content: space-between; align-items: center; color: #888; font-size: 13px; margin-top: 12px;}
         .action-group { display: flex; align-items: center; gap: 20px;}
         .action-icon { display: flex; align-items: center; gap: 4px; cursor: pointer; fill: none; stroke: currentColor; stroke-width: 1.5; padding: 4px; transition: all 0.2s;}
         .action-icon svg { width: 18px; height: 18px; }
         .action-icon:hover { color: var(--accent-color); }
         .action-icon.active { color: var(--accent-color); stroke: var(--accent-color); }
         .action-icon.active svg { fill: var(--accent-color); }
-        .muted-text { font-size: 12px; color: #666; }
-        .role-tag { font-size: 11px; background: rgba(255, 123, 156, 0.2); color: var(--accent-color); padding: 1px 6px; border-radius: 4px; }
+        
+        .btn-delete { color: #ff4757; margin-left: 10px;}
+        .btn-delete:hover { color: #ff6b81; background: rgba(255,71,87,0.1); border-radius: 50%;}
 
-        /* 普通版卡片 */
-        .post-card-new { padding: 16px; border-bottom: 1px solid var(--border-color); }
-        .post-card-new .action-bar { display: flex; justify-content: space-between; margin-top: 12px; max-width: 380px; color: #888;}
-        .post-card-new .action-icon { padding: 4px; gap: 4px; cursor: pointer; fill: none; stroke: currentColor; stroke-width: 1.5;}
-        .post-card-new .action-icon svg { width: 18px; height: 18px;}
-        .post-card-new .action-icon.active { color: var(--accent-color); stroke: var(--accent-color);}
-        .post-card-new .action-icon.active svg { fill: var(--accent-color);}
-        .post-new-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .post-new-user { display: flex; align-items: center; }
-        .post-new-user .avatar { width: 40px; height: 40px; margin-right: 10px; border-radius: 50%; overflow: hidden;}
-        .post-new-name { display: flex; flex-direction: column; cursor: pointer;}
-        .post-new-name .username { font-weight: bold; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 6px;}
-        .post-new-name .time { font-size: 12px; color: var(--text-sub); }
-        .post-content { font-size: 15px; margin-bottom: 12px; white-space: pre-wrap; line-height: 1.5;}
-        .post-media { width: 100%; max-height: 300px; border-radius: 16px; margin-bottom: 12px; object-fit: cover; border: 1px solid var(--border-color); }
+        .role-tag { font-size: 11px; background: rgba(255, 123, 156, 0.2); color: var(--accent-color); padding: 1px 6px; border-radius: 4px; }
 
         /* 侧边栏 */
         .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 300; display: none; opacity: 0; transition: opacity 0.3s;}
@@ -106,30 +104,48 @@
         .sidebar-item { display: flex; align-items: center; padding: 16px 24px; font-size: 16px; font-weight: bold; color: var(--text-main); cursor: pointer; transition: background 0.2s;}
         .sidebar-item:hover { background: var(--hover-color); }
 
-        /* 详情页 */
+        /* =========================================
+           详情页 (完美复刻图3)
+           ========================================= */
         #detail-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 250; display: none; flex-direction: column; max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
         .detail-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); background: var(--bg-color); position: sticky; top: 0; z-index: 10;}
         .detail-header-left { display: flex; align-items: center; gap: 16px;}
-        .back-btn { cursor: pointer; color: #fff; display: flex; align-items: center; padding: 4px; background: #222; border-radius: 50%;}
+        .back-btn { cursor: pointer; color: #fff; display: flex; align-items: center; padding: 4px; }
         .back-btn svg { width: 20px; height: 20px; fill: currentColor;}
         .detail-header-title { font-size: 16px; font-weight: bold; }
+        .detail-header-right svg { width: 20px; height: 20px; fill: #fff; cursor: pointer;}
         
         .detail-content-area { flex: 1; overflow-y: auto; padding-bottom: 70px; }
+        
+        /* 主贴区域 */
         .detail-post-main { padding: 16px; border-bottom: 1px solid var(--border-color); }
-        .detail-user-info { display: flex; align-items: center; margin-bottom: 16px; gap: 10px;}
-        .detail-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #333;}
+        .detail-user-info { display: flex; align-items: center; margin-bottom: 16px; gap: 10px; justify-content: space-between;}
+        .detail-user-left { display: flex; align-items: center; gap: 10px;}
+        .detail-avatar { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: #333;}
         .detail-avatar img { width: 100%; height: 100%; object-fit: cover;}
         .detail-name { font-size: 15px; font-weight: bold; color: #fff;}
-        .detail-time { font-size: 13px; color: var(--text-sub);}
+        .detail-time { font-size: 13px; color: var(--text-sub); margin-left: auto;}
         .detail-post-content { font-size: 16px; color: #fff; line-height: 1.5; margin-bottom: 16px; white-space: pre-wrap; }
         .detail-post-media { width: 100%; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);}
         .detail-actions-bar { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border-color);}
         
-        /* 图4评论区 */
+        /* 评论区 (图3的竖线嵌套风格) */
         .comment-section { padding: 16px; }
-        .comment-block { margin-bottom: 16px; display: flex; gap: 10px;}
-        .comment-avatar { width: 36px; height: 36px; border-radius: 50%; background: #fff; flex-shrink: 0; overflow: hidden;}
+        
+        .comment-thread { display: flex; flex-direction: column; margin-bottom: 16px; position: relative;}
+        .comment-node { display: flex; gap: 10px; position: relative;}
+        
+        /* 左侧头像与竖线 */
+        .comment-left { display: flex; flex-direction: column; align-items: center; width: 36px; flex-shrink: 0;}
+        .comment-avatar { width: 36px; height: 36px; border-radius: 50%; background: #fff; overflow: hidden; z-index: 2;}
         .comment-avatar img { width: 100%; height: 100%; object-fit: cover;}
+        
+        /* 如果有回复，主评论头像向下延伸一条线 */
+        .comment-thread.has-replies .comment-left::after {
+            content: ''; flex: 1; width: 2px; background: #333; margin-top: 4px; margin-bottom: -16px; z-index: 1;
+        }
+
+        /* 评论气泡框 */
         .comment-bubble { flex: 1; background: var(--card-bg); border-radius: 12px; padding: 12px; border: 1px solid #2a2a2a;}
         .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;}
         .comment-name { font-size: 14px; font-weight: bold; color: #fff; cursor: pointer;}
@@ -138,8 +154,12 @@
         .comment-actions { display: flex; gap: 16px; font-size: 12px; color: #888; align-items: center;}
         .comment-actions span { display: flex; align-items: center; gap: 4px; cursor: pointer;}
         .comment-actions span:hover { color: var(--accent-color);}
-        .reply-block { margin-left: 46px; margin-bottom: 16px; display: flex; gap: 10px;}
-        .reply-block .comment-avatar { width: 30px; height: 30px;}
+        
+        /* 回复块 (缩进并带有左竖线) */
+        .reply-list { padding-left: 0; margin-top: 12px; display: flex; flex-direction: column; gap: 12px;}
+        .reply-node { display: flex; gap: 10px;}
+        .reply-node .comment-avatar { width: 30px; height: 30px;}
+        .reply-node .comment-left { width: 30px;}
 
         .detail-bottom-bar { position: absolute; bottom: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color); padding: 12px 16px; display: flex; align-items: center; gap: 12px;}
         .detail-input { flex: 1; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 16px; color: #fff; outline: none; font-size: 14px;}
@@ -237,7 +257,6 @@
                     <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
                     <div class="red-dot" id="header-noti-dot">0</div>
                 </div>
-                <!-- 这是唯一的发布动态按钮 -->
                 <button class="btn-post-main" id="header-post-btn" onclick="openPostModal()">发布动态</button>
                 <span class="layout-btn" id="layout-btn" onclick="toggleLayout()">切怀旧版</span>
             </div>
@@ -289,8 +308,14 @@
             </div>
             <span class="detail-header-title" id="detail-header-title">帖子详情</span>
         </div>
+        <div class="detail-header-right">
+             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+             <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+        </div>
     </div>
-    <div class="detail-content-area" id="detail-render-area"></div>
+    <div class="detail-content-area" id="detail-render-area">
+        <!-- JS 会先在这里渲染主贴，然后再加载评论 -->
+    </div>
     <div class="detail-bottom-bar">
         <input type="text" class="detail-input" id="comment-input" placeholder="发布你的评论...">
         <button class="detail-send-btn" onclick="submitComment()">发送</button>
@@ -349,7 +374,6 @@
     let currentReplyTo = null;
     let currentLayout = localStorage.getItem('forum_layout') || 'classic'; 
     let isLoggingIn = false;
-    let unreadNotiCount = 0;
 
     function generateSignal() { return `KIV-${Math.floor(100000 + Math.random() * 900000)}`; }
 
@@ -487,22 +511,19 @@
     async function loadNotifications() {
         const { data: notis } = await supabaseClient.from('notifications').select('*, sender:profiles!sender_id(name, avatar)').eq('user_id', CurrentUserProfile.id).order('created_at', { ascending: false });
         window.UserNotifications = notis || [];
-        unreadNotiCount = window.UserNotifications.filter(n => !n.is_read).length;
-        
+        let unread = window.UserNotifications.filter(n => !n.is_read).length;
         const dot = document.getElementById('header-noti-dot');
-        if (unreadNotiCount > 0) {
-            dot.innerText = unreadNotiCount > 99 ? '99+' : unreadNotiCount;
+        if (unread > 0) {
+            dot.innerText = unread > 99 ? '99+' : unread;
             dot.style.display = 'block';
         } else {
             dot.style.display = 'none';
         }
     }
 
-    // ================= 侧边栏逻辑 =================
     window.openSidebar = function() {
         if (!CurrentUserProfile) return;
         const content = document.getElementById('sidebar-content');
-        // 移除了重复的 "发布帖子" 按钮
         content.innerHTML = `
             <div class="sidebar-header" onclick="switchView('profile_self'); closeSidebar();">
                 <img src="${CurrentUserProfile.avatar}">
@@ -528,10 +549,20 @@
         document.getElementById('sidebar-nav').classList.remove('open');
     }
 
-    // ================= 消息通知弹窗逻辑 =================
     window.openNotiModal = function() {
         document.getElementById('noti-modal-overlay').style.display = 'flex';
-        renderNotiList('all');
+        const box = document.getElementById('noti-modal-content');
+        let list = window.UserNotifications || [];
+        if (list.length === 0) {
+            box.innerHTML = `<div style="text-align:center; padding:20px; color:#666; font-size:13px;">暂无通知</div>`;
+            return;
+        }
+        let html = '';
+        list.forEach(n => {
+            let actionText = n.type === 'like' ? '赞了你的帖子' : (n.type === 'follow' ? '关注了你' : '回复了你的帖子');
+            html += `<div class="noti-item"><img class="noti-avatar" src="${n.sender?.avatar || ''}"><div class="noti-item-right"><div class="noti-user-line"><span class="noti-username">${n.sender?.name || '某人'}</span><span class="noti-action-text">${actionText}</span></div><div class="noti-time-text">${new Date(n.created_at).toLocaleString()}</div></div></div>`;
+        });
+        box.innerHTML = html;
     }
 
     window.closeNotiModal = function(event) {
@@ -539,40 +570,6 @@
         document.getElementById('noti-modal-overlay').style.display = 'none';
     }
 
-    function renderNotiList(filterType) {
-        const box = document.getElementById('noti-modal-content');
-        let list = window.UserNotifications || [];
-        
-        if (list.length === 0) {
-            box.innerHTML = `<div style="text-align:center; padding:20px; color:#666; font-size:13px;">暂无通知</div>`;
-            return;
-        }
-
-        let html = '';
-        list.forEach(n => {
-            let actionText = n.type === 'like' ? '赞了你的评论' : (n.type === 'follow' ? '关注了你' : '回复了你的评论');
-            let quoteHtml = '';
-            if (n.content && (n.type === 'comment' || n.type === 'like')) {
-                quoteHtml = `<div class="noti-quote-box">${n.content}</div>`;
-            }
-
-            html += `
-            <div class="noti-item" onclick="viewUser('${n.sender_id}'); closeNotiModal();">
-                <img class="noti-avatar" src="${n.sender?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=unknown'}">
-                <div class="noti-item-right">
-                    <div class="noti-user-line">
-                        <span class="noti-username">${n.sender?.name || '某人'}</span>
-                        <span class="noti-action-text">${actionText}</span>
-                    </div>
-                    ${quoteHtml}
-                    <div class="noti-time-text">${new Date(n.created_at).toLocaleString()}</div>
-                </div>
-            </div>`;
-        });
-        box.innerHTML = html;
-    }
-
-    // ================= 搜索逻辑 =================
     window.openSearch = function() {
         document.getElementById('search-overlay').style.display = 'flex';
         document.getElementById('search-input').focus();
@@ -601,11 +598,8 @@
     }
 
     window.viewUser = function(id) {
-        if (id === CurrentUserProfile.id) {
-            switchView('profile_self');
-        } else {
-            switchView('profile_other', id);
-        }
+        if (id === CurrentUserProfile.id) switchView('profile_self');
+        else switchView('profile_other', id);
     }
 
     function updateUIForLayout() {
@@ -630,11 +624,6 @@
         if (viewName === 'profile_self') currentProfileTab = 'posts';
         
         updateUIForLayout();
-        render();
-    }
-
-    window.switchProfileTab = function(tab) {
-        currentProfileTab = tab;
         render();
     }
 
@@ -666,13 +655,7 @@
 
             headerTitle.innerText = targetUser.name;
             headerTitle.style.display = 'block';
-            
-            if (isSelf && currentProfileTab === 'bookmarks') {
-                const bookmarkIds = CurrentUserProfile.bookmarks || [];
-                postsToRender = postsToRender.filter(p => bookmarkIds.includes(p.id));
-            } else {
-                postsToRender = postsToRender.filter(p => p.author_id === targetUser.id);
-            }
+            postsToRender = postsToRender.filter(p => p.author_id === targetUser.id);
 
             const followersList = AllUsers.filter(u => u.following_list && u.following_list.includes(targetUser.id));
             const followingCount = targetUser.following_list ? targetUser.following_list.length : 0;
@@ -728,8 +711,14 @@
         const iconBookmark = `<svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
         const iconBookmarkFill = `<svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
         const iconShare = `<svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>`;
+        const iconDelete = `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+
+        // 构造操作栏按钮，如果是自己的帖子，加上删除按钮
+        const deleteBtn = (post.author_id === CurrentUserProfile.id) ? 
+            `<div class="action-icon btn-delete" onclick="deletePost('${post.id}')">${iconDelete}</div>` : '';
 
         if (currentLayout === 'new') {
+            // 普通版：带边框的卡片
             return `
             <div class="post-card-new">
                 <div class="post-new-header" onclick="openDetailPage('${post.id}')">
@@ -746,14 +735,21 @@
                     ${mediaHtml}
                 </div>
                 <div class="action-bar">
-                    <div class="action-icon" onclick="openDetailPage('${post.id}')">${iconReply} <span>${(post.comments || []).length}</span></div>
-                    <div class="action-icon">${iconRetweet} <span>0</span></div>
-                    <div class="action-icon like-btn ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
-                    <div class="action-icon">${iconViews} <span>${post.views}</span></div>
-                    <div class="action-icon ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? iconBookmarkFill : iconBookmark}</div>
+                    <div class="action-group">
+                        <div class="action-icon" onclick="openDetailPage('${post.id}')">${iconReply} <span>${(post.comments || []).length}</span></div>
+                        <div class="action-icon">${iconRetweet} <span>0</span></div>
+                        <div class="action-icon like-btn ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
+                        <div class="action-icon">${iconViews} <span>${post.views}</span></div>
+                        <div class="action-icon ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? iconBookmarkFill : iconBookmark}</div>
+                        ${deleteBtn}
+                    </div>
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <div class="action-icon">${iconShare}</div>
+                    </div>
                 </div>
             </div>`;
         } else {
+            // 怀旧版：无边框极简线条
             return `
             <div class="post-classic">
                 <div class="post-classic-header">
@@ -766,13 +762,14 @@
                 <div class="post-classic-content" onclick="openDetailPage('${post.id}')">${post.content}</div>
                 <div onclick="openDetailPage('${post.id}')">${mediaHtml}</div>
                 
-                <div class="post-classic-actions">
+                <div class="action-bar">
                     <div class="action-group">
                         <div class="action-icon" onclick="openDetailPage('${post.id}')">${iconReply} <span>${(post.comments || []).length}</span></div>
                         <div class="action-icon">${iconRetweet} <span>0</span></div>
                         <div class="action-icon like-btn ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
                         <div class="action-icon">${iconViews} <span>${post.views}</span></div>
                         <div class="action-icon ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? iconBookmarkFill : iconBookmark}</div>
+                        ${deleteBtn}
                     </div>
                     <div style="display:flex; align-items:center; gap:16px;">
                         <div class="action-icon">${iconShare}</div>
@@ -782,20 +779,23 @@
         }
     }
 
-    window.showUserList = function(type, userId) {
-        const targetUser = AllUsers.find(u => u.id === userId);
-        if (!targetUser) return;
-        let list = type === 'following' ? AllUsers.filter(u => targetUser.following_list && targetUser.following_list.includes(u.id)) : AllUsers.filter(u => u.following_list && u.following_list.includes(targetUser.id));
-        document.getElementById('list-title').innerText = type === 'following' ? '正在关注' : '关注者';
-        
-        let html = list.length === 0 ? `<div style="text-align:center;padding:40px;color:var(--text-sub);">暂无用户</div>` : '';
-        list.forEach(u => {
-            html += `<div class="search-user-item" onclick="document.getElementById('list-modal').style.display='none'; viewUser('${u.id}')"><div class="avatar" style="width:40px;height:40px;margin-right:12px;border-radius:50%;overflow:hidden;"><img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;"></div><div style="font-weight:bold;color:#fff;">${u.name}</div></div>`;
-        });
-        document.getElementById('list-render-area').innerHTML = html;
-        document.getElementById('list-modal').style.display = 'flex';
+    // 删除帖子功能
+    window.deletePost = async function(id) {
+        if (!confirm('确定要删除这条帖子吗？')) return;
+        try {
+            const { error } = await supabaseClient.from('posts').delete().eq('id', id);
+            if (error) throw error;
+            showToast('帖子已删除');
+            await resetAndLoadPosts();
+            if (currentView === 'detail' || currentPostIdForComment === id) {
+                closeDetailPage();
+            }
+        } catch (err) {
+            showToast('删除失败: ' + err.message);
+        }
     }
 
+    // ================= 详情页与评论区重构（图3完美版） =================
     window.openDetailPage = async function(id) {
         currentPostIdForComment = id;
         currentReplyTo = null;
@@ -803,30 +803,35 @@
         if (!post) return;
         
         document.getElementById('detail-header-title').innerText = post.profiles ? post.profiles.name : '帖子详情';
-        document.getElementById('detail-render-area').innerHTML = `<div style="text-align:center; padding:50px; color:var(--text-sub);">加载中...</div>`;
         document.getElementById('detail-page').style.display = 'flex';
 
-        post.views = (post.views || 0) + 1;
-        supabaseClient.from('posts').update({ views: post.views }).eq('id', id).then();
-
-        const { data: comments } = await supabaseClient.from('comments').select(`*, profiles ( name, avatar, signal )`).eq('post_id', id).order('created_at', { ascending: true });
-
+        // 1. 秒开主贴，不等评论加载
         const authorProfile = post.profiles || { name: '未知', avatar: '' };
         let mediaHtml = post.media_data ? (post.media_type === 'image' ? `<img src="${post.media_data}" class="detail-post-media">` : `<video src="${post.media_data}" class="detail-post-media" controls></video>`) : '';
+        
+        // 复用图标
+        const iconReply = `<svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>`;
+        const iconRetweet = `<svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>`;
+        const iconHeart = `<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+        const iconHeartFill = `<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+        const iconViews = `<svg viewBox="0 0 24 24"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>`;
+        const iconBookmark = `<svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
+        const iconBookmarkFill = `<svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
+        const iconShare = `<svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>`;
 
         let html = `<div class="detail-post-main">
             <div class="detail-user-info" onclick="closeDetailPage(); viewUser('${post.author_id}')">
-                <div class="detail-avatar"><img src="${authorProfile.avatar}"></div>
-                <div style="display:flex; flex-direction:column;">
+                <div class="detail-user-left">
+                    <div class="detail-avatar"><img src="${authorProfile.avatar}"></div>
                     <span class="detail-name">${authorProfile.name}</span>
                 </div>
-                <span class="detail-time" style="margin-left:auto;">${new Date(post.created_at).toLocaleDateString()}</span>
+                <span class="detail-time">${new Date(post.created_at).toLocaleString()}</span>
             </div>
             <div class="detail-post-content">${post.content}</div>
             ${mediaHtml}
             <div class="detail-actions-bar">
                 <div class="action-group">
-                    <div class="action-icon">${iconReply} <span>${(comments||[]).length}</span></div>
+                    <div class="action-icon">${iconReply} <span>${(post.comments || []).length}</span></div>
                     <div class="action-icon">${iconRetweet} <span>0</span></div>
                     <div class="action-icon like-btn ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
                     <div class="action-icon">${iconViews} <span>${post.views}</span></div>
@@ -835,57 +840,80 @@
                 <div class="action-icon">${iconShare}</div>
             </div>
         </div>`;
+        
+        html += `<div class="comment-section" id="comment-loading-area"><div style="text-align:center; padding:20px; color:#666;">评论区加载中...</div></div>`;
+        document.getElementById('detail-render-area').innerHTML = html;
 
-        html += `<div class="comment-section">`;
-        if (!comments || comments.length === 0) {
-            html += `<div style="text-align:center; padding:40px; color:var(--text-sub); font-size:14px;">还没有评论</div>`;
-        } else {
-            let rootComments = comments.filter(c => !c.reply_to);
-            rootComments.forEach(root => {
-                const rootAuthor = root.profiles || { name: '未知', avatar: '' };
-                const replies = comments.filter(c => c.reply_to === root.author_id);
-                
-                html += `<div class="comment-block">
-                    <div class="comment-avatar"><img src="${rootAuthor.avatar}"></div>
-                    <div class="comment-bubble">
-                        <div class="comment-header">
-                            <span class="comment-name" onclick="closeDetailPage(); viewUser('${root.author_id}')">${rootAuthor.name}</span>
-                            <span class="comment-time">${new Date(root.created_at).toLocaleString()}</span>
-                        </div>
-                        <div class="comment-text">${root.content}</div>
-                        <div class="comment-actions">
-                            <span>♡ 0</span>
-                            <span onclick="prepareReply('${rootAuthor.name}', '${root.author_id}')">💬 回复</span>
-                            <span>⚠ 举报</span>
-                        </div>
-                    </div>
-                </div>`;
-                
-                if (replies.length > 0) {
-                    replies.forEach(reply => {
-                        const replyAuthor = reply.profiles || { name: '未知', avatar: '' };
-                        html += `<div class="reply-block">
-                            <div class="comment-avatar"><img src="${replyAuthor.avatar}"></div>
+        // 2. 异步加载评论并渲染（完美还原图3的嵌套竖线）
+        try {
+            post.views = (post.views || 0) + 1;
+            supabaseClient.from('posts').update({ views: post.views }).eq('id', id).then();
+
+            const { data: comments, error } = await supabaseClient.from('comments').select(`*, profiles ( name, avatar, signal )`).eq('post_id', id).order('created_at', { ascending: true });
+            if (error) throw error;
+
+            let commentHtml = '';
+            if (!comments || comments.length === 0) {
+                commentHtml = `<div style="text-align:center; padding:20px; color:var(--text-sub); font-size:14px;">还没有评论，快来抢沙发吧！</div>`;
+            } else {
+                let rootComments = comments.filter(c => !c.reply_to);
+                rootComments.forEach(root => {
+                    const rootAuthor = root.profiles || { name: '未知', avatar: '' };
+                    const replies = comments.filter(c => c.reply_to === root.author_id);
+                    const hasReplies = replies.length > 0;
+
+                    commentHtml += `<div class="comment-thread ${hasReplies ? 'has-replies' : ''}">
+                        <div class="comment-node">
+                            <div class="comment-left">
+                                <div class="comment-avatar" onclick="closeDetailPage(); viewUser('${root.author_id}')"><img src="${rootAuthor.avatar}"></div>
+                            </div>
                             <div class="comment-bubble">
                                 <div class="comment-header">
-                                    <span class="comment-name" onclick="closeDetailPage(); viewUser('${reply.author_id}')">${replyAuthor.name}</span>
-                                    <span class="comment-time">${new Date(reply.created_at).toLocaleString()}</span>
+                                    <span class="comment-name" onclick="closeDetailPage(); viewUser('${root.author_id}')">${rootAuthor.name}</span>
+                                    <span class="comment-time">${new Date(root.created_at).toLocaleString()}</span>
                                 </div>
-                                <div class="comment-text"><span style="color:var(--accent-color)">回复 @${rootAuthor.name}：</span>${reply.content}</div>
+                                <div class="comment-text">${root.content}</div>
                                 <div class="comment-actions">
                                     <span>♡ 0</span>
-                                    <span onclick="prepareReply('${replyAuthor.name}', '${replyAuthor.id}')">💬 回复</span>
+                                    <span onclick="prepareReply('${rootAuthor.name}', '${root.author_id}')">💬 回复</span>
                                     <span>⚠ 举报</span>
                                 </div>
                             </div>
                         </div>`;
-                    });
-                }
-            });
+                    
+                    // 回复列表
+                    if (hasReplies) {
+                        commentHtml += `<div class="reply-list">`;
+                        replies.forEach(reply => {
+                            const replyAuthor = reply.profiles || { name: '未知', avatar: '' };
+                            commentHtml += `<div class="reply-node">
+                                <div class="comment-left">
+                                    <div class="comment-avatar" onclick="closeDetailPage(); viewUser('${reply.author_id}')"><img src="${replyAuthor.avatar}"></div>
+                                </div>
+                                <div class="comment-bubble">
+                                    <div class="comment-header">
+                                        <span class="comment-name" onclick="closeDetailPage(); viewUser('${reply.author_id}')">${replyAuthor.name}</span>
+                                        <span class="comment-time">${new Date(reply.created_at).toLocaleString()}</span>
+                                    </div>
+                                    <div class="comment-text"><span style="color:var(--accent-color)">回复 @${rootAuthor.name}：</span>${reply.content}</div>
+                                    <div class="comment-actions">
+                                        <span>♡ 0</span>
+                                        <span onclick="prepareReply('${replyAuthor.name}', '${replyAuthor.id}')">💬 回复</span>
+                                        <span>⚠ 举报</span>
+                                    </div>
+                                </div>
+                            </div>`;
+                        });
+                        commentHtml += `</div>`;
+                    }
+                    commentHtml += `</div>`;
+                });
+            }
+            document.getElementById('comment-loading-area').innerHTML = commentHtml;
+        } catch (err) {
+            document.getElementById('comment-loading-area').innerHTML = `<div style="text-align:center; padding:20px; color:#ff4757;">加载评论失败: ${err.message}</div>`;
         }
-        html += `</div>`;
-
-        document.getElementById('detail-render-area').innerHTML = html;
+        
         document.getElementById('comment-input').value = '';
     }
 
@@ -923,7 +951,6 @@
         document.getElementById('role-input-group').style.display = mode === 'cosplay' ? 'block' : 'none';
     }
 
-    // ================= 发帖逻辑（增加了报错捕获） =================
     window.submitPost = async function() {
         const c = document.getElementById('post-input').value.trim();
         const role = document.getElementById('post-role').value.trim();
@@ -933,25 +960,16 @@
         if (currentPostMode === 'cosplay' && !role) return showToast('请填写角色名');
 
         try {
-            // 检查 posts 表的 RLS 权限和字段是否存在
             const { error } = await supabaseClient.from('posts').insert([{
-                author_id: CurrentUserProfile.id, 
-                content: c, 
-                type: currentPostMode, 
-                role: currentPostMode === 'cosplay' ? role : null, 
-                media_type: mediaUrl ? 'image' : null, 
-                media_data: mediaUrl || null
+                author_id: CurrentUserProfile.id, content: c, type: currentPostMode, role: currentPostMode === 'cosplay' ? role : null, media_type: mediaUrl ? 'image' : null, media_data: mediaUrl || null
             }]);
-
             if (error) throw error;
-            
             showToast('发布成功！');
             closePostModal();
             await resetAndLoadPosts();
             switchView(currentPostMode === 'cosplay' ? 'story' : 'feed');
         } catch (err) {
-            console.error(err);
-            showToast('发帖失败: ' + err.message); // 如果发不出，这里会告诉你原因
+            showToast('发帖失败: ' + err.message);
         }
     }
 
@@ -959,12 +977,11 @@
         currentLayout = currentLayout === 'new' ? 'classic' : 'new';
         localStorage.setItem('forum_layout', currentLayout);
         document.getElementById('layout-btn').innerText = currentLayout === 'new' ? '切怀旧版' : '切普通版';
-        
         updateUIForLayout();
         render();
     }
 
-    // ================= 编辑资料 =================
+    // 编辑资料
     window.openEditProfile = function() {
         document.getElementById('edit-name').value = CurrentUserProfile.name;
         document.getElementById('edit-bio').value = CurrentUserProfile.bio || '';
