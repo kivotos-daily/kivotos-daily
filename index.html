@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v6.4</title>
+    <title>基沃托斯日讯-测试版v6.5</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -38,6 +38,10 @@
         .header-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid #444;}
         .header-title { font-size: 18px; font-weight: bold; color: #fff; display: none; }
         
+        /* 返回按钮 (仅在个人主页显示) */
+        .back-home-btn { display: none; cursor: pointer; color: #fff; align-items: center; justify-content: center; padding: 4px; margin-right: 4px;}
+        .back-home-btn svg { width: 20px; height: 20px; fill: currentColor; }
+        
         .header-right { display: flex; align-items: center; gap: 12px; }
         .header-msg-btn { position: relative; cursor: pointer; display: flex; align-items: center; }
         .header-msg-btn svg { width: 22px; height: 22px; fill: #fff; }
@@ -52,24 +56,17 @@
         .tab.active { color: var(--accent-color); }
         .tab.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 40px; height: 3px; background: var(--accent-color); border-radius: 2px; }
 
-        /* =========================================
-           怀旧版排版 (无边框，极简线条，对应图1)
-           ========================================= */
+        /* 通用帖子样式 */
         .post-classic { padding: 16px; border-bottom: 1px solid var(--border-color); background: transparent; }
         .post-classic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .post-classic-user { display: flex; align-items: center; gap: 10px; cursor: pointer;}
         .post-classic-avatar { width: 40px; height: 40px; border-radius: 50%; background: #333; overflow: hidden; flex-shrink: 0;}
         .post-classic-avatar img { width: 100%; height: 100%; object-fit: cover;}
-        
         .post-classic-name { font-size: 15px; font-weight: bold; color: #fff; display: flex; align-items: center; gap: 6px;}
         .post-classic-time { font-size: 13px; color: var(--text-sub); display: flex; align-items: center; gap: 4px;}
-        
         .post-classic-content { font-size: 15px; margin-bottom: 16px; white-space: pre-wrap; word-break: break-word; cursor: pointer; color: #eee; line-height: 1.5;}
         .post-classic-media { width: 100%; border-radius: 12px; margin-bottom: 16px; max-height: 300px; object-fit: cover; cursor: pointer; border: 1px solid #333;}
-        
-        /* =========================================
-           普通版卡片 (带边框，深色背景，对应图2)
-           ========================================= */
+
         .post-card-new { margin: 12px 16px; padding: 16px; border: 1px solid #2a2a2a; border-radius: 12px; background: #181818; }
         .post-card-new .post-new-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
         .post-card-new .post-new-user { display: flex; align-items: center; }
@@ -80,7 +77,6 @@
         .post-card-new .post-content { font-size: 15px; margin-bottom: 16px; white-space: pre-wrap; line-height: 1.5;}
         .post-card-new .post-media { width: 100%; max-height: 300px; border-radius: 12px; margin-bottom: 16px; object-fit: cover; border: 1px solid var(--border-color); }
 
-        /* 通用操作栏 */
         .action-bar { display: flex; justify-content: space-between; align-items: center; color: #888; font-size: 13px; margin-top: 12px;}
         .action-group { display: flex; align-items: center; gap: 20px;}
         .action-icon { display: flex; align-items: center; gap: 4px; cursor: pointer; fill: none; stroke: currentColor; stroke-width: 1.5; padding: 4px; transition: all 0.2s;}
@@ -104,9 +100,7 @@
         .sidebar-item { display: flex; align-items: center; padding: 16px 24px; font-size: 16px; font-weight: bold; color: var(--text-main); cursor: pointer; transition: background 0.2s;}
         .sidebar-item:hover { background: var(--hover-color); }
 
-        /* =========================================
-           详情页 (完美复刻图3)
-           ========================================= */
+        /* 详情页 */
         #detail-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 250; display: none; flex-direction: column; max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
         .detail-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); background: var(--bg-color); position: sticky; top: 0; z-index: 10;}
         .detail-header-left { display: flex; align-items: center; gap: 16px;}
@@ -116,8 +110,6 @@
         .detail-header-right svg { width: 20px; height: 20px; fill: #fff; cursor: pointer;}
         
         .detail-content-area { flex: 1; overflow-y: auto; padding-bottom: 70px; }
-        
-        /* 主贴区域 */
         .detail-post-main { padding: 16px; border-bottom: 1px solid var(--border-color); }
         .detail-user-info { display: flex; align-items: center; margin-bottom: 16px; gap: 10px; justify-content: space-between;}
         .detail-user-left { display: flex; align-items: center; gap: 10px;}
@@ -129,23 +121,14 @@
         .detail-post-media { width: 100%; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);}
         .detail-actions-bar { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border-color);}
         
-        /* 评论区 (图3的竖线嵌套风格) */
+        /* 评论区 */
         .comment-section { padding: 16px; }
-        
         .comment-thread { display: flex; flex-direction: column; margin-bottom: 16px; position: relative;}
         .comment-node { display: flex; gap: 10px; position: relative;}
-        
-        /* 左侧头像与竖线 */
         .comment-left { display: flex; flex-direction: column; align-items: center; width: 36px; flex-shrink: 0;}
         .comment-avatar { width: 36px; height: 36px; border-radius: 50%; background: #fff; overflow: hidden; z-index: 2;}
         .comment-avatar img { width: 100%; height: 100%; object-fit: cover;}
-        
-        /* 如果有回复，主评论头像向下延伸一条线 */
-        .comment-thread.has-replies .comment-left::after {
-            content: ''; flex: 1; width: 2px; background: #333; margin-top: 4px; margin-bottom: -16px; z-index: 1;
-        }
-
-        /* 评论气泡框 */
+        .comment-thread.has-replies .comment-left::after { content: ''; flex: 1; width: 2px; background: #333; margin-top: 4px; margin-bottom: -16px; z-index: 1;}
         .comment-bubble { flex: 1; background: var(--card-bg); border-radius: 12px; padding: 12px; border: 1px solid #2a2a2a;}
         .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;}
         .comment-name { font-size: 14px; font-weight: bold; color: #fff; cursor: pointer;}
@@ -154,8 +137,6 @@
         .comment-actions { display: flex; gap: 16px; font-size: 12px; color: #888; align-items: center;}
         .comment-actions span { display: flex; align-items: center; gap: 4px; cursor: pointer;}
         .comment-actions span:hover { color: var(--accent-color);}
-        
-        /* 回复块 (缩进并带有左竖线) */
         .reply-list { padding-left: 0; margin-top: 12px; display: flex; flex-direction: column; gap: 12px;}
         .reply-node { display: flex; gap: 10px;}
         .reply-node .comment-avatar { width: 30px; height: 30px;}
@@ -182,12 +163,34 @@
         .profile-stats-row b { color: var(--accent-color); font-weight: normal; margin-right: 4px;}
         .profile-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
 
-        /* 消息通知弹窗 */
-        .noti-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 400; display: none; justify-content: center; align-items: center; }
-        .noti-modal { width: 90%; max-width: 360px; background: #161616; border-radius: 16px; border: 1px solid #333; overflow: hidden; display: flex; flex-direction: column; max-height: 80vh;}
-        .noti-modal-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a2a;}
-        .noti-modal-title { color: var(--accent-color); font-size: 16px; font-weight: bold;}
-        .noti-modal-content { padding: 16px; overflow-y: auto; flex: 1;}
+        /* =========================================
+           居中弹窗样式 (图1的提示框风格)
+           ========================================= */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 500; display: none; justify-content: center; align-items: center; }
+        .modal-content { background: #161616; width: 90%; max-width: 360px; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; border: 1px solid #333; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5);}
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: bold; font-size: 16px; color: var(--accent-color); padding-bottom: 12px; border-bottom: 1px solid #2a2a2a;}
+        .modal-close { cursor: pointer; color: #888; font-size: 20px; line-height: 1; }
+        .modal-close:hover { color: #fff; }
+        .modal-textarea { width: 100%; height: 120px; background: #1e1e1e; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; color: #fff; font-size: 15px; resize: none; outline: none; margin-bottom: 16px; }
+        .modal-textarea:focus { border-color: var(--accent-color); }
+        .modal-submit { width: 100%; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 20px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 8px;}
+        
+        .modal-input-group { margin-bottom: 12px; }
+        .modal-input-group label { display: block; font-size: 12px; color: #888; margin-bottom: 6px;}
+        .modal-input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: #1e1e1e; color: #fff; font-size: 14px; outline: none;}
+        .modal-input:focus { border-color: var(--accent-color);}
+
+        /* 全屏搜索 */
+        #search-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 450; display: none; flex-direction: column; }
+        .search-header { display: flex; align-items: center; padding: 10px 16px; gap: 10px; border-bottom: 1px solid var(--border-color);}
+        .search-box { flex: 1; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
+        .search-results { flex: 1; overflow-y: auto; }
+        .search-user-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #222; cursor: pointer;}
+        
+        /* 消息通知样式 */
+        .noti-tabs { display: flex; padding: 0 0 12px 0; gap: 10px; border-bottom: 1px solid #2a2a2a; margin-bottom: 12px;}
+        .noti-tab { font-size: 13px; color: #888; cursor: pointer; padding: 4px 10px; border-radius: 20px;}
+        .noti-tab.active { background: #2a2a2a; color: #fff;}
         .noti-item { display: flex; gap: 12px; margin-bottom: 16px;}
         .noti-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;}
         .noti-item-right { flex: 1;}
@@ -196,22 +199,6 @@
         .noti-action-text { font-size: 13px; color: #ccc;}
         .noti-quote-box { background: #222; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: #aaa; margin-bottom: 6px; border: 1px solid #333;}
         .noti-time-text { font-size: 11px; color: #666;}
-        .noti-modal-footer { padding: 12px; border-top: 1px solid #2a2a2a; text-align: center;}
-        .noti-close-btn { background: transparent; border: none; color: #ccc; font-size: 14px; cursor: pointer;}
-
-        /* 发帖弹窗 */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 500; display: none; justify-content: center; align-items: flex-end; }
-        .modal-content { background: var(--bg-color); width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; display: flex; flex-direction: column; border-top: 1px solid var(--border-color); max-height: 85vh; overflow-y: auto;}
-        .modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: bold; font-size: 18px; color: #fff;}
-        .modal-textarea { width: 100%; height: 120px; background: transparent; border: none; padding: 12px 0; color: #fff; font-size: 16px; resize: none; outline: none; margin-bottom: 12px; }
-        .modal-submit { width: 100%; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 20px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;}
-
-        /* 全屏搜索 */
-        #search-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 450; display: none; flex-direction: column; }
-        .search-header { display: flex; align-items: center; padding: 10px 16px; gap: 10px; border-bottom: 1px solid var(--border-color);}
-        .search-box { flex: 1; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
-        .search-results { flex: 1; overflow-y: auto; }
-        .search-user-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #222; cursor: pointer;}
     </style>
 </head>
 <body>
@@ -247,7 +234,10 @@
     <header class="header">
         <div class="header-top">
             <div class="header-left">
-                <svg class="header-icon" onclick="openSearch()" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <div class="back-home-btn" id="back-home-btn" onclick="switchView('feed')">
+                    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                </div>
+                <svg class="header-icon" id="search-icon" onclick="openSearch()" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
                 <img id="header-avatar-img" class="header-avatar" onclick="openSidebar()" src="">
                 <span class="header-title" id="header-title">首页</span>
             </div>
@@ -286,16 +276,74 @@
     <div class="search-results" id="search-results"></div>
 </div>
 
+<!-- ================= 弹窗（居中样式） ================= -->
+
 <!-- 消息通知弹窗 -->
-<div class="noti-modal-overlay" id="noti-modal-overlay" onclick="closeNotiModal(event)">
-    <div class="noti-modal" onclick="event.stopPropagation()">
-        <div class="noti-modal-header">
-            <span class="noti-modal-title">消息通知</span>
+<div class="modal-overlay" id="noti-modal-overlay" onclick="closeNotiModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <span>消息通知</span>
+            <span class="modal-close" onclick="closeNotiModal()">×</span>
         </div>
-        <div class="noti-modal-content" id="noti-modal-content"></div>
-        <div class="noti-modal-footer">
-            <button class="noti-close-btn" onclick="closeNotiModal()">关闭</button>
+        <div class="noti-tabs">
+            <div class="noti-tab active" onclick="switchNotiTab(this)">全部</div>
+            <div class="noti-tab" onclick="switchNotiTab(this)">评论</div>
+            <div class="noti-tab" onclick="switchNotiTab(this)">回复</div>
+            <div class="noti-tab" onclick="switchNotiTab(this)">点赞</div>
+            <div class="noti-tab" onclick="switchNotiTab(this)">关注</div>
         </div>
+        <div id="noti-modal-content" style="flex:1; overflow-y:auto; min-height:200px;"></div>
+    </div>
+</div>
+
+<!-- 发帖弹窗 -->
+<div class="modal-overlay" id="post-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>发布动态</span>
+            <span class="modal-close" onclick="closePostModal()">×</span>
+        </div>
+        <div class="mode-switch" style="display:flex; gap:10px; margin-bottom:16px;">
+            <div class="mode-btn active" id="mode-normal" onclick="switchPostMode('normal')" style="flex:1; text-align:center; padding:8px; border-radius:20px; cursor:pointer; background:rgba(255,123,156,0.1); color:var(--accent-color); font-weight:bold; font-size:14px;">日常发帖</div>
+            <div class="mode-btn" id="mode-cos" onclick="switchPostMode('cosplay')" style="flex:1; text-align:center; padding:8px; border-radius:20px; cursor:pointer; background:transparent; color:var(--text-sub); font-weight:bold; font-size:14px;">🎭 剧情演绎</div>
+        </div>
+        <div class="modal-input-group" id="role-input-group" style="display:none;">
+            <label>扮演角色</label>
+            <input type="text" class="modal-input" id="post-role" placeholder="如: 砂狼白子">
+        </div>
+        <textarea class="modal-textarea" id="post-input" placeholder="有什么新鲜事？"></textarea>
+        <div class="modal-input-group">
+            <label>附带图片/视频链接（可选）</label>
+            <input type="text" class="modal-input" id="post-media-url" placeholder="https://...">
+        </div>
+        <button class="modal-submit" onclick="submitPost()">发布</button>
+    </div>
+</div>
+
+<!-- 编辑资料弹窗 (包含 4 个字段) -->
+<div class="modal-overlay" id="edit-profile-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>编辑资料</span>
+            <span class="modal-close" onclick="document.getElementById('edit-profile-modal').style.display='none'">×</span>
+        </div>
+        <div class="modal-input-group">
+            <label>个人名称</label>
+            <input type="text" class="modal-input" id="edit-name" placeholder="你的昵称">
+        </div>
+        <div class="modal-input-group">
+            <label>个人简介 / 签名</label>
+            <input type="text" class="modal-input" id="edit-bio" placeholder="介绍一下自己吧...">
+        </div>
+        <div class="modal-input-group">
+            <label>个人头像链接</label>
+            <input type="text" class="modal-input" id="edit-avatar" placeholder="https://...">
+        </div>
+        <div class="modal-input-group">
+            <label>主页背景链接</label>
+            <input type="text" class="modal-input" id="edit-cover" placeholder="https://...">
+        </div>
+        <button class="modal-submit" onclick="saveProfile()">保存修改</button>
     </div>
 </div>
 
@@ -309,53 +357,16 @@
             <span class="detail-header-title" id="detail-header-title">帖子详情</span>
         </div>
         <div class="detail-header-right">
-             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
              <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
         </div>
     </div>
-    <div class="detail-content-area" id="detail-render-area">
-        <!-- JS 会先在这里渲染主贴，然后再加载评论 -->
-    </div>
+    <div class="detail-content-area" id="detail-render-area"></div>
     <div class="detail-bottom-bar">
         <input type="text" class="detail-input" id="comment-input" placeholder="发布你的评论...">
         <button class="detail-send-btn" onclick="submitComment()">发送</button>
     </div>
 </div>
 
-<!-- 发帖弹窗 -->
-<div class="modal-overlay" id="post-modal">
-    <div class="modal-content">
-        <div class="modal-header"><span style="cursor:pointer;" onclick="closePostModal()">取消</span><span>发布帖子</span><span style="width:40px;"></span></div>
-        <div class="mode-switch" style="display:flex; gap:10px; margin-bottom:12px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-            <div class="mode-btn active" id="mode-normal" onclick="switchPostMode('normal')" style="flex:1; text-align:center; padding:8px; border-radius:20px; cursor:pointer; background:rgba(255,123,156,0.1); color:var(--accent-color); font-weight:bold;">日常发帖</div>
-            <div class="mode-btn" id="mode-cos" onclick="switchPostMode('cosplay')" style="flex:1; text-align:center; padding:8px; border-radius:20px; cursor:pointer; background:transparent; color:var(--text-sub); font-weight:bold;">🎭 剧情演绎</div>
-        </div>
-        <div class="role-input-group" id="role-input-group" style="display:none; margin-bottom:12px;">
-            <input type="text" class="auth-input" id="post-role" placeholder="扮演角色 (如: 砂狼白子)" style="margin-bottom: 10px; background: #161616; border-radius: 8px;">
-        </div>
-        <textarea class="modal-textarea" id="post-input" placeholder="有什么新鲜事？"></textarea>
-        <div class="input-group" style="margin-top:10px;">
-            <input type="text" class="auth-input" id="post-media-url" placeholder="附带图片/视频链接（可选）" style="background: #161616; border-radius: 8px; font-size: 14px;">
-        </div>
-        <button class="modal-submit" onclick="submitPost()">发布</button>
-    </div>
-</div>
-
-<!-- 编辑资料弹窗 -->
-<div class="modal-overlay" id="edit-profile-modal">
-    <div class="modal-content">
-        <div class="modal-header"><span style="cursor:pointer;" onclick="document.getElementById('edit-profile-modal').style.display='none'">取消</span><span>编辑资料</span><span style="width:40px;"></span></div>
-        <div class="input-group" style="margin-top:10px;">
-            <label>昵称</label>
-            <input type="text" class="auth-input" id="edit-name" placeholder="你的昵称" style="background: #161616; border-radius: 8px;">
-        </div>
-        <div class="input-group" style="margin-top:10px;">
-            <label>简介</label>
-            <input type="text" class="auth-input" id="edit-bio" placeholder="介绍一下自己吧..." style="background: #161616; border-radius: 8px;">
-        </div>
-        <button class="modal-submit" onclick="saveProfile()">保存</button>
-    </div>
-</div>
 
 <script>
     const SUPABASE_URL = 'https://ycjshhxxqnyizewpswoc.supabase.co'; 
@@ -521,6 +532,7 @@
         }
     }
 
+    // ================= 侧边栏逻辑 =================
     window.openSidebar = function() {
         if (!CurrentUserProfile) return;
         const content = document.getElementById('sidebar-content');
@@ -549,25 +561,54 @@
         document.getElementById('sidebar-nav').classList.remove('open');
     }
 
+    // ================= 弹窗通用逻辑 =================
     window.openNotiModal = function() {
         document.getElementById('noti-modal-overlay').style.display = 'flex';
+        renderNotiList('all');
+    }
+    window.closeNotiModal = function(event) {
+        if(event && event.target !== document.getElementById('noti-modal-overlay')) return;
+        document.getElementById('noti-modal-overlay').style.display = 'none';
+    }
+    window.switchNotiTab = function(el) {
+        document.querySelectorAll('.noti-tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        const typeText = el.innerText;
+        let filterType = 'all';
+        if (typeText === '评论' || typeText === '回复') filterType = 'comment';
+        else if (typeText === '点赞') filterType = 'like';
+        else if (typeText === '关注') filterType = 'follow';
+        renderNotiList(filterType);
+    }
+    function renderNotiList(filterType) {
         const box = document.getElementById('noti-modal-content');
         let list = window.UserNotifications || [];
+        if (filterType !== 'all') list = list.filter(n => n.type === filterType);
         if (list.length === 0) {
             box.innerHTML = `<div style="text-align:center; padding:20px; color:#666; font-size:13px;">暂无通知</div>`;
             return;
         }
         let html = '';
         list.forEach(n => {
-            let actionText = n.type === 'like' ? '赞了你的帖子' : (n.type === 'follow' ? '关注了你' : '回复了你的帖子');
-            html += `<div class="noti-item"><img class="noti-avatar" src="${n.sender?.avatar || ''}"><div class="noti-item-right"><div class="noti-user-line"><span class="noti-username">${n.sender?.name || '某人'}</span><span class="noti-action-text">${actionText}</span></div><div class="noti-time-text">${new Date(n.created_at).toLocaleString()}</div></div></div>`;
+            let actionText = n.type === 'like' ? '赞了你的评论' : (n.type === 'follow' ? '关注了你' : '回复了你的评论');
+            let quoteHtml = '';
+            if (n.content && (n.type === 'comment' || n.type === 'like')) {
+                quoteHtml = `<div class="noti-quote-box">${n.content}</div>`;
+            }
+            html += `
+            <div class="noti-item" onclick="viewUser('${n.sender_id}'); closeNotiModal();">
+                <img class="noti-avatar" src="${n.sender?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=unknown'}">
+                <div class="noti-item-right">
+                    <div class="noti-user-line">
+                        <span class="noti-username">${n.sender?.name || '某人'}</span>
+                        <span class="noti-action-text">${actionText}</span>
+                    </div>
+                    ${quoteHtml}
+                    <div class="noti-time-text">${new Date(n.created_at).toLocaleString()}</div>
+                </div>
+            </div>`;
         });
         box.innerHTML = html;
-    }
-
-    window.closeNotiModal = function(event) {
-        if(event && event.target !== document.getElementById('noti-modal-overlay')) return;
-        document.getElementById('noti-modal-overlay').style.display = 'none';
     }
 
     window.openSearch = function() {
@@ -630,8 +671,19 @@
     function render() {
         if (!CurrentUserProfile) return;
         const headerTitle = document.getElementById('header-title');
+        const backBtn = document.getElementById('back-home-btn');
+        const searchIcon = document.getElementById('search-icon');
         let html = '';
         let postsToRender = AllPosts;
+
+        // 控制返回按钮显示
+        if (currentView === 'profile_self' || currentView === 'profile_other') {
+            backBtn.style.display = 'flex';
+            searchIcon.style.display = 'none'; // 个人主页隐藏搜索图标
+        } else {
+            backBtn.style.display = 'none';
+            searchIcon.style.display = 'block';
+        }
 
         if (currentView === 'feed') {
             headerTitle.innerText = '首页';
@@ -663,7 +715,7 @@
             const likesCount = 1000; 
 
             html += `
-            <div class="profile-cover"></div>
+            <div class="profile-cover" style="background-image:url('${targetUser.cover || ''}')"></div>
             <div class="profile-info-container">
                 <div class="profile-avatar-wrapper"><img src="${targetUser.avatar}"></div>
                 <div class="profile-actions-row">
@@ -713,12 +765,10 @@
         const iconShare = `<svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>`;
         const iconDelete = `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
 
-        // 构造操作栏按钮，如果是自己的帖子，加上删除按钮
         const deleteBtn = (post.author_id === CurrentUserProfile.id) ? 
             `<div class="action-icon btn-delete" onclick="deletePost('${post.id}')">${iconDelete}</div>` : '';
 
         if (currentLayout === 'new') {
-            // 普通版：带边框的卡片
             return `
             <div class="post-card-new">
                 <div class="post-new-header" onclick="openDetailPage('${post.id}')">
@@ -749,7 +799,6 @@
                 </div>
             </div>`;
         } else {
-            // 怀旧版：无边框极简线条
             return `
             <div class="post-classic">
                 <div class="post-classic-header">
@@ -779,7 +828,6 @@
         }
     }
 
-    // 删除帖子功能
     window.deletePost = async function(id) {
         if (!confirm('确定要删除这条帖子吗？')) return;
         try {
@@ -795,7 +843,6 @@
         }
     }
 
-    // ================= 详情页与评论区重构（图3完美版） =================
     window.openDetailPage = async function(id) {
         currentPostIdForComment = id;
         currentReplyTo = null;
@@ -805,11 +852,9 @@
         document.getElementById('detail-header-title').innerText = post.profiles ? post.profiles.name : '帖子详情';
         document.getElementById('detail-page').style.display = 'flex';
 
-        // 1. 秒开主贴，不等评论加载
         const authorProfile = post.profiles || { name: '未知', avatar: '' };
         let mediaHtml = post.media_data ? (post.media_type === 'image' ? `<img src="${post.media_data}" class="detail-post-media">` : `<video src="${post.media_data}" class="detail-post-media" controls></video>`) : '';
         
-        // 复用图标
         const iconReply = `<svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>`;
         const iconRetweet = `<svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>`;
         const iconHeart = `<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
@@ -844,7 +889,6 @@
         html += `<div class="comment-section" id="comment-loading-area"><div style="text-align:center; padding:20px; color:#666;">评论区加载中...</div></div>`;
         document.getElementById('detail-render-area').innerHTML = html;
 
-        // 2. 异步加载评论并渲染（完美还原图3的嵌套竖线）
         try {
             post.views = (post.views || 0) + 1;
             supabaseClient.from('posts').update({ views: post.views }).eq('id', id).then();
@@ -881,7 +925,6 @@
                             </div>
                         </div>`;
                     
-                    // 回复列表
                     if (hasReplies) {
                         commentHtml += `<div class="reply-list">`;
                         replies.forEach(reply => {
@@ -981,26 +1024,49 @@
         render();
     }
 
-    // 编辑资料
+    // ================= 编辑资料 =================
     window.openEditProfile = function() {
         document.getElementById('edit-name').value = CurrentUserProfile.name;
         document.getElementById('edit-bio').value = CurrentUserProfile.bio || '';
+        document.getElementById('edit-avatar').value = CurrentUserProfile.avatar || '';
+        document.getElementById('edit-cover').value = CurrentUserProfile.cover || '';
         document.getElementById('edit-profile-modal').style.display = 'flex';
     }
 
     window.saveProfile = async function() {
         const newName = document.getElementById('edit-name').value.trim();
         const newBio = document.getElementById('edit-bio').value.trim();
+        const newAvatar = document.getElementById('edit-avatar').value.trim();
+        const newCover = document.getElementById('edit-cover').value.trim();
+        
         if (!newName) return showToast('昵称不能为空');
 
-        const { error } = await supabaseClient.from('profiles').update({ name: newName, bio: newBio }).eq('id', CurrentUserProfile.id);
+        // 更新数据库
+        const { error } = await supabaseClient.from('profiles').update({ 
+            name: newName, 
+            bio: newBio,
+            avatar: newAvatar || CurrentUserProfile.avatar,
+            cover: newCover
+        }).eq('id', CurrentUserProfile.id);
+        
         if (error) return showToast('保存失败: ' + error.message);
 
+        // 更新本地状态
         CurrentUserProfile.name = newName;
         CurrentUserProfile.bio = newBio;
+        CurrentUserProfile.avatar = newAvatar || CurrentUserProfile.avatar;
+        CurrentUserProfile.cover = newCover;
         
         const userInAll = AllUsers.find(u => u.id === CurrentUserProfile.id);
-        if (userInAll) { userInAll.name = newName; userInAll.bio = newBio; }
+        if (userInAll) { 
+            userInAll.name = newName; 
+            userInAll.bio = newBio; 
+            userInAll.avatar = CurrentUserProfile.avatar; 
+            userInAll.cover = newCover;
+        }
+
+        // 更新左上角头像
+        document.getElementById('header-avatar-img').src = CurrentUserProfile.avatar;
 
         document.getElementById('edit-profile-modal').style.display = 'none';
         showToast('资料已更新！');
