@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v4.6</title>
+    <title>基沃托斯日讯-测试版v4.9</title>
     
     <!-- 👇 加载 Supabase 的核心引擎 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -247,10 +247,10 @@
 
 <script>
     // =======================================================
-    // ✅ 已经为你填好正确的 Supabase 网址了！
+    // ✅ 已为你填入真实的 Supabase URL 和 Publishable Key！
     // =======================================================
     const SUPABASE_URL = 'https://ycjshhxxqnyizewpswoc.supabase.co'; 
-    const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLt1w_hq1GlLut';
+    const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut';
 
     let supabaseClient = null;
     let CurrentUserProfile = null;
@@ -425,7 +425,7 @@
 
         if (currentView === 'feed') {
             headerTitle.innerText = '首页';
-            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 v4.6 已上线！</div></div>`;
+            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 v4.9 已上线！</div></div>`;
         } 
         else if (currentView === 'story') {
             headerTitle.innerText = '剧情广场';
@@ -784,4 +784,4 @@
     }
 </script>
 </body>
-    </html>
+</html>
