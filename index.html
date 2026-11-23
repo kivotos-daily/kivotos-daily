@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v7.3</title>
+    <title>基沃托斯日讯-测试版v8.0</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -11,6 +11,25 @@
         :root { --bg-color: #0f0f0f; --text-main: #e0e0e0; --text-sub: #888888; --accent-color: #ff7b9c; --border-color: #2a2a2a; --card-bg: #181818; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden;}
+
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes modalPop {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 点击反馈 */
+        button, .action-icon, .tab, .sidebar-item, .search-user-item {
+            transition: transform 0.1s ease, background-color 0.2s;
+            cursor: pointer;
+        }
+        button:active, .action-icon:active, .tab:active, .sidebar-item:active {
+            transform: scale(0.92);
+        }
 
         #error-box { position: fixed; top: 0; left: 0; width: 100%; background: rgba(255,0,0,0.95); color: white; padding: 15px; font-weight: bold; z-index: 99999; display: none; font-size: 14px; text-align: center; line-height: 1.5;}
         #toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--border-color); font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.5);}
@@ -56,7 +75,7 @@
         .tab.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 40px; height: 3px; background: var(--accent-color); border-radius: 2px; }
 
         /* 通用帖子样式 */
-        .post-classic { padding: 16px; border-bottom: 1px solid var(--border-color); background: transparent; }
+        .post-classic { padding: 16px; border-bottom: 1px solid var(--border-color); background: transparent; animation: fadeInUp 0.3s ease; }
         .post-classic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .post-classic-user { display: flex; align-items: center; gap: 10px; cursor: pointer;}
         .post-classic-avatar { width: 40px; height: 40px; border-radius: 50%; background: #333; overflow: hidden; flex-shrink: 0;}
@@ -66,7 +85,7 @@
         .post-classic-content { font-size: 15px; margin-bottom: 16px; white-space: pre-wrap; word-break: break-word; cursor: pointer; color: #eee; line-height: 1.5;}
         .post-classic-media { width: 100%; border-radius: 12px; margin-bottom: 16px; max-height: 300px; object-fit: cover; cursor: pointer; border: 1px solid #333;}
 
-        .post-card-new { margin: 12px 16px; padding: 16px; border: 1px solid #2a2a2a; border-radius: 12px; background: #181818; }
+        .post-card-new { margin: 12px 16px; padding: 16px; border: 1px solid #2a2a2a; border-radius: 12px; background: #181818; animation: fadeInUp 0.3s ease; }
         .post-card-new .post-new-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
         .post-card-new .post-new-user { display: flex; align-items: center; }
         .post-card-new .post-new-user .avatar { width: 40px; height: 40px; margin-right: 10px; border-radius: 50%; overflow: hidden;}
@@ -120,7 +139,7 @@
         
         /* 评论区 */
         .comment-section { padding: 16px; }
-        .comment-thread { display: flex; flex-direction: column; margin-bottom: 16px; position: relative;}
+        .comment-thread { display: flex; flex-direction: column; margin-bottom: 16px; position: relative; animation: fadeInUp 0.3s ease;}
         .comment-node { display: flex; gap: 10px; position: relative;}
         .comment-left { display: flex; flex-direction: column; align-items: center; width: 36px; flex-shrink: 0;}
         .comment-avatar { width: 36px; height: 36px; border-radius: 50%; background: #fff; overflow: hidden; z-index: 2;}
@@ -146,7 +165,7 @@
 
         /* 个人主页 */
         .profile-cover { height: 160px; background: #222 center/cover no-repeat; width: 100%; }
-        .profile-info-container { padding: 0 16px 20px; position: relative; border-bottom: 1px solid var(--border-color); }
+        .profile-info-container { padding: 0 16px 20px; position: relative; border-bottom: 1px solid var(--border-color); animation: fadeInUp 0.3s ease; }
         .profile-avatar-wrapper { width: 86px; height: 86px; border-radius: 50%; border: 3px solid var(--bg-color); background: #333; margin-top: -43px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;}
         .profile-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .profile-actions-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: -30px; margin-bottom: 16px;}
@@ -162,7 +181,8 @@
 
         /* 弹窗统一样式 */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 500; display: none; justify-content: center; align-items: center; }
-        .modal-content { background: #161616; width: 90%; max-width: 360px; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; border: 1px solid #333; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5);}
+        .modal-overlay.open { display: flex; }
+        .modal-content { background: #161616; width: 90%; max-width: 360px; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; border: 1px solid #333; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: bold; font-size: 16px; color: var(--accent-color); padding-bottom: 12px; border-bottom: 1px solid #2a2a2a;}
         .modal-close { cursor: pointer; color: #888; font-size: 20px; line-height: 1; }
         .modal-close:hover { color: #fff; }
@@ -362,7 +382,7 @@
     </div>
 </div>
 
-<!-- 用户列表弹窗 (新增) -->
+<!-- 用户列表弹窗 -->
 <div class="modal-overlay" id="user-list-modal">
     <div class="modal-content" style="height: 60vh;">
         <div class="modal-header">
@@ -389,7 +409,7 @@
     <div class="detail-content-area" id="detail-render-area"></div>
     <div class="detail-bottom-bar">
         <input type="text" class="detail-input" id="comment-input" placeholder="发布你的评论...">
-        <button class="detail-send-btn" onclick="submitComment()">发送</button>
+        <button class="detail-send-btn" id="comment-submit-btn" onclick="submitComment()">发送</button>
     </div>
 </div>
 
@@ -405,13 +425,16 @@
     let AllUsers = [];
     let isRegisterMode = false;
     let currentView = 'feed';
-    let currentProfileTab = 'posts';
     let viewingUserId = null;
     let currentPostMode = 'normal';
     let currentPostIdForComment = null;
     let currentReplyTo = null;
     let currentLayout = localStorage.getItem('forum_layout') || 'classic'; 
     let isLoggingIn = false;
+
+    // 防止重复点击/提交的锁
+    let isProcessing = false;
+    let clickCooldowns = {};
 
     function generateSignal() { return `KIV-${Math.floor(100000 + Math.random() * 900000)}`; }
 
@@ -640,7 +663,6 @@
         }
     }
 
-    // ================= 侧边栏逻辑 =================
     window.openSidebar = function() {
         if (!CurrentUserProfile) return;
         const content = document.getElementById('sidebar-content');
@@ -669,25 +691,21 @@
         document.getElementById('sidebar-nav').classList.remove('open');
     }
 
-    // ================= 消息弹窗逻辑 (增加已读和公告) =================
     window.openNotiModal = async function() {
-        document.getElementById('noti-modal-overlay').style.display = 'flex';
+        document.getElementById('noti-modal-overlay').classList.add('open');
         renderNotiList('all');
         
-        // 【核心修复】点击进入后，把所有未读标记为已读
         if (window.UserNotifications.some(n => !n.is_read)) {
             const unreadIds = window.UserNotifications.filter(n => !n.is_read).map(n => n.id);
-            window.UserNotifications.forEach(n => n.is_read = true); // 本地状态更新
-            updateNotiDot(); // 立刻隐藏红点
-            
-            // 异步更新云端数据库
+            window.UserNotifications.forEach(n => n.is_read = true); 
+            updateNotiDot(); 
             await supabaseClient.from('notifications').update({ is_read: true }).in('id', unreadIds);
         }
     }
     
     window.closeNotiModal = function(event) {
         if(event && event.target !== document.getElementById('noti-modal-overlay')) return;
-        document.getElementById('noti-modal-overlay').style.display = 'none';
+        document.getElementById('noti-modal-overlay').classList.remove('open');
     }
     
     window.switchNotiTab = function(el) {
@@ -705,14 +723,13 @@
     function renderNotiList(filterType) {
         const box = document.getElementById('noti-modal-content');
         
-        // 如果是公告，直接输出静态公告
         if (filterType === 'announcement') {
             box.innerHTML = `
                 <div class="noti-item">
                     <img class="noti-avatar" src="https://ui-avatars.com/api/?name=公&background=ff7b9c&color=fff&size=128">
                     <div class="noti-item-right">
                         <div class="noti-user-line"><span class="noti-username" style="color:var(--accent-color);">系统公告</span></div>
-                        <div style="font-size:13px; color:#ddd; margin-bottom:8px;">欢迎来到基沃托斯日讯！v7.3版本已上线，修复了点赞慢、小红点等问题，新增了图片自动压缩和首字头像功能。</div>
+                        <div style="font-size:13px; color:#ddd; margin-bottom:8px;">v8.0流畅版已上线！修复了连点问题，优化了动画流畅度，修复了获赞数显示。</div>
                         <div class="noti-time-text">置顶</div>
                     </div>
                 </div>
@@ -746,7 +763,6 @@
         box.innerHTML = html;
     }
 
-    // ================= 用户列表弹窗 (关注/粉丝) =================
     window.showUserList = function(type, userId) {
         const targetUser = AllUsers.find(u => u.id === userId);
         if (!targetUser) return;
@@ -813,7 +829,6 @@
         currentView = viewName;
         closeSearch();
         if (viewName === 'profile_other') viewingUserId = targetId;
-        if (viewName === 'profile_self') currentProfileTab = 'posts';
         
         updateUIForLayout();
         render();
@@ -862,7 +877,12 @@
             const followersList = AllUsers.filter(u => u.following_list && u.following_list.includes(targetUser.id));
             const followingCount = targetUser.following_list ? targetUser.following_list.length : 0;
             const isFollowed = CurrentUserProfile.following_list && CurrentUserProfile.following_list.includes(targetUser.id);
-            const likesCount = 1000; 
+            
+            // 【修复】真实计算获赞数
+            let likesCount = 0;
+            AllPosts.forEach(p => {
+                if(p.author_id === targetUser.id) likesCount += (p.likes || 0);
+            });
 
             html += `
             <div class="profile-cover" style="background-image:url('${targetUser.cover || ''}')"></div>
@@ -898,7 +918,6 @@
     function renderPostHTML(post) {
         const authorProfile = post.profiles || { name: '未知', avatar: '' };
         const isBookmarked = CurrentUserProfile.bookmarks?.includes(post.id);
-        
         const commentCount = post.comments && post.comments[0] ? post.comments[0].count : 0;
 
         let mediaHtml = '';
@@ -980,59 +999,65 @@
         }
     }
 
-    // ================= 交互逻辑优化 =================
+    // ================= 交互逻辑优化 (加锁防重复，防连点) =================
     
-    // 点赞：先用本地状态立即刷新UI，再后台同步
+    // 防连点工具
+    function canClick(id) {
+        const now = Date.now();
+        if (clickCooldowns[id] && now - clickCooldowns[id] < 800) return false; 
+        clickCooldowns[id] = now;
+        return true;
+    }
+
     window.toggleLike = async function(id) {
+        if (!canClick('like_' + id)) return; // 800ms冷却
+
         const post = AllPosts.find(x => x.id === id);
         if (!post) return;
         
-        // 乐观更新
         post.isLiked = !post.isLiked;
         post.likes += post.isLiked ? 1 : -1;
-        render(); // 立即重绘，让爱心变色
+        render(); 
 
         try {
-            // 实际去更新数据库
             if(post.isLiked && post.author_id !== CurrentUserProfile.id) {
                 await supabaseClient.from('notifications').insert([{ user_id: post.author_id, sender_id: CurrentUserProfile.id, type: 'like', post_id: post.id }]);
             }
-            // 你的表里如果有记录点赞的字段，这里也可以加 update
+            await supabaseClient.from('posts').update({ likes: post.likes }).eq('id', id);
         } catch (err) {
             console.error("点赞同步失败", err);
         }
     }
 
-    // 收藏：同上，先更新UI再同步
     window.toggleBookmark = async function(id) {
+        if (!canClick('bookmark_' + id)) return;
+
         if (!CurrentUserProfile.bookmarks) CurrentUserProfile.bookmarks = [];
         const idx = CurrentUserProfile.bookmarks.indexOf(id);
         
-        // 乐观更新
         if (idx > -1) CurrentUserProfile.bookmarks.splice(idx, 1);
         else CurrentUserProfile.bookmarks.push(id);
         
         const isNowBookmarked = CurrentUserProfile.bookmarks.includes(id);
         showToast(isNowBookmarked ? '已加入收藏' : '已取消收藏');
-        render(); // 立即重绘让书签变色
+        render(); 
 
         try {
-            // 后台同步到数据库
             await supabaseClient.from('profiles').update({ bookmarks: CurrentUserProfile.bookmarks }).eq('id', CurrentUserProfile.id);
         } catch (err) {
             console.error("收藏同步失败", err);
         }
     }
 
-    // 关注：修改为“乐观更新”，点击瞬间变化，不再卡顿
     window.toggleFollow = async function(targetId) {
+        if (!canClick('follow_' + targetId)) return;
+
         const targetUser = AllUsers.find(u => u.id === targetId);
         if (!targetUser) return;
         
         let fList = CurrentUserProfile.following_list || [];
         const idx = fList.indexOf(targetId);
         
-        // 1. 立即更新本地状态
         if (idx > -1) {
             fList.splice(idx, 1);
             targetUser.followers = Math.max(0, (targetUser.followers || 0) - 1);
@@ -1042,10 +1067,8 @@
         }
         CurrentUserProfile.following_list = fList;
         
-        // 2. 立即重绘界面（按钮瞬间变化）
-        render();
+        render(); 
 
-        // 3. 后台静默同步
         try {
             if (idx === -1 && targetId !== CurrentUserProfile.id) {
                 await supabaseClient.from('notifications').insert([{ user_id: targetId, sender_id: CurrentUserProfile.id, type: 'follow' }]);
@@ -1054,11 +1077,11 @@
             await supabaseClient.from('profiles').update({ followers: targetUser.followers }).eq('id', targetId);
         } catch (err) {
             console.error("关注同步失败", err);
-            showToast("网络延迟，关注状态同步失败");
         }
     }
 
     window.deletePost = async function(id) {
+        if (!canClick('del_' + id)) return;
         if (!confirm('确定要删除这条帖子吗？')) return;
         try {
             const post = AllPosts.find(x => x.id === id);
@@ -1203,17 +1226,32 @@
     window.closeDetailPage = function() { document.getElementById('detail-page').style.display = 'none'; resetAndLoadPosts(); }
     window.prepareReply = function(name, id) { currentReplyTo = id; const input = document.getElementById('comment-input'); input.placeholder = `回复 @${name}...`; input.focus(); }
 
+    // ================= 发帖/评论防重复提交 =================
     window.submitComment = async function() {
+        if (isProcessing) return;
         const input = document.getElementById('comment-input');
         const c = input.value.trim(); if (!c) return;
 
-        await supabaseClient.from('comments').insert([{ post_id: currentPostIdForComment, author_id: CurrentUserProfile.id, content: c, reply_to: currentReplyTo }]);
-        const post = AllPosts.find(x => x.id === currentPostIdForComment);
-        if(post && post.author_id !== CurrentUserProfile.id) {
-            await supabaseClient.from('notifications').insert([{ user_id: post.author_id, sender_id: CurrentUserProfile.id, type: 'comment', content: c, post_id: post.id }]);
+        isProcessing = true;
+        const btn = document.getElementById('comment-submit-btn');
+        btn.disabled = true;
+        btn.innerText = '发送中...';
+
+        try {
+            await supabaseClient.from('comments').insert([{ post_id: currentPostIdForComment, author_id: CurrentUserProfile.id, content: c, reply_to: currentReplyTo }]);
+            const post = AllPosts.find(x => x.id === currentPostIdForComment);
+            if(post && post.author_id !== CurrentUserProfile.id) {
+                await supabaseClient.from('notifications').insert([{ user_id: post.author_id, sender_id: CurrentUserProfile.id, type: 'comment', content: c, post_id: post.id }]);
+            }
+            input.value = ''; currentReplyTo = null;
+            await openDetailPage(currentPostIdForComment);
+        } catch(err) {
+            showToast('评论失败: ' + err.message);
+        } finally {
+            isProcessing = false;
+            btn.disabled = false;
+            btn.innerText = '发送';
         }
-        input.value = ''; currentReplyTo = null;
-        openDetailPage(currentPostIdForComment);
     }
 
     window.openPostModal = function() {
@@ -1223,9 +1261,9 @@
         document.getElementById('post-preview').style.display = 'none'; 
         document.getElementById('file-upload-text').innerText = '点击选择本地图片';
         switchPostMode('normal');
-        document.getElementById('post-modal').style.display = 'flex';
+        document.getElementById('post-modal').classList.add('open');
     }
-    window.closePostModal = function() { document.getElementById('post-modal').style.display = 'none'; }
+    window.closePostModal = function() { document.getElementById('post-modal').classList.remove('open'); }
     
     window.switchPostMode = function(mode) {
         currentPostMode = mode;
@@ -1237,6 +1275,7 @@
     }
 
     window.submitPost = async function() {
+        if (isProcessing) return;
         const c = document.getElementById('post-input').value.trim();
         const role = document.getElementById('post-role').value.trim();
         const fileInput = document.getElementById('post-media-file');
@@ -1245,6 +1284,7 @@
         if (!c) return showToast('内容不能为空');
         if (currentPostMode === 'cosplay' && !role) return showToast('请填写角色名');
 
+        isProcessing = true;
         btn.innerText = '发布中...';
         btn.disabled = true;
 
@@ -1276,6 +1316,7 @@
         } catch (err) {
             showToast('发帖失败: ' + err.message);
         } finally {
+            isProcessing = false;
             btn.innerText = '发布';
             btn.disabled = false;
         }
@@ -1301,10 +1342,11 @@
         document.getElementById('cover-preview').style.display = 'none';
         document.getElementById('cover-upload-text').innerText = '点击选择背景图';
 
-        document.getElementById('edit-profile-modal').style.display = 'flex';
+        document.getElementById('edit-profile-modal').classList.add('open');
     }
 
     window.saveProfile = async function() {
+        if (isProcessing) return;
         const newName = document.getElementById('edit-name').value.trim();
         const newBio = document.getElementById('edit-bio').value.trim();
         const avatarFileInput = document.getElementById('edit-avatar-file');
@@ -1313,6 +1355,7 @@
         
         if (!newName) return showToast('昵称不能为空');
 
+        isProcessing = true;
         btn.innerText = '保存中...';
         btn.disabled = true;
 
@@ -1350,12 +1393,13 @@
             }
 
             document.getElementById('header-avatar-img').src = CurrentUserProfile.avatar;
-            document.getElementById('edit-profile-modal').style.display = 'none';
+            document.getElementById('edit-profile-modal').classList.remove('open');
             showToast('资料已更新！');
             render();
         } catch (err) {
             showToast('保存失败: ' + err.message);
         } finally {
+            isProcessing = false;
             btn.innerText = '保存修改';
             btn.disabled = false;
         }
