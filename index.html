@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v4.9</title>
+    <title>基沃托斯日讯-测试版v5.0</title>
     
     <!-- 👇 加载 Supabase 的核心引擎 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,7 +14,7 @@
         body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden;}
 
         #error-box { position: fixed; top: 0; left: 0; width: 100%; background: rgba(255,0,0,0.95); color: white; padding: 15px; font-weight: bold; z-index: 99999; display: none; font-size: 14px; text-align: center; line-height: 1.5;}
-        #toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #fff; padding: 14px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--border-color); font-weight: bold;}
+        #toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #fff; padding: 14px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--border-color); font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.5);}
 
         /* 登录页 */
         #auth-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background: #121212; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
@@ -247,7 +247,7 @@
 
 <script>
     // =======================================================
-    // ✅ 已为你填入真实的 Supabase URL 和 Publishable Key！
+    // ✅ 已填入真实的 Supabase URL 和 Publishable Key
     // =======================================================
     const SUPABASE_URL = 'https://ycjshhxxqnyizewpswoc.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut';
@@ -273,7 +273,7 @@
         toast.innerText = msg;
         toast.style.display = 'block';
         clearTimeout(window.toastTimer);
-        window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 4000); // 延长显示时间，方便看错误
     }
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -295,24 +295,49 @@
             if (password.length < 6) return showToast('密码至少需要6位');
             if (isRegisterMode && !nickname) return showToast('请输入昵称');
             
-            isLoggingIn = true; btn.innerText = '处理中...'; btn.disabled = true;
+            isLoggingIn = true; 
+            btn.innerText = isRegisterMode ? '注册中...' : '登录中...'; 
+            btn.disabled = true;
             
             try {
                 if (isRegisterMode) {
+                    // 1. 注册账号
                     const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { data: { display_name: nickname } } });
                     if (error) throw error;
+                    
                     if (data.user) {
-                        await supabaseClient.from('profiles').insert([{ id: data.user.id, name: nickname, email: email, signal: generateSignal(), avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`, bio: '' }]);
-                        showToast('注册成功！请登录。');
-                        document.getElementById('switch-btn').click();
+                        // 2. 写入 profiles 表
+                        const { error: profileErr } = await supabaseClient.from('profiles').insert([{ 
+                            id: data.user.id, name: nickname, email: email, signal: generateSignal(), 
+                            avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`, bio: '' 
+                        }]);
+                        if (profileErr) throw new Error("创建档案失败：" + profileErr.message);
+                        
+                        // 3. 自动登录 (如果后台没开启邮箱验证)
+                        const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({ email, password });
+                        if (loginError) throw new Error("注册成功，但自动登录失败（请检查Supabase后台是否关闭了邮箱验证）：" + loginError.message);
+                        
+                        await initUser(loginData.user);
+                        showToast('注册并登录成功！');
                     }
                 } else {
+                    // 直接登录
                     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                     if (error) throw error;
-                    await initUser(data.user);
+                    
+                    if (data.user) {
+                        await initUser(data.user);
+                        showToast('登录成功！');
+                    }
                 }
-            } catch (err) { showToast('操作失败: ' + err.message); } 
-            finally { isLoggingIn = false; btn.innerText = isRegisterMode ? '注 册' : '登 录'; btn.disabled = false; }
+            } catch (err) { 
+                // 将报错强行弹出来
+                showToast('失败: ' + err.message); 
+            } finally { 
+                isLoggingIn = false; 
+                btn.innerText = isRegisterMode ? '注 册' : '登 录'; 
+                btn.disabled = false; 
+            }
         };
 
         document.getElementById('switch-btn').onclick = function() {
@@ -328,7 +353,11 @@
     });
 
     async function checkAuth() {
-        const { data: { session } } = await supabaseClient.auth.getSession();
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) {
+            console.error(error);
+            return;
+        }
         if (session) {
             await initUser(session.user);
         } else {
@@ -338,8 +367,16 @@
     }
 
     async function initUser(user) {
-        let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
-        if (!profile) return; 
+        // 加上了严格的错误捕获
+        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+        
+        if (profileError) {
+            throw new Error("读取个人资料失败，请检查 profiles 表是否存在: " + profileError.message);
+        }
+        if (!profile) {
+            throw new Error("找不到该用户的个人资料");
+        }
+
         CurrentUserProfile = profile;
         localStorage.setItem('cached_profile', JSON.stringify(profile));
 
@@ -347,7 +384,8 @@
         document.getElementById('app').style.display = 'block';
         document.getElementById('bottom-nav').classList.add('show');
 
-        let { data: users } = await supabaseClient.from('profiles').select('*');
+        let { data: users, error: usersError } = await supabaseClient.from('profiles').select('*');
+        if (usersError) throw new Error("读取用户列表失败: " + usersError.message);
         AllUsers = users || [];
         
         await loadNotifications();
@@ -362,7 +400,12 @@
     }
 
     async function resetAndLoadPosts() {
-        const { data: posts } = await supabaseClient.from('posts').select(`*, profiles ( name, avatar, signal, email )`).order('created_at', { ascending: false }).limit(50);
+        const { data: posts, error } = await supabaseClient.from('posts').select(`*, profiles ( name, avatar, signal, email )`).order('created_at', { ascending: false }).limit(50);
+        if (error) {
+            console.error("加载帖子失败:", error);
+            showToast('加载帖子失败: ' + error.message);
+            return;
+        }
         AllPosts = posts || [];
         render();
     }
@@ -425,7 +468,7 @@
 
         if (currentView === 'feed') {
             headerTitle.innerText = '首页';
-            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 v4.9 已上线！</div></div>`;
+            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 v5.0 已上线！</div></div>`;
         } 
         else if (currentView === 'story') {
             headerTitle.innerText = '剧情广场';
@@ -784,4 +827,4 @@
     }
 </script>
 </body>
-</html>
+    </html>
