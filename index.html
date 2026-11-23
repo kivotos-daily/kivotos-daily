@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v5.5</title>
+    <title>基沃托斯日讯-测试版v5.7</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* 1. 完美还原暗黑粉色主题 */
         :root { --bg-color: #121212; --text-main: #e0e0e0; --text-sub: #888888; --accent-color: #ff7b9c; --border-color: #333333; --hover-color: #1a1a1a; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden;}
@@ -30,41 +29,55 @@
         /* 主应用 */
         #app { display: none; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; background: var(--bg-color); border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);}
         
-        /* 顶部导航 */
-        .header { position: sticky; top: 0; background: rgba(18,18,18,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 100;}
-        .header-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; font-size: 18px; font-weight: bold; color: var(--accent-color);}
-        .header-title-area { display: flex; align-items: center; gap: 10px; }
+        /* 顶部导航区 (完美还原截图布局) */
+        .header { position: sticky; top: 0; background: rgba(18,18,18,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 100;}
+        .header-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; height: 56px;}
+        
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-icon { width: 24px; height: 24px; fill: var(--text-main); cursor: pointer; }
+        .header-title { font-size: 18px; font-weight: bold; color: var(--text-main); }
         
         /* 左上角头像(怀旧版专属) */
-        #header-avatar-wrapper { display: none; cursor: pointer; }
+        #header-avatar-wrapper { cursor: pointer; display: none;}
         #header-avatar-wrapper img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); }
         
-        .layout-btn { font-size: 12px; color: var(--text-sub); font-weight: normal; cursor:pointer; border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 20px;}
-        .layout-btn:hover { background: var(--hover-color); }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .header-msg-btn { position: relative; cursor: pointer; display: flex; align-items: center; }
+        .header-msg-btn svg { width: 24px; height: 24px; fill: var(--text-main); }
+        .red-dot { position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; background: #f91880; border-radius: 50%; display: none; border: 2px solid var(--bg-color);}
+        
+        /* 发布动态按钮 */
+        .btn-post-main { background: var(--accent-color); color: #fff; border: none; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; display: none;}
+        
+        /* 切换版式按钮 */
+        .layout-btn { font-size: 12px; color: var(--text-sub); cursor:pointer; border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 20px; white-space: nowrap;}
 
+        /* 顶部 Tabs */
         .tabs { display: flex; border-bottom: 1px solid var(--border-color); }
         .tab { flex: 1; text-align: center; padding: 12px 0; font-size: 14px; color: var(--text-sub); font-weight: bold; cursor: pointer; position: relative; transition: background 0.2s;}
         .tab.active { color: var(--accent-color); }
         .tab.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 40px; height: 3px; background: var(--accent-color); border-radius: 2px; }
+        
+        /* 提示条 */
+        .new-post-toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--accent-color); color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 12px rgba(255,123,156,0.3); display: none; z-index: 90; cursor: pointer;}
 
-        /* 搜索 */
-        .search-wrapper { padding: 8px 16px; }
-        .search-box { width: 100%; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
-        .search-box:focus { border-color: var(--accent-color); }
-        #search-results { position: absolute; top: 100%; left: 0; width: 100%; background: var(--bg-color); border-bottom: 1px solid var(--border-color); z-index: 150; max-height: 300px; overflow-y: auto; display: none;}
+        /* 搜索弹窗 (点击放大镜出现) */
+        #search-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 400; display: none; flex-direction: column; }
+        .search-header { display: flex; align-items: center; padding: 10px 16px; gap: 10px; border-bottom: 1px solid var(--border-color);}
+        .search-box { flex: 1; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
+        .search-results { flex: 1; overflow-y: auto; }
         .search-user-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #222; cursor: pointer;}
         .search-user-item:hover { background: var(--hover-color); }
 
-        /* 底部导航 (普通版显示) */
+        /* 底部导航 (两版共用，信息移走) */
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; height: 60px; background: rgba(24,24,24,0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border-color); justify-content: space-around; align-items: center; z-index: 200; }
         .bottom-nav.show { display: flex; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sub); cursor: pointer; flex: 1; position: relative;}
         .nav-item.active { color: var(--accent-color); }
         .nav-item svg { width: 24px; height: 24px; fill: currentColor; margin-bottom: 2px; }
         .nav-btn-add { background: var(--accent-color); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-top: -20px; cursor: pointer; font-size: 24px; box-shadow: 0 4px 12px rgba(255,123,156,0.3);}
-        .red-dot { position: absolute; top: 2px; right: 25px; width: 8px; height: 8px; background: #f91880; border-radius: 50%; display: none; border: 1px solid #000;}
 
-        /* 抽屉侧边栏 (怀旧版专属) */
+        /* 侧边栏 (怀旧版左侧抽屉) */
         .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 300; display: none; opacity: 0; transition: opacity 0.3s;}
         .sidebar-overlay.open { display: block; opacity: 1; }
         .sidebar-nav { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: var(--bg-color); border-right: 1px solid var(--border-color); z-index: 301; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1); display: flex; flex-direction: column; }
@@ -78,10 +91,11 @@
         .avatar { border-radius: 50%; background: #333; display: flex; justify-content: center; align-items: center; color: #fff; overflow: hidden; flex-shrink: 0;}
         .avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 帖子通用 */
         .announcement-bar { margin: 12px 16px; background: rgba(255, 123, 156, 0.1); border: 1px solid var(--accent-color); border-radius: 12px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; }
         
-        /* 新版卡片 */
+        /* =========================================
+           普通版帖子卡片
+           ========================================= */
         .post-card-new { background: var(--bg-color); padding: 16px; border-bottom: 1px solid var(--border-color); transition: background 0.2s;}
         .post-card-new:hover { background: var(--hover-color); }
         .post-new-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
@@ -101,24 +115,29 @@
         .action-icon.active { color: var(--accent-color); stroke: var(--accent-color); }
         .action-icon.active svg { fill: var(--accent-color); }
 
-        /* 怀旧版排版 */
-        .post-classic { display: flex; padding: 12px 16px; border-bottom: 1px solid var(--border-color); transition: background 0.2s;}
-        .post-classic:hover { background: var(--hover-color); }
-        .post-classic-avatar { width: 44px; height: 44px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; background: #333; cursor: pointer;}
-        .post-classic-main { flex: 1; min-width: 0; }
-        .post-classic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-        .post-classic-name-group { display: flex; align-items: center; gap: 6px; cursor: pointer;}
-        .post-classic-name { font-size: 15px; font-weight: bold; color: #fff; }
-        .post-classic-time { font-size: 13px; color: #888; }
-        .post-classic-content { font-size: 15px; margin-bottom: 8px; white-space: pre-wrap; word-break: break-word; cursor: pointer; color: #ccc; line-height: 1.5;}
-        .post-classic-media { width: 100%; border-radius: 16px; margin-bottom: 12px; max-height: 300px; object-fit: cover; border: 1px solid var(--border-color); cursor: pointer;}
-        .post-classic-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; max-width: 380px;}
+        /* =========================================
+           怀旧版帖子排版 (严格还原截图：带边框的深色卡片)
+           ========================================= */
+        .post-classic { margin: 12px 16px; padding: 16px; border: 1px solid var(--border-color); border-radius: 12px; background: #161616; transition: background 0.2s;}
+        .post-classic:hover { background: #1c1c1c; }
+        .post-classic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .post-classic-user { display: flex; align-items: center; gap: 10px; cursor: pointer;}
+        .post-classic-avatar { width: 36px; height: 36px; border-radius: 50%; background: #333; overflow: hidden;}
+        .post-classic-avatar img { width: 100%; height: 100%; object-fit: cover;}
+        .post-classic-name { font-size: 15px; font-weight: bold; color: var(--text-main); }
+        .post-classic-time { font-size: 13px; color: var(--text-sub); }
+        .post-classic-content { font-size: 15px; margin-bottom: 12px; white-space: pre-wrap; word-break: break-word; cursor: pointer; color: #ccc; line-height: 1.5;}
+        .post-classic-media { width: 100%; border-radius: 12px; margin-bottom: 12px; max-height: 300px; object-fit: cover; cursor: pointer;}
+        
+        /* 怀旧版操作栏 (颜色稍暗，间距更开) */
+        .post-classic-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; margin-top: 4px;}
+        .post-classic-actions .action-icon { padding: 6px; }
+        .post-classic-actions .action-icon svg { width: 20px; height: 20px; }
 
         /* 详情页 */
         #detail-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 250; display: none; flex-direction: column; max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
         .detail-header { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); background: rgba(18,18,18,0.85); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 10;}
         .back-btn { font-size: 20px; cursor: pointer; margin-right: 20px; color: #fff; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;}
-        .back-btn:hover { background: var(--hover-color); }
         .detail-header-title { font-size: 18px; font-weight: bold; }
         .detail-content-area { flex: 1; overflow-y: auto; padding-bottom: 70px; }
         
@@ -149,6 +168,8 @@
         .profile-bio { font-size: 15px; margin-bottom: 12px; line-height: 1.4;}
         .profile-stats-row { display: flex; gap: 20px; font-size: 14px; color: var(--text-sub); margin-bottom: 16px;}
         .profile-stats-row b { color: #eff3f4; cursor: pointer;}
+        
+        /* 个人主页 Tabs */
         .profile-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
         
         /* 弹窗 */
@@ -181,14 +202,6 @@
         .reply-time { font-size: 12px; color: var(--text-sub);}
         .reply-target { font-size: 14px; color: var(--accent-color);}
         .reply-text { font-size: 14px; color: #eff3f4; margin-bottom: 6px; line-height: 1.4;}
-
-        /* 消息通知 */
-        .noti-item { display: flex; align-items: flex-start; padding: 16px; border-bottom: 1px solid var(--border-color); gap: 12px; transition: background 0.2s;}
-        .noti-item:hover { background: var(--hover-color); }
-        .noti-item .avatar { width: 40px; height: 40px; }
-        .noti-content { flex: 1; font-size: 15px; color: #ccc; line-height: 1.4;}
-        .noti-content b { color: #fff; }
-        .noti-time { font-size: 13px; color: #666; margin-top: 6px; }
     </style>
 </head>
 <body>
@@ -200,18 +213,17 @@
 <div id="auth-page">
     <div class="auth-box">
         <div class="auth-title" id="auth-title">登录基沃托斯</div>
-        
         <div class="input-group" id="nickname-group" style="display: none;">
             <label>昵称</label>
-            <input type="text" class="auth-input" id="auth-nickname" placeholder="给自己起个名字">
+            <input type="text" class="auth-input" id="auth-nickname" placeholder="给自己起个名字" autocomplete="off">
         </div>
         <div class="input-group">
             <label>邮箱</label>
-            <input type="email" class="auth-input" id="auth-email" placeholder="example@mail.com">
+            <input type="email" class="auth-input" id="auth-email" placeholder="example@mail.com" autocomplete="new-password">
         </div>
         <div class="input-group">
             <label>密码</label>
-            <input type="password" class="auth-input" id="auth-password" placeholder="至少 6 位字符">
+            <input type="password" class="auth-input" id="auth-password" placeholder="至少 6 位字符" autocomplete="new-password">
         </div>
         <button class="auth-btn" id="submit-btn">登 录</button>
         <div class="auth-switch" id="switch-btn">
@@ -222,32 +234,43 @@
 
 <!-- 主应用 -->
 <div id="app">
+    <!-- 顶部导航 (完美还原截图2) -->
     <header class="header">
         <div class="header-top">
-            <div class="header-title-area">
-                <!-- 左上角头像 (怀旧版显示) -->
+            <div class="header-left">
+                <!-- 左上角图标区 -->
+                <svg class="header-icon" id="header-search-icon" onclick="openSearch()" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                
                 <div id="header-avatar-wrapper" onclick="openSidebar()">
                     <img id="header-avatar-img" src="">
                 </div>
-                <span id="header-title">首页</span>
+                <span class="header-title" id="header-title">首页</span>
             </div>
-            <span class="layout-btn" id="layout-btn" onclick="toggleLayout()">切怀旧版</span>
+            
+            <div class="header-right">
+                <!-- 右侧功能区 -->
+                <div class="header-msg-btn" onclick="switchView('notifications')">
+                    <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                    <div class="red-dot" id="header-noti-dot"></div>
+                </div>
+                <button class="btn-post-main" id="header-post-btn" onclick="openPostModal()">发布动态</button>
+                <span class="layout-btn" id="layout-btn" onclick="toggleLayout()">切怀旧版</span>
+            </div>
         </div>
         
+        <!-- 怀旧版首页的 Tabs -->
         <div class="tabs" id="feed-tabs" style="display:none;">
             <div class="tab active" onclick="switchTab(this)">为你推荐</div>
             <div class="tab" onclick="switchTab(this)">实时帖子</div>
         </div>
-        
-        <div class="search-wrapper">
-            <input type="text" class="search-box" id="search-input" placeholder="搜索帖子或用户..." oninput="handleSearch(this.value)">
-            <div id="search-results"></div>
-        </div>
+        <!-- 新动态提示条 -->
+        <div class="new-post-toast" id="new-post-toast" onclick="resetAndLoadPosts()">1 条新动态，点击查看</div>
     </header>
 
     <main id="main-content"></main>
 
-    <nav class="bottom-nav" id="bottom-nav">
+    <!-- 底部导航 (普通版和怀旧版共有) -->
+    <nav class="bottom-nav show" id="bottom-nav">
         <div class="nav-item active" data-view="feed" onclick="switchView('feed')">
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>首页
         </div>
@@ -257,9 +280,9 @@
         <div class="nav-btn-add" onclick="openPostModal()">
             <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:#fff;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         </div>
-        <div class="nav-item" data-view="notifications" onclick="switchView('notifications')">
-            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>消息
-            <div class="red-dot" id="noti-dot"></div>
+        <!-- 收藏夹入口 -->
+        <div class="nav-item" data-view="bookmarks" onclick="switchView('bookmarks')">
+            <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>收藏
         </div>
         <div class="nav-item" data-view="profile_self" onclick="switchView('profile_self')">
             <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>我的
@@ -267,12 +290,19 @@
     </nav>
 </div>
 
-<!-- 抽屉侧边栏 (怀旧版使用) -->
+<!-- 左侧抽屉 (怀旧版) -->
 <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
 <div id="sidebar-nav" class="sidebar-nav">
-    <div id="sidebar-content" style="display:flex; flex-direction:column; flex:1;">
-        <!-- 内容由JS动态生成 -->
+    <div id="sidebar-content" style="display:flex; flex-direction:column; flex:1;"></div>
+</div>
+
+<!-- 全屏搜索 -->
+<div id="search-overlay">
+    <div class="search-header">
+        <svg class="header-icon" onclick="closeSearch()" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        <input type="text" class="search-box" id="search-input" placeholder="搜索帖子或用户..." oninput="handleSearch(this.value)">
     </div>
+    <div class="search-results" id="search-results"></div>
 </div>
 
 <!-- 详情页 -->
@@ -281,7 +311,7 @@
         <div class="back-btn" onclick="closeDetailPage()">
             <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:currentColor;"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         </div>
-        <div class="detail-header-title">帖子</div>
+        <div class="detail-header-title">帖子详情</div>
     </div>
     <div class="detail-content-area" id="detail-render-area"></div>
     <div class="detail-bottom-bar">
@@ -343,6 +373,7 @@
     let AllUsers = [];
     let isRegisterMode = false;
     let currentView = 'feed';
+    let currentProfileTab = 'posts';
     let viewingUserId = null;
     let currentPostMode = 'normal';
     let currentPostIdForComment = null;
@@ -371,7 +402,8 @@
             const nickname = document.getElementById('auth-nickname').value.trim();
             const btn = document.getElementById('submit-btn');
             
-            if (!email || !password) return showToast('请填写邮箱和密码');
+            if (!email) return showToast('请输入邮箱');
+            if (!password) return showToast('请输入密码');
             if (password.length < 6) return showToast('密码至少需要6位');
             if (isRegisterMode && !nickname) return showToast('请输入昵称');
             
@@ -392,7 +424,7 @@
                         if (profileErr) throw new Error("创建档案失败：" + profileErr.message);
                         
                         const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({ email, password });
-                        if (loginError) throw new Error("注册成功但自动登录失败：" + loginError.message);
+                        if (loginError) throw new Error("自动登录失败：" + loginError.message);
                         
                         await initUser(loginData.user);
                         showToast('注册并登录成功！');
@@ -425,13 +457,15 @@
         };
 
         document.getElementById('layout-btn').innerText = currentLayout === 'new' ? '切怀旧版' : '切普通版';
+        
         checkAuth();
     });
 
     async function checkAuth() {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) { await initUser(session.user); } 
-        else {
+        if (session && session.user && session.user.email) { 
+            await initUser(session.user); 
+        } else {
             document.getElementById('auth-page').style.display = 'flex';
             document.getElementById('app').style.display = 'none';
         }
@@ -453,9 +487,7 @@
 
         CurrentUserProfile = profile;
         
-        // 更新左上角头像
         document.getElementById('header-avatar-img').src = CurrentUserProfile.avatar;
-
         document.getElementById('auth-page').style.display = 'none';
         document.getElementById('app').style.display = 'block';
 
@@ -464,7 +496,7 @@
         
         await loadNotifications();
         await resetAndLoadPosts();
-        updateNavVisibility();
+        updateUIForLayout();
     }
 
     window.logout = async function() {
@@ -475,6 +507,7 @@
     }
 
     async function resetAndLoadPosts() {
+        document.getElementById('new-post-toast').style.display = 'none';
         const { data: posts } = await supabaseClient.from('posts').select(`*, profiles ( name, avatar, signal )`).order('created_at', { ascending: false }).limit(50);
         AllPosts = posts || [];
         render();
@@ -484,32 +517,38 @@
         const { data: notis } = await supabaseClient.from('notifications').select('*, sender:profiles!sender_id(name, avatar)').eq('user_id', CurrentUserProfile.id).order('created_at', { ascending: false });
         window.UserNotifications = notis || [];
         unreadNotiCount = window.UserNotifications.filter(n => !n.is_read).length;
-        document.getElementById('noti-dot').style.display = unreadNotiCount > 0 ? 'block' : 'none';
+        document.getElementById('header-noti-dot').style.display = unreadNotiCount > 0 ? 'block' : 'none';
+    }
+
+    window.openSearch = function() {
+        document.getElementById('search-overlay').style.display = 'flex';
+        document.getElementById('search-input').focus();
+    }
+    window.closeSearch = function() {
+        document.getElementById('search-overlay').style.display = 'none';
+        document.getElementById('search-input').value = '';
+        document.getElementById('search-results').innerHTML = '';
     }
 
     window.handleSearch = function(val) {
         const resBox = document.getElementById('search-results');
-        if (!val) { resBox.style.display = 'none'; return; }
+        if (!val) { resBox.innerHTML = ''; return; }
         const matchedUsers = AllUsers.filter(u => u.name.includes(val));
         if (matchedUsers.length > 0) {
             let html = '';
             matchedUsers.forEach(u => {
-                html += `<div class="search-user-item" onclick="viewUser('${u.id}')"><div class="avatar" style="width:40px;height:40px;margin-right:12px;"><img src="${u.avatar}"></div><div style="font-weight:bold;color:#fff;">${u.name}</div></div>`;
+                html += `<div class="search-user-item" onclick="viewUser('${u.id}'); closeSearch();"><div class="avatar" style="width:40px;height:40px;margin-right:12px;"><img src="${u.avatar}"></div><div style="font-weight:bold;color:#fff;">${u.name}</div></div>`;
             });
             resBox.innerHTML = html;
-            resBox.style.display = 'block';
-        } else { resBox.style.display = 'none'; }
+        } else { resBox.innerHTML = `<div style="text-align:center;padding:20px;color:#666;">没有找到相关用户</div>`; }
     }
 
-    // 顶部 Tabs 点击事件
     window.switchTab = function(el) {
         document.querySelectorAll('#feed-tabs .tab').forEach(t => t.classList.remove('active'));
         el.classList.add('active');
         showToast('已切换到 ' + el.innerText);
-        // 如果你需要真实的过滤逻辑，可以在这里修改 AllPosts 并调用 render()
     }
 
-    // 点击自己头像的判定逻辑
     window.viewUser = function(id) {
         if (id === CurrentUserProfile.id) {
             if (currentLayout === 'classic') {
@@ -522,7 +561,6 @@
         }
     }
 
-    // 侧边栏开关逻辑
     window.openSidebar = function() {
         if (!CurrentUserProfile) return;
         const content = document.getElementById('sidebar-content');
@@ -537,6 +575,7 @@
             <div class="sidebar-item" onclick="switchView('feed'); closeSidebar();">首页</div>
             <div class="sidebar-item" onclick="switchView('story'); closeSidebar();">剧情广场</div>
             <div class="sidebar-item" onclick="switchView('notifications'); closeSidebar();">消息通知</div>
+            <div class="sidebar-item" onclick="switchView('bookmarks'); closeSidebar();">我的收藏</div>
             <div class="sidebar-item" onclick="openPostModal(); closeSidebar();">发布帖子</div>
             <div style="flex:1;"></div>
             <div class="sidebar-item" style="font-size:15px; color:var(--accent-color); border-top:1px solid var(--border-color);" onclick="toggleLayout(); closeSidebar();">切换普通版</div>
@@ -551,40 +590,42 @@
         document.getElementById('sidebar-nav').classList.remove('open');
     }
 
-    // 判断当前布局显示/隐藏底部导航和左上角头像
-    function updateNavVisibility() {
-        const bottomNav = document.getElementById('bottom-nav');
+    // 根据当前版式更新顶部栏 UI
+    function updateUIForLayout() {
+        const isClassic = currentLayout === 'classic';
         const headerAvatar = document.getElementById('header-avatar-wrapper');
+        const searchIcon = document.getElementById('header-search-icon');
+        const postBtn = document.getElementById('header-post-btn');
         
-        if (currentLayout === 'classic') {
-            bottomNav.classList.remove('show');
-            bottomNav.style.display = 'none';
-            headerAvatar.style.display = 'block'; // 显示左上角头像
+        if (isClassic) {
+            headerAvatar.style.display = 'block'; // 显示头像
+            searchIcon.style.display = 'block';   // 显示搜索图标
+            postBtn.style.display = 'block';      // 显示发布按钮
+            document.getElementById('feed-tabs').style.display = (currentView === 'feed') ? 'flex' : 'none';
         } else {
-            bottomNav.style.display = 'flex';
-            bottomNav.classList.add('show');
-            headerAvatar.style.display = 'none'; // 隐藏左上角头像
+            headerAvatar.style.display = 'none';
+            searchIcon.style.display = 'none';
+            postBtn.style.display = 'none';
+            document.getElementById('feed-tabs').style.display = 'none';
         }
     }
 
     window.switchView = function(viewName, targetId = null) {
         currentView = viewName;
-        document.getElementById('search-input').value = '';
-        document.getElementById('search-results').style.display = 'none';
+        closeSearch();
         if (viewName === 'profile_other') viewingUserId = targetId;
-        
+        if (viewName === 'profile_self') currentProfileTab = 'posts';
+
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        if (viewName !== 'profile_other' && currentLayout === 'new') {
-            const navBtn = document.querySelector(`.nav-item[data-view="${viewName}"]`);
-            if(navBtn) navBtn.classList.add('active');
-        }
+        const navBtn = document.querySelector(`.nav-item[data-view="${viewName}"]`);
+        if(navBtn) navBtn.classList.add('active');
 
-        if (currentLayout === 'classic' && viewName === 'feed') {
-            document.getElementById('feed-tabs').style.display = 'flex';
-        } else {
-            document.getElementById('feed-tabs').style.display = 'none';
-        }
+        updateUIForLayout();
+        render();
+    }
 
+    window.switchProfileTab = function(tab) {
+        currentProfileTab = tab;
         render();
     }
 
@@ -596,9 +637,6 @@
 
         if (currentView === 'feed') {
             headerTitle.innerText = '首页';
-            if (currentLayout === 'new') {
-                html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div style="color: var(--accent-color); font-weight:bold;">基沃托斯日讯 v5.5 已上线！</div></div>`;
-            }
         } 
         else if (currentView === 'story') {
             headerTitle.innerText = '剧情广场';
@@ -611,9 +649,14 @@
             } else {
                 window.UserNotifications.forEach(n => {
                     let actionText = n.type === 'like' ? '赞了你的帖子' : (n.type === 'follow' ? '关注了你' : '回复了你的帖子');
-                    html += `<div class="noti-item" onclick="viewUser('${n.sender_id}')"><div class="avatar"><img src="${n.sender?.avatar}"></div><div class="noti-content"><div><b>${n.sender?.name || '某人'}</b> ${actionText}</div><div class="noti-time">${new Date(n.created_at).toLocaleString()}</div></div></div>`;
+                    html += `<div class="noti-item" onclick="viewUser('${n.sender_id}')" style="display:flex; padding:16px; border-bottom:1px solid var(--border-color); gap:12px;"><div class="avatar" style="width:40px;height:40px;"><img src="${n.sender?.avatar}"></div><div style="flex:1;"><div style="font-size:15px;"><b>${n.sender?.name || '某人'}</b> ${actionText}</div><div style="font-size:13px; color:#666; margin-top:4px;">${new Date(n.created_at).toLocaleString()}</div></div></div>`;
                 });
             }
+        }
+        else if (currentView === 'bookmarks') {
+            headerTitle.innerText = '我的收藏';
+            const bookmarkIds = CurrentUserProfile.bookmarks || [];
+            postsToRender = postsToRender.filter(p => bookmarkIds.includes(p.id));
         }
         else if (currentView === 'profile_self' || currentView === 'profile_other') {
             const isSelf = currentView === 'profile_self';
@@ -621,7 +664,13 @@
             if (!targetUser) return;
 
             headerTitle.innerText = targetUser.name;
-            postsToRender = postsToRender.filter(p => p.author_id === targetUser.id);
+            
+            if (isSelf && currentProfileTab === 'bookmarks') {
+                const bookmarkIds = CurrentUserProfile.bookmarks || [];
+                postsToRender = postsToRender.filter(p => bookmarkIds.includes(p.id));
+            } else {
+                postsToRender = postsToRender.filter(p => p.author_id === targetUser.id);
+            }
 
             const followersList = AllUsers.filter(u => u.following_list && u.following_list.includes(targetUser.id));
             const followingCount = targetUser.following_list ? targetUser.following_list.length : 0;
@@ -644,7 +693,8 @@
                 </div>
             </div>
             <div class="profile-tabs">
-                <div class="tab active">帖子</div>
+                <div class="tab ${isSelf && currentProfileTab === 'posts' ? 'active' : ''}" onclick="${isSelf ? 'switchProfileTab(\'posts\')' : ''}">帖子</div>
+                ${isSelf ? `<div class="tab ${currentProfileTab === 'bookmarks' ? 'active' : ''}" onclick="switchProfileTab('bookmarks')">收藏</div>` : ''}
             </div>`;
         }
 
@@ -702,26 +752,26 @@
                 </div>
             </div>`;
         } else {
+            // 怀旧版卡片：完全按照截图还原（带圆角边框、卡片背景）
             return `
             <div class="post-classic">
-                <div class="post-classic-avatar avatar" onclick="viewUser('${post.author_id}')"><img src="${authorProfile.avatar}"></div>
-                <div class="post-classic-main">
-                    <div class="post-classic-header">
-                        <div class="post-classic-name-group" onclick="viewUser('${post.author_id}')">
-                            <span class="post-classic-name">${authorProfile.name}</span>
-                            ${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}
-                            <span class="post-classic-time">· ${new Date(post.created_at).toLocaleString()}</span>
+                <div class="post-classic-header">
+                    <div class="post-classic-user" onclick="viewUser('${post.author_id}')">
+                        <div class="post-classic-avatar"><img src="${authorProfile.avatar}"></div>
+                        <div style="display:flex; flex-direction:column;">
+                            <span class="post-classic-name">${authorProfile.name} ${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}</span>
                         </div>
                     </div>
-                    <div class="post-classic-content" onclick="openDetailPage('${post.id}')">${post.content}</div>
-                    <div onclick="openDetailPage('${post.id}')">${mediaHtml}</div>
-                    <div class="post-classic-actions action-bar">
-                        <div class="action-icon" onclick="openDetailPage('${post.id}')">${iconReply} <span>${(post.comments || []).length}</span></div>
-                        <div class="action-icon">${iconRetweet} <span>0</span></div>
-                        <div class="action-icon like-btn ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
-                        <div class="action-icon">${iconViews} <span>${post.views}</span></div>
-                        <div class="action-icon ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? iconBookmarkFill : iconBookmark}</div>
-                    </div>
+                    <span class="post-classic-time">${new Date(post.created_at).toLocaleString()}</span>
+                </div>
+                <div class="post-classic-content" onclick="openDetailPage('${post.id}')">${post.content}</div>
+                <div onclick="openDetailPage('${post.id}')">${mediaHtml}</div>
+                <div class="post-classic-actions">
+                    <div class="action-icon" onclick="openDetailPage('${post.id}')">${iconReply} <span>${(post.comments || []).length}</span></div>
+                    <div class="action-icon">${iconRetweet} <span>0</span></div>
+                    <div class="action-icon like-btn ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
+                    <div class="action-icon">${iconViews} <span>${post.views}</span></div>
+                    <div class="action-icon ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? iconBookmarkFill : iconBookmark}</div>
                 </div>
             </div>`;
         }
@@ -812,7 +862,7 @@
                                 </div>
                                 <div class="reply-text"><span class="reply-target">回复 @${rootAuthor.name}：</span>${reply.content}</div>
                                 <div class="comment-actions">
-                                    <span onclick="prepareReply('${replyAuthor.name}', '${reply.author_id}')">💬 回复</span>
+                                    <span onclick="prepareReply('${replyAuthor.name}', '${replyAuthor.id}')">💬 回复</span>
                                 </div>
                             </div>
                         </div>`;
@@ -883,15 +933,8 @@
         currentLayout = currentLayout === 'new' ? 'classic' : 'new';
         localStorage.setItem('forum_layout', currentLayout);
         document.getElementById('layout-btn').innerText = currentLayout === 'new' ? '切怀旧版' : '切普通版';
-        showToast(currentLayout === 'new' ? '已切换到 普通版' : '已切换到 怀旧版');
         
-        if (currentLayout === 'classic' && currentView === 'feed') {
-            document.getElementById('feed-tabs').style.display = 'flex';
-        } else {
-            document.getElementById('feed-tabs').style.display = 'none';
-        }
-        
-        updateNavVisibility();
+        updateUIForLayout();
         render();
     }
 
@@ -938,6 +981,7 @@
         if (idx > -1) CurrentUserProfile.bookmarks.splice(idx, 1);
         else CurrentUserProfile.bookmarks.push(id);
         await supabaseClient.from('profiles').update({ bookmarks: CurrentUserProfile.bookmarks }).eq('id', CurrentUserProfile.id);
+        showToast(CurrentUserProfile.bookmarks.includes(id) ? '已加入收藏' : '已取消收藏');
         render();
     }
 
