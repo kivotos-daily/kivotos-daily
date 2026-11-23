@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v6.2</title>
+    <title>基沃托斯日讯-测试版v6.3</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -36,34 +36,30 @@
         /* 左侧：搜索 + 头像 */
         .header-left { display: flex; align-items: center; gap: 12px; }
         .header-icon { width: 22px; height: 22px; fill: #fff; cursor: pointer; }
-        
-        /* 头像，点击呼出侧边栏 */
         .header-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid #444;}
+        .header-title { font-size: 18px; font-weight: bold; color: #fff; display: none; }
         
         /* 右侧：消息 + 发布 */
-        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-right { display: flex; align-items: center; gap: 12px; }
         .header-msg-btn { position: relative; cursor: pointer; display: flex; align-items: center; }
-        .header-msg-btn svg { width: 24px; height: 24px; fill: #fff; }
+        .header-msg-btn svg { width: 22px; height: 22px; fill: #fff; }
         .red-dot { position: absolute; top: -4px; right: -4px; background: #ff4757; color: #fff; font-size: 10px; font-weight: bold; padding: 1px 4px; border-radius: 10px; min-width: 16px; text-align: center; display: none;}
-        .btn-post-main { background: var(--accent-color); color: #fff; border: none; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; display: none;}
-        .layout-btn { font-size: 12px; color: var(--text-sub); cursor:pointer; border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 20px; white-space: nowrap;}
+        
+        .btn-post-main { background: var(--accent-color); color: #fff; border: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; display: none;}
+        .layout-btn { font-size: 12px; color: var(--text-sub); cursor:pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 20px; white-space: nowrap;}
 
         /* Tabs */
         .tabs { display: flex; border-bottom: 1px solid var(--border-color); }
         .tab { flex: 1; text-align: center; padding: 12px 0; font-size: 14px; color: var(--text-sub); font-weight: bold; cursor: pointer; position: relative;}
         .tab.active { color: var(--accent-color); }
         .tab.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 40px; height: 3px; background: var(--accent-color); border-radius: 2px; }
-        
-        /* 悬浮提示 */
-        .new-post-toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--accent-color); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 12px rgba(255,123,156,0.3); display: none; z-index: 90; cursor: pointer;}
 
         /* =========================================
-           怀旧版帖子卡片 (修好了排版乱码的问题)
+           怀旧版帖子卡片
            ========================================= */
         .post-classic { margin: 12px 16px; padding: 16px; border: 1px solid #2a2a2a; border-radius: 12px; background: #181818; }
         .post-classic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .post-classic-user { display: flex; align-items: center; gap: 10px; cursor: pointer;}
-        /* 强制固定头像大小 */
         .post-classic-avatar { width: 36px; height: 36px; border-radius: 50%; background: #333; overflow: hidden; flex-shrink: 0;}
         .post-classic-avatar img { width: 100%; height: 100%; object-fit: cover;}
         
@@ -71,7 +67,6 @@
         .post-classic-time { font-size: 13px; color: var(--text-sub); display: flex; align-items: center; gap: 4px;}
         .post-classic-time::before { content: '·'; font-weight: bold;}
         
-        /* 强制文字正常换行和间距 */
         .post-classic-content { font-size: 15px; margin-bottom: 16px; white-space: pre-wrap; word-break: break-word; cursor: pointer; color: #eee; line-height: 1.5;}
         .post-classic-media { width: 100%; border-radius: 12px; margin-bottom: 16px; max-height: 300px; object-fit: cover; cursor: pointer; border: 1px solid #333;}
         
@@ -101,10 +96,7 @@
         .post-content { font-size: 15px; margin-bottom: 12px; white-space: pre-wrap; line-height: 1.5;}
         .post-media { width: 100%; max-height: 300px; border-radius: 16px; margin-bottom: 12px; object-fit: cover; border: 1px solid var(--border-color); }
 
-
-        /* =========================================
-           侧边栏（左侧抽屉）
-           ========================================= */
+        /* 侧边栏 */
         .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 300; display: none; opacity: 0; transition: opacity 0.3s;}
         .sidebar-overlay.open { display: block; opacity: 1; }
         .sidebar-nav { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: var(--bg-color); border-right: 1px solid var(--border-color); z-index: 301; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1); display: flex; flex-direction: column; }
@@ -114,13 +106,10 @@
         .sidebar-item { display: flex; align-items: center; padding: 16px 24px; font-size: 16px; font-weight: bold; color: var(--text-main); cursor: pointer; transition: background 0.2s;}
         .sidebar-item:hover { background: var(--hover-color); }
 
-        /* =========================================
-           详情页 (修复了退不出去的问题)
-           ========================================= */
+        /* 详情页 */
         #detail-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 250; display: none; flex-direction: column; max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
         .detail-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); background: var(--bg-color); position: sticky; top: 0; z-index: 10;}
         .detail-header-left { display: flex; align-items: center; gap: 16px;}
-        /* 明确的返回按钮 */
         .back-btn { cursor: pointer; color: #fff; display: flex; align-items: center; padding: 4px; background: #222; border-radius: 50%;}
         .back-btn svg { width: 20px; height: 20px; fill: currentColor;}
         .detail-header-title { font-size: 16px; font-weight: bold; }
@@ -157,9 +146,7 @@
         .detail-input:focus { border-color: var(--accent-color);}
         .detail-send-btn { background: var(--accent-color); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px;}
 
-        /* =========================================
-           个人主页 (修复了退不出去的问题)
-           ========================================= */
+        /* 个人主页 */
         .profile-cover { height: 160px; background: #222 center/cover no-repeat; width: 100%; }
         .profile-info-container { padding: 0 16px 20px; position: relative; border-bottom: 1px solid var(--border-color); }
         .profile-avatar-wrapper { width: 86px; height: 86px; border-radius: 50%; border: 3px solid var(--bg-color); background: #333; margin-top: -43px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;}
@@ -175,16 +162,11 @@
         .profile-stats-row b { color: var(--accent-color); font-weight: normal; margin-right: 4px;}
         .profile-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
 
-        /* =========================================
-           图1：消息通知弹窗
-           ========================================= */
+        /* 消息通知弹窗 */
         .noti-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 400; display: none; justify-content: center; align-items: center; }
         .noti-modal { width: 90%; max-width: 360px; background: #161616; border-radius: 16px; border: 1px solid #333; overflow: hidden; display: flex; flex-direction: column; max-height: 80vh;}
         .noti-modal-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a2a;}
         .noti-modal-title { color: var(--accent-color); font-size: 16px; font-weight: bold;}
-        .noti-modal-tabs { display: flex; padding: 12px 16px; gap: 16px; border-bottom: 1px solid #2a2a2a; overflow-x: auto;}
-        .noti-tab { font-size: 13px; color: #888; cursor: pointer; padding: 4px 10px; border-radius: 20px;}
-        .noti-tab.active { background: #2a2a2a; color: #fff;}
         .noti-modal-content { padding: 16px; overflow-y: auto; flex: 1;}
         .noti-item { display: flex; gap: 12px; margin-bottom: 16px;}
         .noti-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;}
@@ -197,7 +179,7 @@
         .noti-modal-footer { padding: 12px; border-top: 1px solid #2a2a2a; text-align: center;}
         .noti-close-btn { background: transparent; border: none; color: #ccc; font-size: 14px; cursor: pointer;}
 
-        /* 弹窗 (发帖/编辑资料等) */
+        /* 发帖弹窗 */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 500; display: none; justify-content: center; align-items: flex-end; }
         .modal-content { background: var(--bg-color); width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; display: flex; flex-direction: column; border-top: 1px solid var(--border-color); max-height: 85vh; overflow-y: auto;}
         .modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: bold; font-size: 18px; color: #fff;}
@@ -244,36 +226,33 @@
 <div id="app">
     <header class="header">
         <div class="header-top">
-            <!-- 左侧：搜索 + 头像 -->
             <div class="header-left">
                 <svg class="header-icon" onclick="openSearch()" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                <!-- 点击这里呼出侧边栏！ -->
                 <img id="header-avatar-img" class="header-avatar" onclick="openSidebar()" src="">
+                <span class="header-title" id="header-title">首页</span>
             </div>
             
-            <!-- 右侧：消息 + 发布 -->
             <div class="header-right">
                 <div class="header-msg-btn" onclick="openNotiModal()">
                     <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
                     <div class="red-dot" id="header-noti-dot">0</div>
                 </div>
+                <!-- 这是唯一的发布动态按钮 -->
                 <button class="btn-post-main" id="header-post-btn" onclick="openPostModal()">发布动态</button>
                 <span class="layout-btn" id="layout-btn" onclick="toggleLayout()">切怀旧版</span>
             </div>
         </div>
         
-        <!-- Tabs (仅首页显示) -->
         <div class="tabs" id="feed-tabs" style="display:none;">
             <div class="tab active" onclick="switchTab(this)">为你推荐</div>
             <div class="tab" onclick="switchTab(this)">实时帖子</div>
         </div>
-        <div class="new-post-toast" id="new-post-toast" onclick="resetAndLoadPosts()">1 条新动态，点击查看</div>
     </header>
 
     <main id="main-content"></main>
 </div>
 
-<!-- 左侧侧边栏 (解决卡死问题) -->
+<!-- 左侧侧边栏 -->
 <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
 <div id="sidebar-nav" class="sidebar-nav">
     <div id="sidebar-content" style="display:flex; flex-direction:column; flex:1;"></div>
@@ -288,19 +267,11 @@
     <div class="search-results" id="search-results"></div>
 </div>
 
-<!-- 消息通知弹窗 (图1) -->
+<!-- 消息通知弹窗 -->
 <div class="noti-modal-overlay" id="noti-modal-overlay" onclick="closeNotiModal(event)">
     <div class="noti-modal" onclick="event.stopPropagation()">
         <div class="noti-modal-header">
             <span class="noti-modal-title">消息通知</span>
-            <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#888;"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
-        </div>
-        <div class="noti-modal-tabs">
-            <div class="noti-tab active" onclick="switchNotiTab(this)">全部</div>
-            <div class="noti-tab" onclick="switchNotiTab(this)">评论</div>
-            <div class="noti-tab" onclick="switchNotiTab(this)">回复</div>
-            <div class="noti-tab" onclick="switchNotiTab(this)">点赞</div>
-            <div class="noti-tab" onclick="switchNotiTab(this)">关注</div>
         </div>
         <div class="noti-modal-content" id="noti-modal-content"></div>
         <div class="noti-modal-footer">
@@ -309,7 +280,7 @@
     </div>
 </div>
 
-<!-- 详情页 (图4) - 加了返回按钮 -->
+<!-- 详情页 -->
 <div id="detail-page">
     <div class="detail-header">
         <div class="detail-header-left">
@@ -504,8 +475,11 @@
     }
 
     async function resetAndLoadPosts() {
-        document.getElementById('new-post-toast').style.display = 'none';
-        const { data: posts } = await supabaseClient.from('posts').select(`*, profiles ( name, avatar, signal )`).order('created_at', { ascending: false }).limit(50);
+        const { data: posts, error } = await supabaseClient.from('posts').select(`*, profiles ( name, avatar, signal )`).order('created_at', { ascending: false }).limit(50);
+        if (error) {
+            console.error("加载帖子失败:", error);
+            showToast('加载帖子失败: ' + error.message);
+        }
         AllPosts = posts || [];
         render();
     }
@@ -528,6 +502,7 @@
     window.openSidebar = function() {
         if (!CurrentUserProfile) return;
         const content = document.getElementById('sidebar-content');
+        // 移除了重复的 "发布帖子" 按钮
         content.innerHTML = `
             <div class="sidebar-header" onclick="switchView('profile_self'); closeSidebar();">
                 <img src="${CurrentUserProfile.avatar}">
@@ -540,7 +515,6 @@
             <div class="sidebar-item" onclick="switchView('story'); closeSidebar();">剧情广场</div>
             <div class="sidebar-item" onclick="switchView('bookmarks'); closeSidebar();">我的收藏</div>
             <div class="sidebar-item" onclick="switchView('profile_self'); closeSidebar();">个人主页</div>
-            <div class="sidebar-item" onclick="openPostModal(); closeSidebar();">发布帖子</div>
             <div style="flex:1;"></div>
             <div class="sidebar-item" style="font-size:15px; color:var(--accent-color); border-top:1px solid var(--border-color);" onclick="toggleLayout(); closeSidebar();">切换普通版</div>
             <div class="sidebar-item" style="font-size:15px; color:#f91880;" onclick="logout()">退出登录</div>
@@ -565,25 +539,9 @@
         document.getElementById('noti-modal-overlay').style.display = 'none';
     }
 
-    window.switchNotiTab = function(el) {
-        document.querySelectorAll('.noti-tab').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-        const typeText = el.innerText;
-        let filterType = 'all';
-        if (typeText === '评论' || typeText === '回复') filterType = 'comment';
-        else if (typeText === '点赞') filterType = 'like';
-        else if (typeText === '关注') filterType = 'follow';
-        
-        renderNotiList(filterType);
-    }
-
     function renderNotiList(filterType) {
         const box = document.getElementById('noti-modal-content');
         let list = window.UserNotifications || [];
-        
-        if (filterType !== 'all') {
-            list = list.filter(n => n.type === filterType);
-        }
         
         if (list.length === 0) {
             box.innerHTML = `<div style="text-align:center; padding:20px; color:#666; font-size:13px;">暂无通知</div>`;
@@ -796,7 +754,6 @@
                 </div>
             </div>`;
         } else {
-            // 严格修复排版
             return `
             <div class="post-classic">
                 <div class="post-classic-header">
@@ -966,6 +923,7 @@
         document.getElementById('role-input-group').style.display = mode === 'cosplay' ? 'block' : 'none';
     }
 
+    // ================= 发帖逻辑（增加了报错捕获） =================
     window.submitPost = async function() {
         const c = document.getElementById('post-input').value.trim();
         const role = document.getElementById('post-role').value.trim();
@@ -974,13 +932,27 @@
         if (!c) return showToast('内容不能为空');
         if (currentPostMode === 'cosplay' && !role) return showToast('请填写角色名');
 
-        await supabaseClient.from('posts').insert([{
-            author_id: CurrentUserProfile.id, content: c, type: currentPostMode, role: currentPostMode === 'cosplay' ? role : null, media_type: mediaUrl ? 'image' : null, media_data: mediaUrl || null
-        }]);
+        try {
+            // 检查 posts 表的 RLS 权限和字段是否存在
+            const { error } = await supabaseClient.from('posts').insert([{
+                author_id: CurrentUserProfile.id, 
+                content: c, 
+                type: currentPostMode, 
+                role: currentPostMode === 'cosplay' ? role : null, 
+                media_type: mediaUrl ? 'image' : null, 
+                media_data: mediaUrl || null
+            }]);
 
-        closePostModal();
-        await resetAndLoadPosts();
-        switchView(currentPostMode === 'cosplay' ? 'story' : 'feed');
+            if (error) throw error;
+            
+            showToast('发布成功！');
+            closePostModal();
+            await resetAndLoadPosts();
+            switchView(currentPostMode === 'cosplay' ? 'story' : 'feed');
+        } catch (err) {
+            console.error(err);
+            showToast('发帖失败: ' + err.message); // 如果发不出，这里会告诉你原因
+        }
     }
 
     window.toggleLayout = function() {
