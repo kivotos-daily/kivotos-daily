@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v5.7</title>
+    <title>基沃托斯日讯-测试版v6.0</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        :root { --bg-color: #121212; --text-main: #e0e0e0; --text-sub: #888888; --accent-color: #ff7b9c; --border-color: #333333; --hover-color: #1a1a1a; }
+        :root { --bg-color: #0f0f0f; --text-main: #e0e0e0; --text-sub: #888888; --accent-color: #ff7b9c; --border-color: #2a2a2a; --card-bg: #181818; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden;}
 
@@ -16,7 +16,7 @@
         #toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--border-color); font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.5);}
 
         /* 登录页 */
-        #auth-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background: #121212; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
+        #auth-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background: var(--bg-color); position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
         .auth-box { width: 100%; max-width: 360px; background: #1e1e1e; padding: 30px 20px; border-radius: 16px; border: 1px solid #333; }
         .auth-title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 24px; color: var(--accent-color); }
         .input-group { margin-bottom: 16px; }
@@ -29,179 +29,174 @@
         /* 主应用 */
         #app { display: none; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; background: var(--bg-color); border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);}
         
-        /* 顶部导航区 (完美还原截图布局) */
-        .header { position: sticky; top: 0; background: rgba(18,18,18,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 100;}
+        /* =========================================
+           顶部导航区 (严格对齐图2)
+           ========================================= */
+        .header { position: sticky; top: 0; background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 100;}
         .header-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; height: 56px;}
         
+        /* 左侧：搜索 + 头像 + 标题 */
         .header-left { display: flex; align-items: center; gap: 12px; }
-        .header-icon { width: 24px; height: 24px; fill: var(--text-main); cursor: pointer; }
-        .header-title { font-size: 18px; font-weight: bold; color: var(--text-main); }
+        .header-icon { width: 22px; height: 22px; fill: #fff; cursor: pointer; }
+        .header-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid #444;}
+        .header-title { font-size: 18px; font-weight: bold; color: #fff; display: none; }
         
-        /* 左上角头像(怀旧版专属) */
-        #header-avatar-wrapper { cursor: pointer; display: none;}
-        #header-avatar-wrapper img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); }
-        
-        .header-right { display: flex; align-items: center; gap: 12px; }
+        /* 右侧：消息 + 发布动态 */
+        .header-right { display: flex; align-items: center; gap: 16px; }
         .header-msg-btn { position: relative; cursor: pointer; display: flex; align-items: center; }
-        .header-msg-btn svg { width: 24px; height: 24px; fill: var(--text-main); }
-        .red-dot { position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; background: #f91880; border-radius: 50%; display: none; border: 2px solid var(--bg-color);}
+        .header-msg-btn svg { width: 24px; height: 24px; fill: #fff; }
+        .red-dot { position: absolute; top: -4px; right: -4px; background: #ff4757; color: #fff; font-size: 10px; font-weight: bold; padding: 1px 4px; border-radius: 10px; min-width: 16px; text-align: center; display: none;}
         
-        /* 发布动态按钮 */
         .btn-post-main { background: var(--accent-color); color: #fff; border: none; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; display: none;}
-        
-        /* 切换版式按钮 */
         .layout-btn { font-size: 12px; color: var(--text-sub); cursor:pointer; border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 20px; white-space: nowrap;}
 
-        /* 顶部 Tabs */
+        /* Tabs (严格对齐图2) */
         .tabs { display: flex; border-bottom: 1px solid var(--border-color); }
-        .tab { flex: 1; text-align: center; padding: 12px 0; font-size: 14px; color: var(--text-sub); font-weight: bold; cursor: pointer; position: relative; transition: background 0.2s;}
+        .tab { flex: 1; text-align: center; padding: 12px 0; font-size: 14px; color: var(--text-sub); font-weight: bold; cursor: pointer; position: relative;}
         .tab.active { color: var(--accent-color); }
         .tab.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 40px; height: 3px; background: var(--accent-color); border-radius: 2px; }
         
-        /* 提示条 */
-        .new-post-toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--accent-color); color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 12px rgba(255,123,156,0.3); display: none; z-index: 90; cursor: pointer;}
-
-        /* 搜索弹窗 (点击放大镜出现) */
-        #search-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 400; display: none; flex-direction: column; }
-        .search-header { display: flex; align-items: center; padding: 10px 16px; gap: 10px; border-bottom: 1px solid var(--border-color);}
-        .search-box { flex: 1; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
-        .search-results { flex: 1; overflow-y: auto; }
-        .search-user-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #222; cursor: pointer;}
-        .search-user-item:hover { background: var(--hover-color); }
-
-        /* 底部导航 (两版共用，信息移走) */
-        .bottom-nav { display: none; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; height: 60px; background: rgba(24,24,24,0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border-color); justify-content: space-around; align-items: center; z-index: 200; }
-        .bottom-nav.show { display: flex; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sub); cursor: pointer; flex: 1; position: relative;}
-        .nav-item.active { color: var(--accent-color); }
-        .nav-item svg { width: 24px; height: 24px; fill: currentColor; margin-bottom: 2px; }
-        .nav-btn-add { background: var(--accent-color); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-top: -20px; cursor: pointer; font-size: 24px; box-shadow: 0 4px 12px rgba(255,123,156,0.3);}
-
-        /* 侧边栏 (怀旧版左侧抽屉) */
-        .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 300; display: none; opacity: 0; transition: opacity 0.3s;}
-        .sidebar-overlay.open { display: block; opacity: 1; }
-        .sidebar-nav { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: var(--bg-color); border-right: 1px solid var(--border-color); z-index: 301; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1); display: flex; flex-direction: column; }
-        .sidebar-nav.open { transform: translateX(0); }
-        .sidebar-header { padding: 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer;}
-        .sidebar-header img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover;}
-        .sidebar-item { display: flex; align-items: center; padding: 16px 24px; font-size: 16px; font-weight: bold; color: var(--text-main); cursor: pointer; transition: background 0.2s;}
-        .sidebar-item:hover { background: var(--hover-color); }
-
-        /* 通用头像 */
-        .avatar { border-radius: 50%; background: #333; display: flex; justify-content: center; align-items: center; color: #fff; overflow: hidden; flex-shrink: 0;}
-        .avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-        .announcement-bar { margin: 12px 16px; background: rgba(255, 123, 156, 0.1); border: 1px solid var(--accent-color); border-radius: 12px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; }
-        
-        /* =========================================
-           普通版帖子卡片
-           ========================================= */
-        .post-card-new { background: var(--bg-color); padding: 16px; border-bottom: 1px solid var(--border-color); transition: background 0.2s;}
-        .post-card-new:hover { background: var(--hover-color); }
-        .post-new-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .post-new-user { display: flex; align-items: center; }
-        .post-new-user .avatar { width: 40px; height: 40px; margin-right: 10px; }
-        .post-new-name { display: flex; flex-direction: column; cursor: pointer;}
-        .post-new-name .username { font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 6px; color: #fff;}
-        .post-new-name .time { font-size: 12px; color: var(--text-sub); }
-        .post-content { font-size: 15px; margin-bottom: 12px; white-space: pre-wrap; line-height: 1.5;}
-        .post-media { width: 100%; max-height: 300px; border-radius: 16px; margin-bottom: 12px; object-fit: cover; border: 1px solid var(--border-color); }
-        .role-tag { font-size: 11px; background: rgba(255, 123, 156, 0.2); color: var(--accent-color); padding: 1px 6px; border-radius: 4px; }
-
-        .action-bar { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; max-width: 380px; margin-top: 8px;}
-        .action-icon { display: flex; align-items: center; gap: 4px; cursor: pointer; fill: none; stroke: currentColor; stroke-width: 1.5; padding: 4px; border-radius: 50%; transition: all 0.2s;}
-        .action-icon svg { width: 18px; height: 18px; }
-        .action-icon:hover { color: var(--accent-color); background: rgba(255, 123, 156, 0.1);}
-        .action-icon.active { color: var(--accent-color); stroke: var(--accent-color); }
-        .action-icon.active svg { fill: var(--accent-color); }
+        /* 悬浮提示条 (图2) */
+        .new-post-toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--accent-color); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 12px rgba(255,123,156,0.3); display: none; z-index: 90; cursor: pointer;}
 
         /* =========================================
-           怀旧版帖子排版 (严格还原截图：带边框的深色卡片)
+           怀旧版帖子卡片 (严格对齐图2)
            ========================================= */
-        .post-classic { margin: 12px 16px; padding: 16px; border: 1px solid var(--border-color); border-radius: 12px; background: #161616; transition: background 0.2s;}
-        .post-classic:hover { background: #1c1c1c; }
+        .post-classic { margin: 12px 16px; padding: 16px; border: 1px solid #2a2a2a; border-radius: 12px; background: #181818; }
         .post-classic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .post-classic-user { display: flex; align-items: center; gap: 10px; cursor: pointer;}
         .post-classic-avatar { width: 36px; height: 36px; border-radius: 50%; background: #333; overflow: hidden;}
         .post-classic-avatar img { width: 100%; height: 100%; object-fit: cover;}
-        .post-classic-name { font-size: 15px; font-weight: bold; color: var(--text-main); }
-        .post-classic-time { font-size: 13px; color: var(--text-sub); }
-        .post-classic-content { font-size: 15px; margin-bottom: 12px; white-space: pre-wrap; word-break: break-word; cursor: pointer; color: #ccc; line-height: 1.5;}
-        .post-classic-media { width: 100%; border-radius: 12px; margin-bottom: 12px; max-height: 300px; object-fit: cover; cursor: pointer;}
+        .post-classic-name { font-size: 15px; font-weight: bold; color: #fff; }
+        .post-classic-time { font-size: 13px; color: var(--text-sub); display: flex; align-items: center; gap: 4px;}
+        .post-classic-time::before { content: '·'; font-weight: bold;}
+        .post-classic-content { font-size: 15px; margin-bottom: 16px; white-space: pre-wrap; word-break: break-word; cursor: pointer; color: #eee; line-height: 1.5;}
+        .post-classic-media { width: 100%; border-radius: 12px; margin-bottom: 16px; max-height: 300px; object-fit: cover; cursor: pointer;}
         
-        /* 怀旧版操作栏 (颜色稍暗，间距更开) */
-        .post-classic-actions { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; margin-top: 4px;}
-        .post-classic-actions .action-icon { padding: 6px; }
-        .post-classic-actions .action-icon svg { width: 20px; height: 20px; }
+        /* 操作栏图标 (图2) */
+        .post-classic-actions { display: flex; justify-content: space-between; align-items: center; color: #888; font-size: 13px;}
+        .action-group { display: flex; align-items: center; gap: 20px;}
+        .action-icon { display: flex; align-items: center; gap: 4px; cursor: pointer; fill: none; stroke: currentColor; stroke-width: 1.5; padding: 4px; transition: all 0.2s;}
+        .action-icon svg { width: 18px; height: 18px; }
+        .action-icon:hover { color: var(--accent-color); }
+        .action-icon.active { color: var(--accent-color); stroke: var(--accent-color); }
+        .action-icon.active svg { fill: var(--accent-color); }
+        .muted-text { font-size: 12px; color: #666; }
 
-        /* 详情页 */
-        #detail-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 250; display: none; flex-direction: column; max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
-        .detail-header { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); background: rgba(18,18,18,0.85); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 10;}
-        .back-btn { font-size: 20px; cursor: pointer; margin-right: 20px; color: #fff; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;}
-        .detail-header-title { font-size: 18px; font-weight: bold; }
-        .detail-content-area { flex: 1; overflow-y: auto; padding-bottom: 70px; }
-        
-        .detail-post-main { padding: 16px; border-bottom: 1px solid var(--border-color); }
-        .detail-user-info { display: flex; align-items: center; margin-bottom: 12px; justify-content: space-between;}
-        .detail-user-left { display: flex; align-items: center;}
-        .detail-avatar { width: 48px; height: 48px; border-radius: 50%; margin-right: 12px; overflow: hidden; background: #333;}
-        .detail-avatar img { width: 100%; height: 100%; object-fit: cover;}
-        .detail-post-content { font-size: 18px; color: #fff; line-height: 1.5; margin-bottom: 16px; white-space: pre-wrap; }
-        .detail-post-media { width: 100%; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--border-color);}
-        
-        .detail-bottom-bar { position: absolute; bottom: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color); padding: 12px 16px; display: flex; align-items: center; gap: 12px;}
-        .detail-input { flex: 1; background: #161616; border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 16px; color: #fff; outline: none; font-size: 15px;}
-        .detail-input:focus { border-color: var(--accent-color);}
-        .detail-send-btn { background: var(--accent-color); color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 15px;}
+        /* 普通版卡片 (保留，但统一风格) */
+        .post-card-new { padding: 16px; border-bottom: 1px solid var(--border-color); }
+        .post-card-new .action-bar { display: flex; justify-content: space-between; margin-top: 12px; max-width: 380px; color: #888;}
+        .post-card-new .action-icon { padding: 4px; gap: 4px; cursor: pointer; fill: none; stroke: currentColor; stroke-width: 1.5;}
+        .post-card-new .action-icon svg { width: 18px; height: 18px;}
+        .post-card-new .action-icon.active { color: var(--accent-color); stroke: var(--accent-color);}
+        .post-card-new .action-icon.active svg { fill: var(--accent-color);}
 
-        /* 个人主页 */
-        .profile-cover { height: 140px; background: #333 center/cover no-repeat; width: 100%; }
-        .profile-info-container { padding: 12px 16px 20px; position: relative; border-bottom: 1px solid var(--border-color); }
-        .profile-avatar-wrapper { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--bg-color); background: #222; margin-top: -40px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;}
+        /* =========================================
+           个人主页 (严格对齐图3)
+           ========================================= */
+        .profile-cover { height: 160px; background: #222 center/cover no-repeat; width: 100%; }
+        .profile-info-container { padding: 0 16px 20px; position: relative; border-bottom: 1px solid var(--border-color); }
+        .profile-avatar-wrapper { width: 86px; height: 86px; border-radius: 50%; border: 3px solid var(--bg-color); background: #333; margin-top: -43px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;}
         .profile-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-actions-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: -26px; margin-bottom: 16px;}
-        .btn-outline { background: transparent; color: #eff3f4; border: 1px solid #536471; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: background 0.2s;}
-        .btn-outline:hover { background: var(--hover-color); }
-        .btn-fill { background: #eff3f4; color: #000; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer;}
-        .profile-name { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 2px;}
-        .profile-handle { font-size: 15px; color: var(--text-sub); margin-bottom: 12px; }
-        .profile-bio { font-size: 15px; margin-bottom: 12px; line-height: 1.4;}
-        .profile-stats-row { display: flex; gap: 20px; font-size: 14px; color: var(--text-sub); margin-bottom: 16px;}
-        .profile-stats-row b { color: #eff3f4; cursor: pointer;}
+        .profile-actions-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: -30px; margin-bottom: 16px;}
+        .btn-outline { background: transparent; color: #eff3f4; border: 1px solid #536471; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;}
+        .btn-fill { background: #eff3f4; color: #000; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;}
         
-        /* 个人主页 Tabs */
+        .profile-name { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px;}
+        .profile-handle { font-size: 14px; color: var(--text-sub); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;}
+        .platform-tag { background: #2a2a2a; color: #aaa; font-size: 11px; padding: 2px 6px; border-radius: 4px;}
+        .profile-bio { font-size: 15px; margin-bottom: 16px; line-height: 1.5; color: #ddd;}
+        
+        /* 数据行数字变粉色 */
+        .profile-stats-row { display: flex; gap: 20px; font-size: 14px; color: var(--text-sub); margin-bottom: 16px;}
+        .profile-stats-row b { color: var(--accent-color); font-weight: normal; margin-right: 4px;}
+        
         .profile-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
         
-        /* 弹窗 */
+        /* =========================================
+           详情页 & 评论区 (严格对齐图4)
+           ========================================= */
+        #detail-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 250; display: none; flex-direction: column; max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
+        .detail-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); background: var(--bg-color); position: sticky; top: 0; z-index: 10;}
+        .detail-header-left { display: flex; align-items: center; gap: 16px;}
+        .back-btn { cursor: pointer; color: #fff; display: flex; align-items: center;}
+        .back-btn svg { width: 20px; height: 20px; fill: currentColor;}
+        .detail-header-title { font-size: 16px; font-weight: bold; }
+        .detail-header-right { display: flex; gap: 16px; color: #fff;}
+        .detail-header-right svg { width: 20px; height: 20px; fill: currentColor; cursor: pointer;}
+        
+        .detail-content-area { flex: 1; overflow-y: auto; padding-bottom: 70px; }
+        
+        /* 主贴区域 */
+        .detail-post-main { padding: 16px; border-bottom: 1px solid var(--border-color); }
+        .detail-user-info { display: flex; align-items: center; margin-bottom: 16px; gap: 10px;}
+        .detail-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #333;}
+        .detail-avatar img { width: 100%; height: 100%; object-fit: cover;}
+        .detail-name { font-size: 15px; font-weight: bold; color: #fff;}
+        .detail-time { font-size: 13px; color: var(--text-sub);}
+        .detail-post-content { font-size: 16px; color: #fff; line-height: 1.5; margin-bottom: 16px; white-space: pre-wrap; }
+        .detail-post-media { width: 100%; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);}
+        
+        .detail-actions-bar { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border-color);}
+        
+        /* 评论区 (复刻图4的独立灰色圆角框) */
+        .comment-section { padding: 16px; }
+        .comment-block { margin-bottom: 16px; display: flex; gap: 10px;}
+        .comment-avatar { width: 36px; height: 36px; border-radius: 50%; background: #fff; flex-shrink: 0; overflow: hidden;}
+        .comment-avatar img { width: 100%; height: 100%; object-fit: cover;}
+        .comment-bubble { flex: 1; background: var(--card-bg); border-radius: 12px; padding: 12px; border: 1px solid #2a2a2a;}
+        .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;}
+        .comment-name { font-size: 14px; font-weight: bold; color: #fff; cursor: pointer;}
+        .comment-time { font-size: 12px; color: var(--text-sub);}
+        .comment-text { font-size: 14px; color: #ddd; line-height: 1.4; margin-bottom: 12px; word-break: break-word;}
+        .comment-actions { display: flex; gap: 16px; font-size: 12px; color: #888; align-items: center;}
+        .comment-actions span { display: flex; align-items: center; gap: 4px; cursor: pointer;}
+        .comment-actions span:hover { color: var(--accent-color);}
+        
+        /* 嵌套回复 (在图4中也是独立的框，只是向左偏移) */
+        .reply-block { margin-left: 46px; margin-bottom: 16px; display: flex; gap: 10px;}
+        .reply-block .comment-avatar { width: 30px; height: 30px;}
+
+        .detail-bottom-bar { position: absolute; bottom: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color); padding: 12px 16px; display: flex; align-items: center; gap: 12px;}
+        .detail-input { flex: 1; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 16px; color: #fff; outline: none; font-size: 14px;}
+        .detail-input:focus { border-color: var(--accent-color);}
+        .detail-send-btn { background: var(--accent-color); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px;}
+
+        /* =========================================
+           图1：消息通知弹窗
+           ========================================= */
+        .noti-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 400; display: none; justify-content: center; align-items: center; }
+        .noti-modal { width: 90%; max-width: 360px; background: #161616; border-radius: 16px; border: 1px solid #333; overflow: hidden; display: flex; flex-direction: column; max-height: 80vh;}
+        .noti-modal-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a2a;}
+        .noti-modal-title { color: var(--accent-color); font-size: 16px; font-weight: bold;}
+        .noti-modal-tabs { display: flex; padding: 12px 16px; gap: 16px; border-bottom: 1px solid #2a2a2a; overflow-x: auto;}
+        .noti-tab { font-size: 13px; color: #888; cursor: pointer; padding: 4px 10px; border-radius: 20px;}
+        .noti-tab.active { background: #2a2a2a; color: #fff;}
+        .noti-modal-content { padding: 16px; overflow-y: auto; flex: 1;}
+        .noti-item { display: flex; gap: 12px; margin-bottom: 16px;}
+        .noti-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;}
+        .noti-item-right { flex: 1;}
+        .noti-user-line { display: flex; align-items: center; gap: 6px; margin-bottom: 4px;}
+        .noti-username { font-size: 14px; color: #fff; font-weight: bold;}
+        .noti-action-text { font-size: 13px; color: #ccc;}
+        .noti-quote-box { background: #222; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: #aaa; margin-bottom: 6px; border: 1px solid #333;}
+        .noti-time-text { font-size: 11px; color: #666;}
+        .noti-modal-footer { padding: 12px; border-top: 1px solid #2a2a2a; text-align: center;}
+        .noti-close-btn { background: transparent; border: none; color: #ccc; font-size: 14px; cursor: pointer;}
+
+        /* 弹窗 (发帖/编辑资料等) */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 500; display: none; justify-content: center; align-items: flex-end; }
-        .modal-content { background: var(--bg-color); width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; display: flex; flex-direction: column; border-top: 1px solid var(--border-color); max-height: 85vh; overflow-y: auto; box-shadow: 0 -4px 20px rgba(0,0,0,0.5);}
+        .modal-content { background: var(--bg-color); width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; display: flex; flex-direction: column; border-top: 1px solid var(--border-color); max-height: 85vh; overflow-y: auto;}
         .modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: bold; font-size: 18px; color: #fff;}
-        .modal-textarea { width: 100%; height: 120px; background: transparent; border: none; padding: 12px 0; color: #fff; font-size: 18px; resize: none; outline: none; margin-bottom: 12px; }
+        .modal-textarea { width: 100%; height: 120px; background: transparent; border: none; padding: 12px 0; color: #fff; font-size: 16px; resize: none; outline: none; margin-bottom: 12px; }
         .modal-submit { width: 100%; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 20px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;}
 
-        /* 评论 */
-        .comment-list { padding: 0 16px; }
-        .comment-thread { margin-top: 16px; margin-bottom: 16px;}
-        .comment-main { display: flex; gap: 12px; }
-        .comment-main .avatar { width: 40px; height: 40px; }
-        .comment-main-body { flex: 1; padding: 0 12px 12px 12px; border-radius: 12px; border: 1px solid var(--border-color); background: #161616;}
-        .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; margin-top: 8px;}
-        .comment-name { font-size: 14px; font-weight: bold; color: #fff; cursor: pointer;}
-        .comment-time { font-size: 13px; color: var(--text-sub); }
-        .comment-text { font-size: 14px; color: #eff3f4; margin-bottom: 8px; line-height: 1.4;}
-        .comment-actions { display: flex; gap: 16px; font-size: 13px; color: var(--text-sub); }
-        .comment-actions span { cursor: pointer; display: flex; align-items: center; gap: 4px;}
-        .comment-actions span:hover { color: var(--accent-color); }
-        
-        .comment-replies { margin-left: 20px; padding-left: 20px; border-left: 2px solid var(--border-color); margin-top: 8px; }
-        .reply-item { display: flex; gap: 10px; margin-bottom: 12px; padding-top: 10px;}
-        .reply-item .avatar { width: 32px; height: 32px; }
-        .reply-body { flex: 1; }
-        .reply-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px;}
-        .reply-name { font-size: 14px; font-weight: bold; color: #fff; cursor: pointer;}
-        .reply-time { font-size: 12px; color: var(--text-sub);}
-        .reply-target { font-size: 14px; color: var(--accent-color);}
-        .reply-text { font-size: 14px; color: #eff3f4; margin-bottom: 6px; line-height: 1.4;}
+        /* 全屏搜索 */
+        #search-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 450; display: none; flex-direction: column; }
+        .search-header { display: flex; align-items: center; padding: 10px 16px; gap: 10px; border-bottom: 1px solid var(--border-color);}
+        .search-box { flex: 1; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
+        .search-results { flex: 1; overflow-y: auto; }
+        .search-user-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #222; cursor: pointer;}
     </style>
 </head>
 <body>
@@ -234,66 +229,35 @@
 
 <!-- 主应用 -->
 <div id="app">
-    <!-- 顶部导航 (完美还原截图2) -->
     <header class="header">
         <div class="header-top">
+            <!-- 左侧：搜索 + 头像 -->
             <div class="header-left">
-                <!-- 左上角图标区 -->
-                <svg class="header-icon" id="header-search-icon" onclick="openSearch()" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                
-                <div id="header-avatar-wrapper" onclick="openSidebar()">
-                    <img id="header-avatar-img" src="">
-                </div>
+                <svg class="header-icon" onclick="openSearch()" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <img id="header-avatar-img" class="header-avatar" onclick="switchView('profile_self')" src="">
                 <span class="header-title" id="header-title">首页</span>
             </div>
             
+            <!-- 右侧：消息 + 发布 -->
             <div class="header-right">
-                <!-- 右侧功能区 -->
-                <div class="header-msg-btn" onclick="switchView('notifications')">
+                <div class="header-msg-btn" onclick="openNotiModal()">
                     <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
-                    <div class="red-dot" id="header-noti-dot"></div>
+                    <div class="red-dot" id="header-noti-dot">0</div>
                 </div>
                 <button class="btn-post-main" id="header-post-btn" onclick="openPostModal()">发布动态</button>
                 <span class="layout-btn" id="layout-btn" onclick="toggleLayout()">切怀旧版</span>
             </div>
         </div>
         
-        <!-- 怀旧版首页的 Tabs -->
+        <!-- Tabs (仅首页显示) -->
         <div class="tabs" id="feed-tabs" style="display:none;">
             <div class="tab active" onclick="switchTab(this)">为你推荐</div>
             <div class="tab" onclick="switchTab(this)">实时帖子</div>
         </div>
-        <!-- 新动态提示条 -->
         <div class="new-post-toast" id="new-post-toast" onclick="resetAndLoadPosts()">1 条新动态，点击查看</div>
     </header>
 
     <main id="main-content"></main>
-
-    <!-- 底部导航 (普通版和怀旧版共有) -->
-    <nav class="bottom-nav show" id="bottom-nav">
-        <div class="nav-item active" data-view="feed" onclick="switchView('feed')">
-            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>首页
-        </div>
-        <div class="nav-item" data-view="story" onclick="switchView('story')">
-            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>剧情
-        </div>
-        <div class="nav-btn-add" onclick="openPostModal()">
-            <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:#fff;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        </div>
-        <!-- 收藏夹入口 -->
-        <div class="nav-item" data-view="bookmarks" onclick="switchView('bookmarks')">
-            <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>收藏
-        </div>
-        <div class="nav-item" data-view="profile_self" onclick="switchView('profile_self')">
-            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>我的
-        </div>
-    </nav>
-</div>
-
-<!-- 左侧抽屉 (怀旧版) -->
-<div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
-<div id="sidebar-nav" class="sidebar-nav">
-    <div id="sidebar-content" style="display:flex; flex-direction:column; flex:1;"></div>
 </div>
 
 <!-- 全屏搜索 -->
@@ -305,18 +269,48 @@
     <div class="search-results" id="search-results"></div>
 </div>
 
-<!-- 详情页 -->
+<!-- 消息通知弹窗 (图1) -->
+<div class="noti-modal-overlay" id="noti-modal-overlay" onclick="closeNotiModal(event)">
+    <div class="noti-modal" onclick="event.stopPropagation()">
+        <div class="noti-modal-header">
+            <span class="noti-modal-title">消息通知</span>
+            <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#888;"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+        </div>
+        <div class="noti-modal-tabs">
+            <div class="noti-tab active" onclick="switchNotiTab(this)">全部</div>
+            <div class="noti-tab" onclick="switchNotiTab(this)">评论</div>
+            <div class="noti-tab" onclick="switchNotiTab(this)">回复</div>
+            <div class="noti-tab" onclick="switchNotiTab(this)">点赞</div>
+            <div class="noti-tab" onclick="switchNotiTab(this)">关注</div>
+        </div>
+        <div class="noti-modal-content" id="noti-modal-content">
+            <!-- 动态渲染 -->
+        </div>
+        <div class="noti-modal-footer">
+            <button class="noti-close-btn" onclick="closeNotiModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 详情页 (图4) -->
 <div id="detail-page">
     <div class="detail-header">
-        <div class="back-btn" onclick="closeDetailPage()">
-            <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:currentColor;"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        <div class="detail-header-left">
+            <div class="back-btn" onclick="closeDetailPage()">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            </div>
+            <span class="detail-header-title" id="detail-header-title">帖子详情</span>
         </div>
-        <div class="detail-header-title">帖子详情</div>
+        <div class="detail-header-right">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+        </div>
     </div>
     <div class="detail-content-area" id="detail-render-area"></div>
     <div class="detail-bottom-bar">
-        <input type="text" class="detail-input" id="comment-input" placeholder="发布你的回复...">
-        <button class="detail-send-btn" onclick="submitComment()">回复</button>
+        <input type="text" class="detail-input" id="comment-input" placeholder="发布你的评论...">
+        <button class="detail-send-btn" onclick="submitComment()">发送</button>
     </div>
 </div>
 
@@ -402,8 +396,7 @@
             const nickname = document.getElementById('auth-nickname').value.trim();
             const btn = document.getElementById('submit-btn');
             
-            if (!email) return showToast('请输入邮箱');
-            if (!password) return showToast('请输入密码');
+            if (!email || !password) return showToast('请填写邮箱和密码');
             if (password.length < 6) return showToast('密码至少需要6位');
             if (isRegisterMode && !nickname) return showToast('请输入昵称');
             
@@ -517,9 +510,77 @@
         const { data: notis } = await supabaseClient.from('notifications').select('*, sender:profiles!sender_id(name, avatar)').eq('user_id', CurrentUserProfile.id).order('created_at', { ascending: false });
         window.UserNotifications = notis || [];
         unreadNotiCount = window.UserNotifications.filter(n => !n.is_read).length;
-        document.getElementById('header-noti-dot').style.display = unreadNotiCount > 0 ? 'block' : 'none';
+        
+        const dot = document.getElementById('header-noti-dot');
+        if (unreadNotiCount > 0) {
+            dot.innerText = unreadNotiCount > 99 ? '99+' : unreadNotiCount;
+            dot.style.display = 'block';
+        } else {
+            dot.style.display = 'none';
+        }
     }
 
+    // ================= 消息通知弹窗逻辑 =================
+    window.openNotiModal = function() {
+        document.getElementById('noti-modal-overlay').style.display = 'flex';
+        renderNotiList('all');
+    }
+
+    window.closeNotiModal = function(event) {
+        if(event && event.target !== document.getElementById('noti-modal-overlay')) return;
+        document.getElementById('noti-modal-overlay').style.display = 'none';
+    }
+
+    window.switchNotiTab = function(el) {
+        document.querySelectorAll('.noti-tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        const typeText = el.innerText;
+        let filterType = 'all';
+        if (typeText === '评论' || typeText === '回复') filterType = 'comment';
+        else if (typeText === '点赞') filterType = 'like';
+        else if (typeText === '关注') filterType = 'follow';
+        
+        renderNotiList(filterType);
+    }
+
+    function renderNotiList(filterType) {
+        const box = document.getElementById('noti-modal-content');
+        let list = window.UserNotifications || [];
+        
+        if (filterType !== 'all') {
+            list = list.filter(n => n.type === filterType);
+        }
+        
+        if (list.length === 0) {
+            box.innerHTML = `<div style="text-align:center; padding:20px; color:#666; font-size:13px;">暂无通知</div>`;
+            return;
+        }
+
+        let html = '';
+        list.forEach(n => {
+            let actionText = n.type === 'like' ? '赞了你的评论' : (n.type === 'follow' ? '关注了你' : '回复了你的评论');
+            let quoteHtml = '';
+            if (n.content && (n.type === 'comment' || n.type === 'like')) {
+                quoteHtml = `<div class="noti-quote-box">${n.content}</div>`;
+            }
+
+            html += `
+            <div class="noti-item" onclick="viewUser('${n.sender_id}'); closeNotiModal();">
+                <img class="noti-avatar" src="${n.sender?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=unknown'}">
+                <div class="noti-item-right">
+                    <div class="noti-user-line">
+                        <span class="noti-username">${n.sender?.name || '某人'}</span>
+                        <span class="noti-action-text">${actionText}</span>
+                    </div>
+                    ${quoteHtml}
+                    <div class="noti-time-text">${new Date(n.created_at).toLocaleString()}</div>
+                </div>
+            </div>`;
+        });
+        box.innerHTML = html;
+    }
+
+    // ================= 搜索逻辑 =================
     window.openSearch = function() {
         document.getElementById('search-overlay').style.display = 'flex';
         document.getElementById('search-input').focus();
@@ -529,7 +590,6 @@
         document.getElementById('search-input').value = '';
         document.getElementById('search-results').innerHTML = '';
     }
-
     window.handleSearch = function(val) {
         const resBox = document.getElementById('search-results');
         if (!val) { resBox.innerHTML = ''; return; }
@@ -537,7 +597,7 @@
         if (matchedUsers.length > 0) {
             let html = '';
             matchedUsers.forEach(u => {
-                html += `<div class="search-user-item" onclick="viewUser('${u.id}'); closeSearch();"><div class="avatar" style="width:40px;height:40px;margin-right:12px;"><img src="${u.avatar}"></div><div style="font-weight:bold;color:#fff;">${u.name}</div></div>`;
+                html += `<div class="search-user-item" onclick="viewUser('${u.id}'); closeSearch();"><div class="avatar" style="width:40px;height:40px;margin-right:12px;border-radius:50%;overflow:hidden;"><img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;"></div><div style="font-weight:bold;color:#fff;">${u.name}</div></div>`;
             });
             resBox.innerHTML = html;
         } else { resBox.innerHTML = `<div style="text-align:center;padding:20px;color:#666;">没有找到相关用户</div>`; }
@@ -546,67 +606,28 @@
     window.switchTab = function(el) {
         document.querySelectorAll('#feed-tabs .tab').forEach(t => t.classList.remove('active'));
         el.classList.add('active');
-        showToast('已切换到 ' + el.innerText);
     }
 
     window.viewUser = function(id) {
         if (id === CurrentUserProfile.id) {
-            if (currentLayout === 'classic') {
-                openSidebar();
-            } else {
-                switchView('profile_self');
-            }
+            switchView('profile_self');
         } else {
             switchView('profile_other', id);
         }
     }
 
-    window.openSidebar = function() {
-        if (!CurrentUserProfile) return;
-        const content = document.getElementById('sidebar-content');
-        content.innerHTML = `
-            <div class="sidebar-header" onclick="switchView('profile_self'); closeSidebar();">
-                <img src="${CurrentUserProfile.avatar}">
-                <div>
-                    <div style="font-weight:bold; font-size:16px; color:#fff;">${CurrentUserProfile.name}</div>
-                    <div style="font-size:14px; color:var(--text-sub);">@${CurrentUserProfile.signal}</div>
-                </div>
-            </div>
-            <div class="sidebar-item" onclick="switchView('feed'); closeSidebar();">首页</div>
-            <div class="sidebar-item" onclick="switchView('story'); closeSidebar();">剧情广场</div>
-            <div class="sidebar-item" onclick="switchView('notifications'); closeSidebar();">消息通知</div>
-            <div class="sidebar-item" onclick="switchView('bookmarks'); closeSidebar();">我的收藏</div>
-            <div class="sidebar-item" onclick="openPostModal(); closeSidebar();">发布帖子</div>
-            <div style="flex:1;"></div>
-            <div class="sidebar-item" style="font-size:15px; color:var(--accent-color); border-top:1px solid var(--border-color);" onclick="toggleLayout(); closeSidebar();">切换普通版</div>
-            <div class="sidebar-item" style="font-size:15px; color:#f91880;" onclick="logout()">退出登录</div>
-        `;
-        document.getElementById('sidebar-overlay').classList.add('open');
-        document.getElementById('sidebar-nav').classList.add('open');
-    }
-
-    window.closeSidebar = function() {
-        document.getElementById('sidebar-overlay').classList.remove('open');
-        document.getElementById('sidebar-nav').classList.remove('open');
-    }
-
-    // 根据当前版式更新顶部栏 UI
     function updateUIForLayout() {
         const isClassic = currentLayout === 'classic';
-        const headerAvatar = document.getElementById('header-avatar-wrapper');
-        const searchIcon = document.getElementById('header-search-icon');
         const postBtn = document.getElementById('header-post-btn');
+        const feedTabs = document.getElementById('feed-tabs');
         
         if (isClassic) {
-            headerAvatar.style.display = 'block'; // 显示头像
-            searchIcon.style.display = 'block';   // 显示搜索图标
-            postBtn.style.display = 'block';      // 显示发布按钮
-            document.getElementById('feed-tabs').style.display = (currentView === 'feed') ? 'flex' : 'none';
+            postBtn.style.display = 'block';
+            if (currentView === 'feed') feedTabs.style.display = 'flex';
+            else feedTabs.style.display = 'none';
         } else {
-            headerAvatar.style.display = 'none';
-            searchIcon.style.display = 'none';
             postBtn.style.display = 'none';
-            document.getElementById('feed-tabs').style.display = 'none';
+            feedTabs.style.display = 'none';
         }
     }
 
@@ -615,11 +636,7 @@
         closeSearch();
         if (viewName === 'profile_other') viewingUserId = targetId;
         if (viewName === 'profile_self') currentProfileTab = 'posts';
-
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        const navBtn = document.querySelector(`.nav-item[data-view="${viewName}"]`);
-        if(navBtn) navBtn.classList.add('active');
-
+        
         updateUIForLayout();
         render();
     }
@@ -637,24 +654,16 @@
 
         if (currentView === 'feed') {
             headerTitle.innerText = '首页';
+            headerTitle.style.display = 'none';
         } 
         else if (currentView === 'story') {
             headerTitle.innerText = '剧情广场';
+            headerTitle.style.display = 'block';
             postsToRender = postsToRender.filter(p => p.type === 'cosplay');
-        }
-        else if (currentView === 'notifications') {
-            headerTitle.innerText = '消息';
-            if (window.UserNotifications.length === 0) {
-                html += `<div style="text-align:center;padding:50px;color:var(--text-sub);">暂无新消息</div>`;
-            } else {
-                window.UserNotifications.forEach(n => {
-                    let actionText = n.type === 'like' ? '赞了你的帖子' : (n.type === 'follow' ? '关注了你' : '回复了你的帖子');
-                    html += `<div class="noti-item" onclick="viewUser('${n.sender_id}')" style="display:flex; padding:16px; border-bottom:1px solid var(--border-color); gap:12px;"><div class="avatar" style="width:40px;height:40px;"><img src="${n.sender?.avatar}"></div><div style="flex:1;"><div style="font-size:15px;"><b>${n.sender?.name || '某人'}</b> ${actionText}</div><div style="font-size:13px; color:#666; margin-top:4px;">${new Date(n.created_at).toLocaleString()}</div></div></div>`;
-                });
-            }
         }
         else if (currentView === 'bookmarks') {
             headerTitle.innerText = '我的收藏';
+            headerTitle.style.display = 'block';
             const bookmarkIds = CurrentUserProfile.bookmarks || [];
             postsToRender = postsToRender.filter(p => bookmarkIds.includes(p.id));
         }
@@ -664,6 +673,7 @@
             if (!targetUser) return;
 
             headerTitle.innerText = targetUser.name;
+            headerTitle.style.display = 'block';
             
             if (isSelf && currentProfileTab === 'bookmarks') {
                 const bookmarkIds = CurrentUserProfile.bookmarks || [];
@@ -675,6 +685,7 @@
             const followersList = AllUsers.filter(u => u.following_list && u.following_list.includes(targetUser.id));
             const followingCount = targetUser.following_list ? targetUser.following_list.length : 0;
             const isFollowed = CurrentUserProfile.following_list && CurrentUserProfile.following_list.includes(targetUser.id);
+            const likesCount = 1000; // 图3中写着1000获赞，这里先写死
 
             html += `
             <div class="profile-cover"></div>
@@ -682,29 +693,27 @@
                 <div class="profile-avatar-wrapper"><img src="${targetUser.avatar}"></div>
                 <div class="profile-actions-row">
                     ${isSelf ? `<button class="btn-outline" onclick="openEditProfile()">编辑资料</button>` : 
-                    `<button class="${isFollowed ? 'btn-outline' : 'btn-fill'}" onclick="toggleFollow('${targetUser.id}')">${isFollowed ? '正在关注' : '关注'}</button>`}
+                    `<button class="${isFollowed ? 'btn-outline' : 'btn-fill'}" onclick="toggleFollow('${targetUser.id}')">${isFollowed ? '已关注' : '关注'}</button>`}
                 </div>
                 <div class="profile-name">${targetUser.name}</div>
-                <div class="profile-handle">@${targetUser.signal}</div>
-                <div class="profile-bio">${targetUser.bio || '这个人很神秘，什么都没写。'}</div>
+                <div class="profile-handle">@${targetUser.signal} <span class="platform-tag">平台用户</span></div>
+                <div class="profile-bio">${targetUser.bio || '吾乃夏莱文礼部善哉仙人是也！善哉善哉😋'}</div>
                 <div class="profile-stats-row">
-                    <span onclick="showUserList('following', '${targetUser.id}')"><b>${followingCount}</b> 正在关注</span>
-                    <span onclick="showUserList('followers', '${targetUser.id}')"><b>${followersList.length}</b> 关注者</span>
+                    <span><b>${followingCount}</b>关注</span>
+                    <span><b>${followersList.length}</b>粉丝</span>
+                    <span><b>${likesCount}</b>获赞</span>
                 </div>
             </div>
             <div class="profile-tabs">
-                <div class="tab ${isSelf && currentProfileTab === 'posts' ? 'active' : ''}" onclick="${isSelf ? 'switchProfileTab(\'posts\')' : ''}">帖子</div>
-                ${isSelf ? `<div class="tab ${currentProfileTab === 'bookmarks' ? 'active' : ''}" onclick="switchProfileTab('bookmarks')">收藏</div>` : ''}
+                <div class="tab active">帖子</div>
             </div>`;
         }
 
-        if (currentView !== 'notifications') {
+        if (postsToRender.length === 0) {
+            html += `<div style="text-align:center;padding:50px;color:var(--text-sub);">这里空空如也~</div>`;
+        } else {
             postsToRender.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            if (postsToRender.length === 0) {
-                html += `<div style="text-align:center;padding:50px;color:var(--text-sub);">这里空空如也~</div>`;
-            } else {
-                postsToRender.forEach(post => { html += renderPostHTML(post); });
-            }
+            postsToRender.forEach(post => { html += renderPostHTML(post); });
         }
         document.getElementById('main-content').innerHTML = html;
     }
@@ -719,6 +728,7 @@
             else if (post.media_type === 'video') mediaHtml = `<video src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}" controls></video>`;
         }
 
+        // 严格按图2的图标
         const iconReply = `<svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>`;
         const iconRetweet = `<svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>`;
         const iconHeart = `<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
@@ -726,6 +736,7 @@
         const iconViews = `<svg viewBox="0 0 24 24"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>`;
         const iconBookmark = `<svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
         const iconBookmarkFill = `<svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
+        const iconShare = `<svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>`;
 
         if (currentLayout === 'new') {
             return `
@@ -752,26 +763,31 @@
                 </div>
             </div>`;
         } else {
-            // 怀旧版卡片：完全按照截图还原（带圆角边框、卡片背景）
+            // 严格按图2排版
             return `
             <div class="post-classic">
-                <div class="post-classic-header">
-                    <div class="post-classic-user" onclick="viewUser('${post.author_id}')">
+                <div class="post-classic-header" onclick="openDetailPage('${post.id}')">
+                    <div class="post-classic-user" onclick="event.stopPropagation(); viewUser('${post.author_id}')">
                         <div class="post-classic-avatar"><img src="${authorProfile.avatar}"></div>
-                        <div style="display:flex; flex-direction:column;">
-                            <span class="post-classic-name">${authorProfile.name} ${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}</span>
-                        </div>
+                        <span class="post-classic-name">${authorProfile.name} ${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}</span>
                     </div>
-                    <span class="post-classic-time">${new Date(post.created_at).toLocaleString()}</span>
+                    <span class="post-classic-time">${new Date(post.created_at).toLocaleDateString()}</span>
                 </div>
                 <div class="post-classic-content" onclick="openDetailPage('${post.id}')">${post.content}</div>
                 <div onclick="openDetailPage('${post.id}')">${mediaHtml}</div>
+                
                 <div class="post-classic-actions">
-                    <div class="action-icon" onclick="openDetailPage('${post.id}')">${iconReply} <span>${(post.comments || []).length}</span></div>
-                    <div class="action-icon">${iconRetweet} <span>0</span></div>
-                    <div class="action-icon like-btn ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
-                    <div class="action-icon">${iconViews} <span>${post.views}</span></div>
-                    <div class="action-icon ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? iconBookmarkFill : iconBookmark}</div>
+                    <div class="action-group">
+                        <div class="action-icon" onclick="openDetailPage('${post.id}')">${iconReply} <span>${(post.comments || []).length}</span></div>
+                        <div class="action-icon">${iconRetweet} <span>0</span></div>
+                        <div class="action-icon like-btn ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
+                        <div class="action-icon">${iconViews} <span>${post.views}</span></div>
+                        <div class="action-icon ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? iconBookmarkFill : iconBookmark}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <div class="action-icon">${iconShare}</div>
+                        <span class="muted-text">可能引起不适</span>
+                    </div>
                 </div>
             </div>`;
         }
@@ -785,7 +801,7 @@
         
         let html = list.length === 0 ? `<div style="text-align:center;padding:40px;color:var(--text-sub);">暂无用户</div>` : '';
         list.forEach(u => {
-            html += `<div class="search-user-item" onclick="document.getElementById('list-modal').style.display='none'; viewUser('${u.id}')"><div class="avatar" style="width:40px;height:40px;margin-right:12px;"><img src="${u.avatar}"></div><div style="font-weight:bold;color:#fff;">${u.name}</div></div>`;
+            html += `<div class="search-user-item" onclick="document.getElementById('list-modal').style.display='none'; viewUser('${u.id}')"><div class="avatar" style="width:40px;height:40px;margin-right:12px;border-radius:50%;overflow:hidden;"><img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;"></div><div style="font-weight:bold;color:#fff;">${u.name}</div></div>`;
         });
         document.getElementById('list-render-area').innerHTML = html;
         document.getElementById('list-modal').style.display = 'flex';
@@ -797,6 +813,7 @@
         const post = AllPosts.find(x => x.id === id);
         if (!post) return;
         
+        document.getElementById('detail-header-title').innerText = post.profiles ? post.profiles.name : '帖子详情';
         document.getElementById('detail-render-area').innerHTML = `<div style="text-align:center; padding:50px; color:var(--text-sub);">加载中...</div>`;
         document.getElementById('detail-page').style.display = 'flex';
 
@@ -808,68 +825,75 @@
         const authorProfile = post.profiles || { name: '未知', avatar: '' };
         let mediaHtml = post.media_data ? (post.media_type === 'image' ? `<img src="${post.media_data}" class="detail-post-media">` : `<video src="${post.media_data}" class="detail-post-media" controls></video>`) : '';
 
+        // 严格按图4
         let html = `<div class="detail-post-main">
-            <div class="detail-user-info">
-                <div class="detail-user-left">
-                    <div class="detail-avatar" onclick="closeDetailPage(); viewUser('${post.author_id}')"><img src="${authorProfile.avatar}"></div>
-                    <div>
-                        <div class="comment-name" style="font-size: 16px;" onclick="closeDetailPage(); viewUser('${post.author_id}')">${authorProfile.name}</div>
-                        <div class="comment-time">@${authorProfile.signal}</div>
-                    </div>
+            <div class="detail-user-info" onclick="closeDetailPage(); viewUser('${post.author_id}')">
+                <div class="detail-avatar"><img src="${authorProfile.avatar}"></div>
+                <div style="display:flex; flex-direction:column;">
+                    <span class="detail-name">${authorProfile.name}</span>
                 </div>
+                <span class="detail-time" style="margin-left:auto;">${new Date(post.created_at).toLocaleDateString()}</span>
             </div>
             <div class="detail-post-content">${post.content}</div>
             ${mediaHtml}
-            <div class="post-classic-time" style="margin-top: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
-                ${new Date(post.created_at).toLocaleString()} · <b>${post.views}</b> 浏览
+            <div class="detail-actions-bar">
+                <div class="action-group">
+                    <div class="action-icon">${iconReply} <span>${(comments||[]).length}</span></div>
+                    <div class="action-icon">${iconRetweet} <span>0</span></div>
+                    <div class="action-icon like-btn ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
+                    <div class="action-icon">${iconViews} <span>${post.views}</span></div>
+                    <div class="action-icon ${CurrentUserProfile.bookmarks?.includes(post.id) ? 'active' : ''}" onclick="toggleBookmark('${post.id}')">${CurrentUserProfile.bookmarks?.includes(post.id) ? iconBookmarkFill : iconBookmark}</div>
+                </div>
+                <div class="action-icon">${iconShare}</div>
             </div>
         </div>`;
 
-        html += `<div class="comment-list">`;
+        html += `<div class="comment-section">`;
         if (!comments || comments.length === 0) {
-            html += `<div style="text-align:center; padding:40px; color:var(--text-sub); font-size:14px;">还没有人评论，快来抢沙发吧！</div>`;
+            html += `<div style="text-align:center; padding:40px; color:var(--text-sub); font-size:14px;">还没有评论</div>`;
         } else {
             let rootComments = comments.filter(c => !c.reply_to);
             rootComments.forEach(root => {
                 const rootAuthor = root.profiles || { name: '未知', avatar: '' };
                 const replies = comments.filter(c => c.reply_to === root.author_id);
                 
-                html += `<div class="comment-thread">
-                    <div class="comment-main">
-                        <div class="avatar" onclick="closeDetailPage(); viewUser('${root.author_id}')"><img src="${rootAuthor.avatar}"></div>
-                        <div class="comment-main-body">
-                            <div class="comment-header">
-                                <span class="comment-name" onclick="closeDetailPage(); viewUser('${root.author_id}')">${rootAuthor.name}</span>
-                                <span class="comment-time">${new Date(root.created_at).toLocaleString()}</span>
-                            </div>
-                            <div class="comment-text">${root.content}</div>
-                            <div class="comment-actions">
-                                <span onclick="prepareReply('${rootAuthor.name}', '${root.author_id}')">💬 回复</span>
-                            </div>
+                // 独立的灰色圆角框
+                html += `<div class="comment-block">
+                    <div class="comment-avatar"><img src="${rootAuthor.avatar}"></div>
+                    <div class="comment-bubble">
+                        <div class="comment-header">
+                            <span class="comment-name" onclick="closeDetailPage(); viewUser('${root.author_id}')">${rootAuthor.name}</span>
+                            <span class="comment-time">${new Date(root.created_at).toLocaleString()}</span>
                         </div>
-                    </div>`;
+                        <div class="comment-text">${root.content}</div>
+                        <div class="comment-actions">
+                            <span>♡ 0</span>
+                            <span onclick="prepareReply('${rootAuthor.name}', '${root.author_id}')">💬 回复</span>
+                            <span>⚠ 举报</span>
+                        </div>
+                    </div>
+                </div>`;
                 
                 if (replies.length > 0) {
-                    html += `<div class="comment-replies">`;
                     replies.forEach(reply => {
                         const replyAuthor = reply.profiles || { name: '未知', avatar: '' };
-                        html += `<div class="reply-item">
-                            <div class="avatar" onclick="closeDetailPage(); viewUser('${reply.author_id}')"><img src="${replyAuthor.avatar}"></div>
-                            <div class="reply-body">
-                                <div class="reply-header">
-                                    <span class="reply-name" onclick="closeDetailPage(); viewUser('${reply.author_id}')">${replyAuthor.name}</span>
-                                    <span class="reply-time">${new Date(reply.created_at).toLocaleString()}</span>
+                        html += `<div class="reply-block">
+                            <div class="comment-avatar"><img src="${replyAuthor.avatar}"></div>
+                            <div class="comment-bubble">
+                                <div class="comment-header">
+                                    <span class="comment-name" onclick="closeDetailPage(); viewUser('${reply.author_id}')">${replyAuthor.name}</span>
+                                    <span class="comment-time">${new Date(reply.created_at).toLocaleString()}</span>
                                 </div>
-                                <div class="reply-text"><span class="reply-target">回复 @${rootAuthor.name}：</span>${reply.content}</div>
+                                <div class="comment-text"><span class="reply-target" style="color:var(--accent-color)">回复 @${rootAuthor.name}：</span>${reply.content}</div>
                                 <div class="comment-actions">
+                                    <span>♡ 0</span>
                                     <span onclick="prepareReply('${replyAuthor.name}', '${replyAuthor.id}')">💬 回复</span>
+                                    <span>⚠ 举报</span>
                                 </div>
                             </div>
                         </div>`;
                     });
-                    html += `</div>`;
                 }
-                html += `</div>`;
             });
         }
         html += `</div>`;
