@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v8.2</title>
+    <title>基沃托斯日讯-测试版v8.3</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -288,7 +288,6 @@
                     <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
                     <div class="red-dot" id="header-noti-dot">0</div>
                 </div>
-                <!-- 新增：设置按钮 -->
                 <div class="header-btn" onclick="openSettingsModal()">
                     <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
                 </div>
@@ -347,7 +346,7 @@
             </div>
         </div>
 
-        <div class="setting-item" style="cursor:pointer;" onclick="alert('基沃托斯日讯 v8.2\n\n由AI协助开发打造。\n\n功能包含：发帖、评论、图片自动压缩、多主题切换等。')">
+        <div class="setting-item" style="cursor:pointer;" onclick="alert('基沃托斯日讯 v8.3\n\n由第三代AI协助开发打造。\n\n修复：点赞数据持久化、获赞数计算优化。')">
             <div>
                 <div class="setting-label">关于本站</div>
                 <div class="setting-desc">查看版本信息与说明</div>
@@ -485,6 +484,7 @@
     let CurrentUserProfile = null;
     let AllPosts = [];
     let AllUsers = [];
+    let MyLikes = []; // 【新增】当前用户的点赞记录
     let isRegisterMode = false;
     let currentView = 'feed';
     let viewingUserId = null;
@@ -494,7 +494,6 @@
     let currentLayout = localStorage.getItem('forum_layout') || 'classic'; 
     let isLoggingIn = false;
 
-    // 防止重复点击/提交的锁
     let isProcessing = false;
     let clickCooldowns = {};
 
@@ -508,7 +507,6 @@
         window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3000); 
     }
 
-    // ================= 主题切换逻辑 =================
     function applyTheme(isLight) {
         if (isLight) {
             document.body.classList.add('light-theme');
@@ -519,7 +517,6 @@
         }
     }
 
-    // 页面加载时检查主题
     if (localStorage.getItem('theme') === 'light') {
         applyTheme(true);
     }
@@ -541,7 +538,6 @@
         }
     }
 
-    // ================= 图片处理逻辑 =================
     window.previewImage = function(input, previewId) {
         const preview = document.getElementById(previewId);
         if (input.files && input.files[0]) {
@@ -717,7 +713,6 @@
         
         await loadNotifications();
         
-        // 【修复初始化不显示帖子的Bug】先更新UI，再拉取数据渲染
         updateUIForLayout();
         await resetAndLoadPosts(); 
     }
@@ -730,9 +725,10 @@
     }
 
     async function resetAndLoadPosts() {
+        // 1. 拉取帖子（带上作者信息和评论数）
         const { data: posts, error } = await supabaseClient
             .from('posts')
-            .select(`*, profiles ( name, avatar, signal ), comments(count)`) 
+            .select(`*, profiles ( name, avatar, signal, total_likes ), comments(count)`) 
             .order('created_at', { ascending: false })
             .limit(50);
             
@@ -740,7 +736,26 @@
             console.error("加载帖子失败:", error);
             showToast('加载帖子失败: ' + error.message);
         }
+
+        // 2. 拉取当前用户的点赞记录
+        if (CurrentUserProfile) {
+            const { data: likesData, error: likesError } = await supabaseClient
+                .from('likes')
+                .select('post_id')
+                .eq('user_id', CurrentUserProfile.id);
+                
+            if (!likesError && likesData) {
+                MyLikes = likesData.map(l => l.post_id);
+            }
+        }
+
         AllPosts = posts || [];
+        
+        // 3. 将点赞状态合并到帖子数据中
+        AllPosts.forEach(p => {
+            if (MyLikes.includes(p.id)) p.isLiked = true;
+        });
+
         render();
     }
 
@@ -827,7 +842,7 @@
                     <img class="noti-avatar" src="https://ui-avatars.com/api/?name=公&background=ff7b9c&color=fff&size=128">
                     <div class="noti-item-right">
                         <div class="noti-user-line"><span class="noti-username" style="color:var(--accent-color);">系统公告</span></div>
-                        <div style="font-size:13px; color:var(--text-main); margin-bottom:8px;">v8.2主题版已上线！新增设置弹窗与浅色主题，修复了初次进入不渲染帖子的Bug。</div>
+                        <div style="font-size:13px; color:var(--text-main); margin-bottom:8px;">v8.3版本已上线！修复了点赞状态刷新丢失、获赞数加载卡顿的底层数据问题。</div>
                         <div class="noti-time-text">置顶</div>
                     </div>
                 </div>
@@ -940,7 +955,6 @@
         let html = '';
         let postsToRender = AllPosts;
 
-        // 非首页状态显示返回键
         if (currentView !== 'feed') {
             backBtn.style.display = 'flex';
             searchIcon.style.display = 'none';
@@ -977,10 +991,8 @@
             const followingCount = targetUser.following_list ? targetUser.following_list.length : 0;
             const isFollowed = CurrentUserProfile.following_list && CurrentUserProfile.following_list.includes(targetUser.id);
             
-            let likesCount = 0;
-            AllPosts.forEach(p => {
-                if(p.author_id === targetUser.id) likesCount += (p.likes || 0);
-            });
+            // 【优化】直接读取数据库 total_likes 字段，不再遍历帖子计算，防止卡顿
+            let likesCount = targetUser.total_likes || 0;
 
             html += `
             <div class="profile-cover" style="background-image:url('${targetUser.cover || ''}')"></div>
@@ -1097,7 +1109,6 @@
         }
     }
 
-    // ================= 交互逻辑优化 =================
     function canClick(id) {
         const now = Date.now();
         if (clickCooldowns[id] && now - clickCooldowns[id] < 800) return false; 
@@ -1110,16 +1121,32 @@
         const post = AllPosts.find(x => x.id === id);
         if (!post) return;
         
-        post.isLiked = !post.isLiked;
-        post.likes += post.isLiked ? 1 : -1;
+        // 乐观更新 UI
+        const isLiked = !post.isLiked;
+        post.isLiked = isLiked;
+        post.likes += isLiked ? 1 : -1;
         render(); 
 
         try {
-            if(post.isLiked && post.author_id !== CurrentUserProfile.id) {
-                supabaseClient.from('notifications').insert([{ user_id: post.author_id, sender_id: CurrentUserProfile.id, type: 'like', post_id: post.id }]).then();
+            if (isLiked) {
+                // 1. 插入 likes 关联表
+                await supabaseClient.from('likes').insert([{ user_id: CurrentUserProfile.id, post_id: id }]);
+                // 2. 更新 posts 表总数
+                await supabaseClient.from('posts').update({ likes: post.likes }).eq('id', id);
+                // 3. 发通知
+                if (post.author_id !== CurrentUserProfile.id) {
+                    await supabaseClient.from('notifications').insert([{ user_id: post.author_id, sender_id: CurrentUserProfile.id, type: 'like', post_id: post.id }]);
+                }
+            } else {
+                // 1. 删除 likes 关联表记录
+                await supabaseClient.from('likes').delete().match({ user_id: CurrentUserProfile.id, post_id: id });
+                // 2. 更新 posts 表总数
+                await supabaseClient.from('posts').update({ likes: post.likes }).eq('id', id);
             }
-            supabaseClient.from('posts').update({ likes: post.likes }).eq('id', id).then();
-        } catch (err) { console.error("点赞同步失败", err); }
+        } catch (err) { 
+            console.error("点赞同步失败", err); 
+            // 可选：如果后台报错，可以回滚UI。但为了防抖，静默处理即可
+        }
     }
 
     window.toggleBookmark = async function(id) {
