@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v7.1</title>
+    <title>基沃托斯日讯-测试版v7.2</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -210,14 +210,10 @@
 <div id="error-box"></div>
 <div id="toast">提示信息</div>
 
-<!-- 登录页 -->
+<!-- 登录页 (删除了昵称输入框) -->
 <div id="auth-page">
     <div class="auth-box">
         <div class="auth-title" id="auth-title">登录基沃托斯</div>
-        <div class="input-group" id="nickname-group" style="display: none;">
-            <label>昵称</label>
-            <input type="text" class="auth-input" id="auth-nickname" placeholder="给自己起个名字" autocomplete="off">
-        </div>
         <div class="input-group">
             <label>邮箱</label>
             <input type="email" class="auth-input" id="auth-email" placeholder="example@mail.com" autocomplete="new-password">
@@ -444,7 +440,6 @@
                 img.onload = () => {
                     let width = img.width;
                     let height = img.height;
-                    // 如果宽度超过 maxWidth，按比例缩放
                     if (width > maxWidth) {
                         height = Math.round(height * maxWidth / width);
                         width = maxWidth;
@@ -455,7 +450,6 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // 转换为 Blob 对象
                     canvas.toBlob(blob => {
                         if (!blob) reject(new Error("图片压缩失败"));
                         else resolve(blob);
@@ -469,20 +463,15 @@
 
     // ================= 上传图片逻辑 =================
     async function uploadImage(file) {
-        // 1. 压缩图片
         const compressedBlob = await compressImage(file);
-        
-        // 2. 生成文件名 (全部转为 .jpg)
         const fileName = `${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
         const filePath = `${CurrentUserProfile.id}/${fileName}`;
 
-        // 3. 上传到 Supabase
         const { error: uploadError } = await supabaseClient.storage.from(BUCKET_NAME).upload(filePath, compressedBlob, {
             contentType: 'image/jpeg'
         });
         if (uploadError) throw uploadError;
 
-        // 4. 获取公开链接
         const { data } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(filePath);
         return data.publicUrl;
     }
@@ -491,7 +480,6 @@
     async function deleteImageFromCloud(imageUrl) {
         if (!imageUrl) return;
         try {
-            // 从 URL 中提取文件路径。例如 URL 是 .../images/userid/123.jpg，路径就是 userid/123.jpg
             const urlParts = imageUrl.split(`/${BUCKET_NAME}/`);
             if (urlParts.length === 2) {
                 const filePath = urlParts[1];
@@ -505,16 +493,15 @@
     document.addEventListener("DOMContentLoaded", function() {
         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
+        // 注册逻辑已修改
         document.getElementById('submit-btn').onclick = async function() {
             if (isLoggingIn) return;
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
-            const nickname = document.getElementById('auth-nickname').value.trim();
             const btn = document.getElementById('submit-btn');
             
             if (!email || !password) return showToast('请填写邮箱和密码');
             if (password.length < 6) return showToast('密码至少需要6位');
-            if (isRegisterMode && !nickname) return showToast('请输入昵称');
             
             isLoggingIn = true; 
             btn.innerText = isRegisterMode ? '注册中...' : '登录中...'; 
@@ -526,9 +513,19 @@
                     if (error) throw error;
                     
                     if (data.user) {
+                        // 【核心修改】生成默认讯号、名字、首字母头像
+                        const signal = generateSignal();
+                        const defaultName = `用户${signal.split('-')[1]}`; // 例如: 用户123456
+                        // 使用 ui-avatars 接口生成粉底白字的默认头像
+                        const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(defaultName.charAt(0))}&background=ff7b9c&color=fff&size=128`;
+
                         const { error: profileErr } = await supabaseClient.from('profiles').insert([{ 
-                            id: data.user.id, name: nickname, email: email, signal: generateSignal(), 
-                            avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`, bio: '' 
+                            id: data.user.id, 
+                            name: defaultName, 
+                            email: email, 
+                            signal: signal, 
+                            avatar: defaultAvatar, 
+                            bio: '' 
                         }]);
                         if (profileErr) throw new Error("创建档案失败：" + profileErr.message);
                         
@@ -562,7 +559,6 @@
             document.getElementById('auth-title').innerText = isRegisterMode ? '注册基沃托斯' : '登录基沃托斯';
             document.getElementById('submit-btn').innerText = isRegisterMode ? '注 册' : '登 录';
             document.getElementById('switch-text').innerText = isRegisterMode ? '去登录' : '立即注册';
-            document.getElementById('nickname-group').style.display = isRegisterMode ? 'block' : 'none';
         };
 
         document.getElementById('layout-btn').innerText = currentLayout === 'new' ? '切怀旧版' : '切普通版';
@@ -585,10 +581,12 @@
         if (profileError) throw new Error("读取个人资料失败: " + profileError.message);
         
         if (!profile) {
-            const fallbackName = user.email.split('@')[0];
+            const fallbackName = `用户${Math.floor(100000 + Math.random() * 900000)}`;
+            const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(fallbackName.charAt(0))}&background=ff7b9c&color=fff&size=128`;
+            
             const { data: newProfile, error: createErr } = await supabaseClient.from('profiles').insert([{
                 id: user.id, name: fallbackName, email: user.email, signal: generateSignal(), 
-                avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${fallbackName}`, bio: '这个人很神秘。'
+                avatar: defaultAvatar, bio: '这个人很神秘。'
             }]).select().single();
             if (createErr) throw new Error("自动补建档案失败: " + createErr.message);
             profile = newProfile;
@@ -615,8 +613,14 @@
         location.reload();
     }
 
+    // 【核心修改】在拉取帖子时，把评论数量也一起查出来
     async function resetAndLoadPosts() {
-        const { data: posts, error } = await supabaseClient.from('posts').select(`*, profiles ( name, avatar, signal )`).order('created_at', { ascending: false }).limit(50);
+        const { data: posts, error } = await supabaseClient
+            .from('posts')
+            .select(`*, profiles ( name, avatar, signal ), comments(count)`) 
+            .order('created_at', { ascending: false })
+            .limit(50);
+            
         if (error) {
             console.error("加载帖子失败:", error);
             showToast('加载帖子失败: ' + error.message);
@@ -703,7 +707,7 @@
             }
             html += `
             <div class="noti-item" onclick="viewUser('${n.sender_id}'); closeNotiModal();">
-                <img class="noti-avatar" src="${n.sender?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=unknown'}">
+                <img class="noti-avatar" src="${n.sender?.avatar || ''}">
                 <div class="noti-item-right">
                     <div class="noti-user-line">
                         <span class="noti-username">${n.sender?.name || '某人'}</span>
@@ -853,6 +857,9 @@
     function renderPostHTML(post) {
         const authorProfile = post.profiles || { name: '未知', avatar: '' };
         const isBookmarked = CurrentUserProfile.bookmarks?.includes(post.id);
+        
+        // 【核心修改】从聚合查询中提取真实的评论数量
+        const commentCount = post.comments && post.comments[0] ? post.comments[0].count : 0;
 
         let mediaHtml = '';
         if (post.media_data) {
@@ -891,10 +898,10 @@
                 </div>
                 <div class="action-bar">
                     <div class="action-group">
-                        <div class="action-icon" onclick="openDetailPage('${post.id}')">${iconReply} <span>${(post.comments || []).length}</span></div>
+                        <div class="action-icon" onclick="openDetailPage('${post.id}')">${iconReply} <span>${commentCount}</span></div>
                         <div class="action-icon">${iconRetweet} <span>0</span></div>
                         <div class="action-icon like-btn ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
-                        <div class="action-icon">${iconViews} <span>${post.views}</span></div>
+                        <div class="action-icon">${iconViews} <span>${post.views || 0}</span></div>
                         <div class="action-icon ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? iconBookmarkFill : iconBookmark}</div>
                         ${deleteBtn}
                     </div>
@@ -918,10 +925,10 @@
                 
                 <div class="action-bar">
                     <div class="action-group">
-                        <div class="action-icon" onclick="openDetailPage('${post.id}')">${iconReply} <span>${(post.comments || []).length}</span></div>
+                        <div class="action-icon" onclick="openDetailPage('${post.id}')">${iconReply} <span>${commentCount}</span></div>
                         <div class="action-icon">${iconRetweet} <span>0</span></div>
                         <div class="action-icon like-btn ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
-                        <div class="action-icon">${iconViews} <span>${post.views}</span></div>
+                        <div class="action-icon">${iconViews} <span>${post.views || 0}</span></div>
                         <div class="action-icon ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? iconBookmarkFill : iconBookmark}</div>
                         ${deleteBtn}
                     </div>
@@ -939,12 +946,10 @@
         try {
             const post = AllPosts.find(x => x.id === id);
             
-            // 1. 如果有图片，先去云端删掉图片释放空间
             if (post && post.media_data) {
                 await deleteImageFromCloud(post.media_data);
             }
 
-            // 2. 再删数据库记录
             const { error } = await supabaseClient.from('posts').delete().eq('id', id);
             if (error) throw error;
             showToast('帖子已删除');
@@ -990,10 +995,11 @@
             ${mediaHtml}
             <div class="detail-actions-bar">
                 <div class="action-group">
-                    <div class="action-icon">${iconReply} <span>${(post.comments || []).length}</span></div>
+                    <!-- 这里的评论数先占位，后面加载完会更新 -->
+                    <div class="action-icon" id="detail-comment-count">${iconReply} <span>...</span></div>
                     <div class="action-icon">${iconRetweet} <span>0</span></div>
                     <div class="action-icon like-btn ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
-                    <div class="action-icon">${iconViews} <span>${post.views}</span></div>
+                    <div class="action-icon">${iconViews} <span>${post.views || 0}</span></div>
                     <div class="action-icon ${CurrentUserProfile.bookmarks?.includes(post.id) ? 'active' : ''}" onclick="toggleBookmark('${post.id}')">${CurrentUserProfile.bookmarks?.includes(post.id) ? iconBookmarkFill : iconBookmark}</div>
                 </div>
                 <div class="action-icon">${iconShare}</div>
@@ -1004,11 +1010,20 @@
         document.getElementById('detail-render-area').innerHTML = html;
 
         try {
-            post.views = (post.views || 0) + 1;
-            supabaseClient.from('posts').update({ views: post.views }).eq('id', id).then();
+            // 浏览量+1 逻辑
+            const currentViews = (post.views || 0) + 1;
+            post.views = currentViews;
+            supabaseClient.from('posts').update({ views: currentViews }).eq('id', id).then();
+
+            // 更新本地数据里的浏览量和评论数，确保退回列表页时显示正确
+            const localPost = AllPosts.find(x => x.id === id);
+            if(localPost) localPost.views = currentViews;
 
             const { data: comments, error } = await supabaseClient.from('comments').select(`*, profiles ( name, avatar, signal )`).eq('post_id', id).order('created_at', { ascending: true });
             if (error) throw error;
+
+            // 更新详情页顶部的评论数
+            document.getElementById('detail-comment-count').innerHTML = `${iconReply} <span>${comments.length}</span>`;
 
             let commentHtml = '';
             if (!comments || comments.length === 0) {
@@ -1074,7 +1089,7 @@
         document.getElementById('comment-input').value = '';
     }
 
-    window.closeDetailPage = function() { document.getElementById('detail-page').style.display = 'none'; render(); }
+    window.closeDetailPage = function() { document.getElementById('detail-page').style.display = 'none'; resetAndLoadPosts(); } // 关闭时刷新列表，同步最新数据
     window.prepareReply = function(name, id) { currentReplyTo = id; const input = document.getElementById('comment-input'); input.placeholder = `回复 @${name}...`; input.focus(); }
 
     window.submitComment = async function() {
@@ -1277,4 +1292,4 @@
     }
 </script>
 </body>
-            </html>
+    </html>
