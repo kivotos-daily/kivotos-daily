@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v6.0</title>
+    <title>基沃托斯日讯-测试版v6.2</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -29,51 +29,52 @@
         /* 主应用 */
         #app { display: none; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; background: var(--bg-color); border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);}
         
-        /* =========================================
-           顶部导航区 (严格对齐图2)
-           ========================================= */
+        /* 顶部导航区 */
         .header { position: sticky; top: 0; background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 100;}
         .header-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; height: 56px;}
         
-        /* 左侧：搜索 + 头像 + 标题 */
+        /* 左侧：搜索 + 头像 */
         .header-left { display: flex; align-items: center; gap: 12px; }
         .header-icon { width: 22px; height: 22px; fill: #fff; cursor: pointer; }
-        .header-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid #444;}
-        .header-title { font-size: 18px; font-weight: bold; color: #fff; display: none; }
         
-        /* 右侧：消息 + 发布动态 */
+        /* 头像，点击呼出侧边栏 */
+        .header-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid #444;}
+        
+        /* 右侧：消息 + 发布 */
         .header-right { display: flex; align-items: center; gap: 16px; }
         .header-msg-btn { position: relative; cursor: pointer; display: flex; align-items: center; }
         .header-msg-btn svg { width: 24px; height: 24px; fill: #fff; }
         .red-dot { position: absolute; top: -4px; right: -4px; background: #ff4757; color: #fff; font-size: 10px; font-weight: bold; padding: 1px 4px; border-radius: 10px; min-width: 16px; text-align: center; display: none;}
-        
         .btn-post-main { background: var(--accent-color); color: #fff; border: none; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; display: none;}
         .layout-btn { font-size: 12px; color: var(--text-sub); cursor:pointer; border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 20px; white-space: nowrap;}
 
-        /* Tabs (严格对齐图2) */
+        /* Tabs */
         .tabs { display: flex; border-bottom: 1px solid var(--border-color); }
         .tab { flex: 1; text-align: center; padding: 12px 0; font-size: 14px; color: var(--text-sub); font-weight: bold; cursor: pointer; position: relative;}
         .tab.active { color: var(--accent-color); }
         .tab.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 40px; height: 3px; background: var(--accent-color); border-radius: 2px; }
         
-        /* 悬浮提示条 (图2) */
+        /* 悬浮提示 */
         .new-post-toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--accent-color); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 12px rgba(255,123,156,0.3); display: none; z-index: 90; cursor: pointer;}
 
         /* =========================================
-           怀旧版帖子卡片 (严格对齐图2)
+           怀旧版帖子卡片 (修好了排版乱码的问题)
            ========================================= */
         .post-classic { margin: 12px 16px; padding: 16px; border: 1px solid #2a2a2a; border-radius: 12px; background: #181818; }
         .post-classic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .post-classic-user { display: flex; align-items: center; gap: 10px; cursor: pointer;}
-        .post-classic-avatar { width: 36px; height: 36px; border-radius: 50%; background: #333; overflow: hidden;}
+        /* 强制固定头像大小 */
+        .post-classic-avatar { width: 36px; height: 36px; border-radius: 50%; background: #333; overflow: hidden; flex-shrink: 0;}
         .post-classic-avatar img { width: 100%; height: 100%; object-fit: cover;}
-        .post-classic-name { font-size: 15px; font-weight: bold; color: #fff; }
+        
+        .post-classic-name { font-size: 15px; font-weight: bold; color: #fff; display: flex; align-items: center; gap: 6px;}
         .post-classic-time { font-size: 13px; color: var(--text-sub); display: flex; align-items: center; gap: 4px;}
         .post-classic-time::before { content: '·'; font-weight: bold;}
-        .post-classic-content { font-size: 15px; margin-bottom: 16px; white-space: pre-wrap; word-break: break-word; cursor: pointer; color: #eee; line-height: 1.5;}
-        .post-classic-media { width: 100%; border-radius: 12px; margin-bottom: 16px; max-height: 300px; object-fit: cover; cursor: pointer;}
         
-        /* 操作栏图标 (图2) */
+        /* 强制文字正常换行和间距 */
+        .post-classic-content { font-size: 15px; margin-bottom: 16px; white-space: pre-wrap; word-break: break-word; cursor: pointer; color: #eee; line-height: 1.5;}
+        .post-classic-media { width: 100%; border-radius: 12px; margin-bottom: 16px; max-height: 300px; object-fit: cover; cursor: pointer; border: 1px solid #333;}
+        
         .post-classic-actions { display: flex; justify-content: space-between; align-items: center; color: #888; font-size: 13px;}
         .action-group { display: flex; align-items: center; gap: 20px;}
         .action-icon { display: flex; align-items: center; gap: 4px; cursor: pointer; fill: none; stroke: currentColor; stroke-width: 1.5; padding: 4px; transition: all 0.2s;}
@@ -82,52 +83,49 @@
         .action-icon.active { color: var(--accent-color); stroke: var(--accent-color); }
         .action-icon.active svg { fill: var(--accent-color); }
         .muted-text { font-size: 12px; color: #666; }
+        .role-tag { font-size: 11px; background: rgba(255, 123, 156, 0.2); color: var(--accent-color); padding: 1px 6px; border-radius: 4px; }
 
-        /* 普通版卡片 (保留，但统一风格) */
+        /* 普通版卡片 */
         .post-card-new { padding: 16px; border-bottom: 1px solid var(--border-color); }
         .post-card-new .action-bar { display: flex; justify-content: space-between; margin-top: 12px; max-width: 380px; color: #888;}
         .post-card-new .action-icon { padding: 4px; gap: 4px; cursor: pointer; fill: none; stroke: currentColor; stroke-width: 1.5;}
         .post-card-new .action-icon svg { width: 18px; height: 18px;}
         .post-card-new .action-icon.active { color: var(--accent-color); stroke: var(--accent-color);}
         .post-card-new .action-icon.active svg { fill: var(--accent-color);}
+        .post-new-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .post-new-user { display: flex; align-items: center; }
+        .post-new-user .avatar { width: 40px; height: 40px; margin-right: 10px; border-radius: 50%; overflow: hidden;}
+        .post-new-name { display: flex; flex-direction: column; cursor: pointer;}
+        .post-new-name .username { font-weight: bold; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 6px;}
+        .post-new-name .time { font-size: 12px; color: var(--text-sub); }
+        .post-content { font-size: 15px; margin-bottom: 12px; white-space: pre-wrap; line-height: 1.5;}
+        .post-media { width: 100%; max-height: 300px; border-radius: 16px; margin-bottom: 12px; object-fit: cover; border: 1px solid var(--border-color); }
+
 
         /* =========================================
-           个人主页 (严格对齐图3)
+           侧边栏（左侧抽屉）
            ========================================= */
-        .profile-cover { height: 160px; background: #222 center/cover no-repeat; width: 100%; }
-        .profile-info-container { padding: 0 16px 20px; position: relative; border-bottom: 1px solid var(--border-color); }
-        .profile-avatar-wrapper { width: 86px; height: 86px; border-radius: 50%; border: 3px solid var(--bg-color); background: #333; margin-top: -43px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;}
-        .profile-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-actions-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: -30px; margin-bottom: 16px;}
-        .btn-outline { background: transparent; color: #eff3f4; border: 1px solid #536471; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;}
-        .btn-fill { background: #eff3f4; color: #000; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;}
-        
-        .profile-name { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px;}
-        .profile-handle { font-size: 14px; color: var(--text-sub); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;}
-        .platform-tag { background: #2a2a2a; color: #aaa; font-size: 11px; padding: 2px 6px; border-radius: 4px;}
-        .profile-bio { font-size: 15px; margin-bottom: 16px; line-height: 1.5; color: #ddd;}
-        
-        /* 数据行数字变粉色 */
-        .profile-stats-row { display: flex; gap: 20px; font-size: 14px; color: var(--text-sub); margin-bottom: 16px;}
-        .profile-stats-row b { color: var(--accent-color); font-weight: normal; margin-right: 4px;}
-        
-        .profile-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
-        
+        .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 300; display: none; opacity: 0; transition: opacity 0.3s;}
+        .sidebar-overlay.open { display: block; opacity: 1; }
+        .sidebar-nav { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: var(--bg-color); border-right: 1px solid var(--border-color); z-index: 301; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1); display: flex; flex-direction: column; }
+        .sidebar-nav.open { transform: translateX(0); }
+        .sidebar-header { padding: 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer;}
+        .sidebar-header img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover;}
+        .sidebar-item { display: flex; align-items: center; padding: 16px 24px; font-size: 16px; font-weight: bold; color: var(--text-main); cursor: pointer; transition: background 0.2s;}
+        .sidebar-item:hover { background: var(--hover-color); }
+
         /* =========================================
-           详情页 & 评论区 (严格对齐图4)
+           详情页 (修复了退不出去的问题)
            ========================================= */
         #detail-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 250; display: none; flex-direction: column; max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
         .detail-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); background: var(--bg-color); position: sticky; top: 0; z-index: 10;}
         .detail-header-left { display: flex; align-items: center; gap: 16px;}
-        .back-btn { cursor: pointer; color: #fff; display: flex; align-items: center;}
+        /* 明确的返回按钮 */
+        .back-btn { cursor: pointer; color: #fff; display: flex; align-items: center; padding: 4px; background: #222; border-radius: 50%;}
         .back-btn svg { width: 20px; height: 20px; fill: currentColor;}
         .detail-header-title { font-size: 16px; font-weight: bold; }
-        .detail-header-right { display: flex; gap: 16px; color: #fff;}
-        .detail-header-right svg { width: 20px; height: 20px; fill: currentColor; cursor: pointer;}
         
         .detail-content-area { flex: 1; overflow-y: auto; padding-bottom: 70px; }
-        
-        /* 主贴区域 */
         .detail-post-main { padding: 16px; border-bottom: 1px solid var(--border-color); }
         .detail-user-info { display: flex; align-items: center; margin-bottom: 16px; gap: 10px;}
         .detail-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #333;}
@@ -136,10 +134,9 @@
         .detail-time { font-size: 13px; color: var(--text-sub);}
         .detail-post-content { font-size: 16px; color: #fff; line-height: 1.5; margin-bottom: 16px; white-space: pre-wrap; }
         .detail-post-media { width: 100%; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);}
-        
         .detail-actions-bar { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border-color);}
         
-        /* 评论区 (复刻图4的独立灰色圆角框) */
+        /* 图4评论区 */
         .comment-section { padding: 16px; }
         .comment-block { margin-bottom: 16px; display: flex; gap: 10px;}
         .comment-avatar { width: 36px; height: 36px; border-radius: 50%; background: #fff; flex-shrink: 0; overflow: hidden;}
@@ -152,8 +149,6 @@
         .comment-actions { display: flex; gap: 16px; font-size: 12px; color: #888; align-items: center;}
         .comment-actions span { display: flex; align-items: center; gap: 4px; cursor: pointer;}
         .comment-actions span:hover { color: var(--accent-color);}
-        
-        /* 嵌套回复 (在图4中也是独立的框，只是向左偏移) */
         .reply-block { margin-left: 46px; margin-bottom: 16px; display: flex; gap: 10px;}
         .reply-block .comment-avatar { width: 30px; height: 30px;}
 
@@ -161,6 +156,24 @@
         .detail-input { flex: 1; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 16px; color: #fff; outline: none; font-size: 14px;}
         .detail-input:focus { border-color: var(--accent-color);}
         .detail-send-btn { background: var(--accent-color); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px;}
+
+        /* =========================================
+           个人主页 (修复了退不出去的问题)
+           ========================================= */
+        .profile-cover { height: 160px; background: #222 center/cover no-repeat; width: 100%; }
+        .profile-info-container { padding: 0 16px 20px; position: relative; border-bottom: 1px solid var(--border-color); }
+        .profile-avatar-wrapper { width: 86px; height: 86px; border-radius: 50%; border: 3px solid var(--bg-color); background: #333; margin-top: -43px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;}
+        .profile-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-actions-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: -30px; margin-bottom: 16px;}
+        .btn-outline { background: transparent; color: #eff3f4; border: 1px solid #536471; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;}
+        .btn-fill { background: #eff3f4; color: #000; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;}
+        .profile-name { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px;}
+        .profile-handle { font-size: 14px; color: var(--text-sub); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;}
+        .platform-tag { background: #2a2a2a; color: #aaa; font-size: 11px; padding: 2px 6px; border-radius: 4px;}
+        .profile-bio { font-size: 15px; margin-bottom: 16px; line-height: 1.5; color: #ddd;}
+        .profile-stats-row { display: flex; gap: 20px; font-size: 14px; color: var(--text-sub); margin-bottom: 16px;}
+        .profile-stats-row b { color: var(--accent-color); font-weight: normal; margin-right: 4px;}
+        .profile-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
 
         /* =========================================
            图1：消息通知弹窗
@@ -234,8 +247,8 @@
             <!-- 左侧：搜索 + 头像 -->
             <div class="header-left">
                 <svg class="header-icon" onclick="openSearch()" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                <img id="header-avatar-img" class="header-avatar" onclick="switchView('profile_self')" src="">
-                <span class="header-title" id="header-title">首页</span>
+                <!-- 点击这里呼出侧边栏！ -->
+                <img id="header-avatar-img" class="header-avatar" onclick="openSidebar()" src="">
             </div>
             
             <!-- 右侧：消息 + 发布 -->
@@ -258,6 +271,12 @@
     </header>
 
     <main id="main-content"></main>
+</div>
+
+<!-- 左侧侧边栏 (解决卡死问题) -->
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+<div id="sidebar-nav" class="sidebar-nav">
+    <div id="sidebar-content" style="display:flex; flex-direction:column; flex:1;"></div>
 </div>
 
 <!-- 全屏搜索 -->
@@ -283,16 +302,14 @@
             <div class="noti-tab" onclick="switchNotiTab(this)">点赞</div>
             <div class="noti-tab" onclick="switchNotiTab(this)">关注</div>
         </div>
-        <div class="noti-modal-content" id="noti-modal-content">
-            <!-- 动态渲染 -->
-        </div>
+        <div class="noti-modal-content" id="noti-modal-content"></div>
         <div class="noti-modal-footer">
             <button class="noti-close-btn" onclick="closeNotiModal()">关闭</button>
         </div>
     </div>
 </div>
 
-<!-- 详情页 (图4) -->
+<!-- 详情页 (图4) - 加了返回按钮 -->
 <div id="detail-page">
     <div class="detail-header">
         <div class="detail-header-left">
@@ -300,11 +317,6 @@
                 <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
             </div>
             <span class="detail-header-title" id="detail-header-title">帖子详情</span>
-        </div>
-        <div class="detail-header-right">
-            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
         </div>
     </div>
     <div class="detail-content-area" id="detail-render-area"></div>
@@ -346,14 +358,6 @@
             <input type="text" class="auth-input" id="edit-bio" placeholder="介绍一下自己吧..." style="background: #161616; border-radius: 8px;">
         </div>
         <button class="modal-submit" onclick="saveProfile()">保存</button>
-    </div>
-</div>
-
-<!-- 列表弹窗 -->
-<div class="modal-overlay" id="list-modal">
-    <div class="modal-content" style="height: 60vh;">
-        <div class="modal-header"><span style="cursor:pointer;" onclick="document.getElementById('list-modal').style.display='none'">关闭</span><span id="list-title">列表</span><span style="width:40px;"></span></div>
-        <div id="list-render-area" style="flex:1; overflow-y:auto;"></div>
     </div>
 </div>
 
@@ -518,6 +522,36 @@
         } else {
             dot.style.display = 'none';
         }
+    }
+
+    // ================= 侧边栏逻辑 =================
+    window.openSidebar = function() {
+        if (!CurrentUserProfile) return;
+        const content = document.getElementById('sidebar-content');
+        content.innerHTML = `
+            <div class="sidebar-header" onclick="switchView('profile_self'); closeSidebar();">
+                <img src="${CurrentUserProfile.avatar}">
+                <div>
+                    <div style="font-weight:bold; font-size:16px; color:#fff;">${CurrentUserProfile.name}</div>
+                    <div style="font-size:14px; color:var(--text-sub);">@${CurrentUserProfile.signal}</div>
+                </div>
+            </div>
+            <div class="sidebar-item" onclick="switchView('feed'); closeSidebar();">首页</div>
+            <div class="sidebar-item" onclick="switchView('story'); closeSidebar();">剧情广场</div>
+            <div class="sidebar-item" onclick="switchView('bookmarks'); closeSidebar();">我的收藏</div>
+            <div class="sidebar-item" onclick="switchView('profile_self'); closeSidebar();">个人主页</div>
+            <div class="sidebar-item" onclick="openPostModal(); closeSidebar();">发布帖子</div>
+            <div style="flex:1;"></div>
+            <div class="sidebar-item" style="font-size:15px; color:var(--accent-color); border-top:1px solid var(--border-color);" onclick="toggleLayout(); closeSidebar();">切换普通版</div>
+            <div class="sidebar-item" style="font-size:15px; color:#f91880;" onclick="logout()">退出登录</div>
+        `;
+        document.getElementById('sidebar-overlay').classList.add('open');
+        document.getElementById('sidebar-nav').classList.add('open');
+    }
+
+    window.closeSidebar = function() {
+        document.getElementById('sidebar-overlay').classList.remove('open');
+        document.getElementById('sidebar-nav').classList.remove('open');
     }
 
     // ================= 消息通知弹窗逻辑 =================
@@ -685,7 +719,7 @@
             const followersList = AllUsers.filter(u => u.following_list && u.following_list.includes(targetUser.id));
             const followingCount = targetUser.following_list ? targetUser.following_list.length : 0;
             const isFollowed = CurrentUserProfile.following_list && CurrentUserProfile.following_list.includes(targetUser.id);
-            const likesCount = 1000; // 图3中写着1000获赞，这里先写死
+            const likesCount = 1000; 
 
             html += `
             <div class="profile-cover"></div>
@@ -728,7 +762,6 @@
             else if (post.media_type === 'video') mediaHtml = `<video src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}" controls></video>`;
         }
 
-        // 严格按图2的图标
         const iconReply = `<svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>`;
         const iconRetweet = `<svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>`;
         const iconHeart = `<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
@@ -763,11 +796,11 @@
                 </div>
             </div>`;
         } else {
-            // 严格按图2排版
+            // 严格修复排版
             return `
             <div class="post-classic">
-                <div class="post-classic-header" onclick="openDetailPage('${post.id}')">
-                    <div class="post-classic-user" onclick="event.stopPropagation(); viewUser('${post.author_id}')">
+                <div class="post-classic-header">
+                    <div class="post-classic-user" onclick="viewUser('${post.author_id}')">
                         <div class="post-classic-avatar"><img src="${authorProfile.avatar}"></div>
                         <span class="post-classic-name">${authorProfile.name} ${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}</span>
                     </div>
@@ -786,7 +819,6 @@
                     </div>
                     <div style="display:flex; align-items:center; gap:16px;">
                         <div class="action-icon">${iconShare}</div>
-                        <span class="muted-text">可能引起不适</span>
                     </div>
                 </div>
             </div>`;
@@ -825,7 +857,6 @@
         const authorProfile = post.profiles || { name: '未知', avatar: '' };
         let mediaHtml = post.media_data ? (post.media_type === 'image' ? `<img src="${post.media_data}" class="detail-post-media">` : `<video src="${post.media_data}" class="detail-post-media" controls></video>`) : '';
 
-        // 严格按图4
         let html = `<div class="detail-post-main">
             <div class="detail-user-info" onclick="closeDetailPage(); viewUser('${post.author_id}')">
                 <div class="detail-avatar"><img src="${authorProfile.avatar}"></div>
@@ -857,7 +888,6 @@
                 const rootAuthor = root.profiles || { name: '未知', avatar: '' };
                 const replies = comments.filter(c => c.reply_to === root.author_id);
                 
-                // 独立的灰色圆角框
                 html += `<div class="comment-block">
                     <div class="comment-avatar"><img src="${rootAuthor.avatar}"></div>
                     <div class="comment-bubble">
@@ -884,7 +914,7 @@
                                     <span class="comment-name" onclick="closeDetailPage(); viewUser('${reply.author_id}')">${replyAuthor.name}</span>
                                     <span class="comment-time">${new Date(reply.created_at).toLocaleString()}</span>
                                 </div>
-                                <div class="comment-text"><span class="reply-target" style="color:var(--accent-color)">回复 @${rootAuthor.name}：</span>${reply.content}</div>
+                                <div class="comment-text"><span style="color:var(--accent-color)">回复 @${rootAuthor.name}：</span>${reply.content}</div>
                                 <div class="comment-actions">
                                     <span>♡ 0</span>
                                     <span onclick="prepareReply('${replyAuthor.name}', '${replyAuthor.id}')">💬 回复</span>
