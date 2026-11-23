@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>基沃托斯日讯-测试版v4.6</title>
     
-    <!-- 👇 就是这行代码救了你的注册键，千万别删！ -->
+    <!-- 👇 加载 Supabase 的核心引擎 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -247,9 +247,9 @@
 
 <script>
     // =======================================================
-    // ⚠️⚠️⚠️ 核心注意：把下面的地址换成你真实的 Supabase 项目网址 ⚠️⚠️⚠️
+    // ✅ 已经为你填好正确的 Supabase 网址了！
     // =======================================================
-    const SUPABASE_URL = 'https://kivotos-daily.netlify.app'; 
+    const SUPABASE_URL = 'https://ycjshhxxqnyizewpswoc.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLt1w_hq1GlLut';
 
     let supabaseClient = null;
@@ -277,7 +277,6 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        // 修复：确保 supabase 加载完毕后再初始化
         if (typeof supabase === 'undefined') {
             document.getElementById('error-box').style.display = 'block';
             document.getElementById('error-box').innerText = '严重错误：Supabase引擎未加载，请检查网络或刷新页面！';
@@ -285,7 +284,6 @@
         }
         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // 登录注册按钮点击事件
         document.getElementById('submit-btn').onclick = async function() {
             if (isLoggingIn) return;
             const email = document.getElementById('auth-email').value.trim();
@@ -317,7 +315,6 @@
             finally { isLoggingIn = false; btn.innerText = isRegisterMode ? '注 册' : '登 录'; btn.disabled = false; }
         };
 
-        // 切换登录/注册模式
         document.getElementById('switch-btn').onclick = function() {
             if (isLoggingIn) return;
             isRegisterMode = !isRegisterMode;
@@ -787,4 +784,4 @@
     }
 </script>
 </body>
-        </html>
+    </html>
