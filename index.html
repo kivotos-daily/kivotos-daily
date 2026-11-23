@@ -5,14 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>基沃托斯日讯-测试版v4.6</title>
     
+    <!-- 👇 就是这行代码救了你的注册键，千万别删！ -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         :root { --bg-color: #121212; --text-main: #e0e0e0; --text-sub: #888888; --accent-color: #ff7b9c; --border-color: #333333; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden;}
-        
+
         #error-box { position: fixed; top: 0; left: 0; width: 100%; background: rgba(255,0,0,0.95); color: white; padding: 15px; font-weight: bold; z-index: 99999; display: none; font-size: 14px; text-align: center; line-height: 1.5;}
         #toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #fff; padding: 14px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; display: none; text-align: center; border: 1px solid var(--border-color); font-weight: bold;}
-        
+
         /* 登录页 */
         #auth-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background: #121212; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
         .auth-box { width: 100%; max-width: 360px; background: #1e1e1e; padding: 30px 20px; border-radius: 16px; border: 1px solid #333; }
@@ -23,15 +26,13 @@
         .auth-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--accent-color); color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .auth-switch { text-align: center; font-size: 14px; color: #888; margin-top: 20px; cursor: pointer; padding: 15px; border: 1px dashed #444; border-radius: 8px; }
         .auth-switch span { color: var(--accent-color); font-weight: bold; }
-        
+
         /* 主应用 */
         #app { display: none; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; background: var(--bg-color); }
         .header { position: sticky; top: 0; background: rgba(18,18,18,0.85); backdrop-filter: blur(12px); padding: 10px 16px; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; z-index: 100;}
-        
         .header-top { display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: bold; color: var(--accent-color);}
-        .search-box { width: 100%; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
+        .search-box { width: 100%; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 16px; color: var(--text-main); outline: none; font-size: 14px; }
         
-        /* 搜索结果下拉 */
         #search-results { position: absolute; top: 100%; left: 0; width: 100%; background: var(--bg-color); border-bottom: 1px solid var(--border-color); z-index: 150; max-height: 300px; overflow-y: auto; display: none;}
         .search-user-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #222; cursor: pointer;}
         .search-user-item:hover { background: #1a1a1a; }
@@ -45,13 +46,11 @@
         .nav-btn-add { background: var(--accent-color); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-top: -20px; cursor: pointer; font-size: 24px; }
         .red-dot { position: absolute; top: 5px; right: 25px; width: 8px; height: 8px; background: #ff4757; border-radius: 50%; display: none;}
 
-        /* 公告与标签 */
+        /* 帖子通用 */
         .announcement-bar { margin: 12px 16px; background: rgba(255, 123, 156, 0.1); border: 1px solid var(--accent-color); border-radius: 12px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; }
-        .role-tag { font-size: 11px; background: rgba(255, 123, 156, 0.2); color: var(--accent-color); padding: 1px 6px; border-radius: 4px; }
         .avatar { border-radius: 50%; background: #333; display: flex; justify-content: center; align-items: center; color: #fff; overflow: hidden; flex-shrink: 0;}
         .avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* ======== 新版排版 ======== */
         .post-card-new { background: var(--bg-color); padding: 16px; border-bottom: 1px solid var(--border-color); }
         .post-new-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .post-new-user { display: flex; align-items: center; }
@@ -61,41 +60,24 @@
         .post-new-name .time { font-size: 12px; color: var(--text-sub); }
         .post-content { font-size: 15px; margin-bottom: 12px; white-space: pre-wrap; }
         .post-media { width: 100%; max-height: 300px; border-radius: 16px; margin-bottom: 12px; object-fit: cover; border: 1px solid var(--border-color); }
-        
-        /* 简约版图标操作栏 */
+        .role-tag { font-size: 11px; background: rgba(255, 123, 156, 0.2); color: var(--accent-color); padding: 1px 6px; border-radius: 4px; }
+
         .action-bar-new { display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px; max-width: 380px; }
         .action-icon { display: flex; align-items: center; gap: 4px; cursor: pointer; fill: none; stroke: currentColor; stroke-width: 1.5; }
         .action-icon svg { width: 18px; height: 18px; }
         .action-icon:hover { color: var(--accent-color); }
         .action-icon.active { color: var(--accent-color); stroke: var(--accent-color); }
 
-        /* ======== 怀旧版排版 (图4风格) ======== */
+        /* 怀旧版排版 */
         .post-classic { display: flex; padding: 16px; border-bottom: 1px solid var(--border-color); }
         .post-classic-avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; background: #333; cursor: pointer;}
         .post-classic-main { flex: 1; min-width: 0; }
-        
-        /* 头部：左名字，右时间 */
         .post-classic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
         .post-classic-name-group { display: flex; align-items: center; gap: 6px; cursor: pointer;}
         .post-classic-name { font-size: 15px; font-weight: bold; color: #fff; }
         .post-classic-time { font-size: 13px; color: #888; }
-        
         .post-classic-content { font-size: 15px; margin-bottom: 12px; white-space: pre-wrap; word-break: break-word; cursor: pointer;}
         .post-classic-media { width: 100%; border-radius: 16px; margin-bottom: 12px; max-height: 300px; object-fit: cover; border: 1px solid var(--border-color); cursor: pointer;}
-        
-        /* ======== 个人主页 ======== */
-        .profile-cover { height: 120px; background: #333 center/cover no-repeat; width: 100%; }
-        .profile-info-container { padding: 0 16px 20px; position: relative; }
-        .profile-avatar-wrapper { width: 84px; height: 84px; border-radius: 50%; border: 4px solid var(--bg-color); background: #222; margin-top: -42px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;}
-        .profile-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-actions-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: -36px; margin-bottom: 16px;}
-        .btn-outline { background: transparent; color: #eff3f4; border: 1px solid #536471; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-        .btn-fill { background: #eff3f4; color: #000; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer;}
-        .profile-name { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 2px;}
-        .profile-handle { font-size: 15px; color: var(--text-sub); margin-bottom: 12px; }
-        .profile-bio { font-size: 15px; margin-bottom: 12px; }
-        .profile-stats-row { display: flex; gap: 20px; font-size: 14px; color: var(--text-sub); margin-bottom: 16px;}
-        .profile-stats-row b { color: #eff3f4; cursor: pointer;}
 
         /* 详情页 */
         #detail-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 250; display: none; flex-direction: column; max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
@@ -111,7 +93,28 @@
         .detail-bottom-bar { position: absolute; bottom: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color); padding: 12px 16px; display: flex; align-items: center; gap: 12px;}
         .detail-input { flex: 1; background: #161616; border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 16px; color: #fff; outline: none;}
         .detail-send-btn { background: var(--accent-color); color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer;}
-        
+
+        /* 个人主页 */
+        .profile-cover { height: 120px; background: #333 center/cover no-repeat; width: 100%; }
+        .profile-info-container { padding: 0 16px 20px; position: relative; }
+        .profile-avatar-wrapper { width: 84px; height: 84px; border-radius: 50%; border: 4px solid var(--bg-color); background: #222; margin-top: -42px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;}
+        .profile-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-actions-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: -36px; margin-bottom: 16px;}
+        .btn-outline { background: transparent; color: #eff3f4; border: 1px solid #536471; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .btn-fill { background: #eff3f4; color: #000; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer;}
+        .profile-name { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 2px;}
+        .profile-handle { font-size: 15px; color: var(--text-sub); margin-bottom: 12px; }
+        .profile-bio { font-size: 15px; margin-bottom: 12px; }
+        .profile-stats-row { display: flex; gap: 20px; font-size: 14px; color: var(--text-sub); margin-bottom: 16px;}
+        .profile-stats-row b { color: #eff3f4; cursor: pointer;}
+
+        /* 弹窗 */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 500; display: none; justify-content: center; align-items: flex-end; }
+        .modal-content { background: var(--bg-color); width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; display: flex; flex-direction: column; border: 1px solid var(--border-color); border-bottom: none; max-height: 85vh; overflow-y: auto;}
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: bold; font-size: 18px; color: #fff;}
+        .modal-textarea { width: 100%; height: 120px; background: transparent; border: none; border-bottom: 1px solid var(--border-color); padding: 12px 0; color: #fff; font-size: 18px; resize: none; outline: none; margin-bottom: 12px; }
+        .modal-submit { width: 100%; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 20px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;}
+
         /* 评论 */
         .comment-list { padding: 16px; }
         .comment-thread { margin-bottom: 20px;}
@@ -133,14 +136,7 @@
         .reply-target { font-size: 14px; color: var(--accent-color);}
         .reply-text { font-size: 14px; color: #eff3f4; margin-bottom: 4px;}
 
-        /* 弹窗 */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 500; display: none; justify-content: center; align-items: flex-end; }
-        .modal-content { background: var(--bg-color); width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; display: flex; flex-direction: column; border: 1px solid var(--border-color); border-bottom: none; max-height: 85vh; overflow-y: auto;}
-        .modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: bold; font-size: 18px; color: #fff;}
-        .modal-textarea { width: 100%; height: 120px; background: transparent; border: none; border-bottom: 1px solid var(--border-color); padding: 12px 0; color: #fff; font-size: 18px; resize: none; outline: none; margin-bottom: 12px; }
-        .modal-submit { width: 100%; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 20px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;}
-        
-        /* 消息通知列表 */
+        /* 消息通知 */
         .noti-item { display: flex; align-items: center; padding: 16px; border-bottom: 1px solid var(--border-color); gap: 12px; }
         .noti-item .avatar { width: 40px; height: 40px; }
         .noti-content { flex: 1; font-size: 14px; color: #ccc; }
@@ -157,6 +153,7 @@
 <div id="auth-page">
     <div class="auth-box">
         <div class="auth-title" id="auth-title">基沃托斯日讯-登录</div>
+        
         <div class="input-group" id="nickname-group" style="display: none;">
             <label>昵称</label>
             <input type="text" class="auth-input" id="auth-nickname" placeholder="给自己起个名字">
@@ -186,20 +183,19 @@
         <input type="text" class="search-box" id="search-input" placeholder="搜索帖子或用户..." oninput="handleSearch(this.value)">
         <div id="search-results"></div>
     </header>
-    
+
     <main id="main-content"></main>
-    
+
     <nav class="bottom-nav" id="bottom-nav">
         <div class="nav-item active" data-view="feed" onclick="switchView('feed')">
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>首页
         </div>
         <div class="nav-item" data-view="story" onclick="switchView('story')">
-            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>剧情
+            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>剧情
         </div>
         <div class="nav-btn-add" onclick="openPostModal()">+</div>
         <div class="nav-item" data-view="notifications" onclick="switchView('notifications')">
-            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
-            消息
+            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>消息
             <div class="red-dot" id="noti-dot"></div>
         </div>
         <div class="nav-item" data-view="profile_self" onclick="switchView('profile_self')">
@@ -224,42 +220,42 @@
 <!-- 发帖弹窗 -->
 <div class="modal-overlay" id="post-modal">
     <div class="modal-content">
-        <div class="modal-header"><span>发布新帖子</span><span style="cursor:pointer;" onclick="closePostModal()">✕</span></div>
+        <div class="modal-header"><span>发布新帖子</span><span style="cursor:pointer;" onclick="closePostModal()">×</span></div>
         <div class="mode-switch" style="display:flex; gap:10px; margin-bottom:12px;">
             <div class="mode-btn active" id="mode-normal" onclick="switchPostMode('normal')" style="flex:1; text-align:center; padding:8px; border-radius:20px; border:1px solid #333; cursor:pointer; background:#222; color:#fff;">日常发帖</div>
             <div class="mode-btn" id="mode-cos" onclick="switchPostMode('cosplay')" style="flex:1; text-align:center; padding:8px; border-radius:20px; border:1px solid #333; cursor:pointer; background:transparent; color:#888;">🎭 剧情演绎</div>
         </div>
         <div class="role-input-group" id="role-input-group" style="display:none; margin-bottom:12px;">
-            <input type="text" class="auth-input" id="post-role" placeholder="扮演角色（如：砂狼白子）" style="margin-bottom: 10px;">
+            <input type="text" class="auth-input" id="post-role" placeholder="扮演角色 (如: 砂狼白子)" style="margin-bottom: 10px;">
         </div>
         <textarea class="modal-textarea" id="post-input" placeholder="有什么新鲜事？"></textarea>
         <div class="input-group" style="margin-top:10px;">
-            <label>附带图片/视频链接 (可选)</label>
+            <label>附带图片/视频链接（可选）</label>
             <input type="text" class="auth-input" id="post-media-url" placeholder="https://...">
         </div>
         <button class="modal-submit" onclick="submitPost()">发布</button>
     </div>
 </div>
 
-<!-- 通用列表弹窗 (粉丝/关注) -->
+<!-- 列表弹窗 -->
 <div class="modal-overlay" id="list-modal">
     <div class="modal-content" style="height: 60vh;">
-        <div class="modal-header"><span id="list-title">列表</span><span style="cursor:pointer;" onclick="document.getElementById('list-modal').style.display='none'">✕</span></div>
+        <div class="modal-header"><span id="list-title">列表</span><span style="cursor:pointer;" onclick="document.getElementById('list-modal').style.display='none'">×</span></div>
         <div id="list-render-area" style="flex:1; overflow-y:auto;"></div>
     </div>
 </div>
 
 <script>
-    // ==========================================
-    // 👇👇👇 填入你的 Netlify 代理网址 👇👇👇
-    // ==========================================
+    // =======================================================
+    // ⚠️⚠️⚠️ 核心注意：把下面的地址换成你真实的 Supabase 项目网址 ⚠️⚠️⚠️
+    // =======================================================
     const SUPABASE_URL = 'https://kivotos-daily.netlify.app'; 
-    const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut'; 
-    
+    const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLt1w_hq1GlLut';
+
     let supabaseClient = null;
     let CurrentUserProfile = null;
-    let AllPosts = []; 
-    let AllUsers = []; 
+    let AllPosts = [];
+    let AllUsers = [];
     let isRegisterMode = false;
     let currentView = 'feed';
     let viewingUserId = null;
@@ -274,23 +270,35 @@
 
     function showToast(msg) {
         const toast = document.getElementById('toast');
-        toast.innerText = msg; 
+        toast.innerText = msg;
         toast.style.display = 'block';
         clearTimeout(window.toastTimer);
         window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3000);
     }
 
     document.addEventListener("DOMContentLoaded", function() {
+        // 修复：确保 supabase 加载完毕后再初始化
+        if (typeof supabase === 'undefined') {
+            document.getElementById('error-box').style.display = 'block';
+            document.getElementById('error-box').innerText = '严重错误：Supabase引擎未加载，请检查网络或刷新页面！';
+            return;
+        }
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // 登录注册按钮点击事件
         document.getElementById('submit-btn').onclick = async function() {
             if (isLoggingIn) return;
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
             const nickname = document.getElementById('auth-nickname').value.trim();
             const btn = document.getElementById('submit-btn');
+            
             if (!email || !password) return showToast('请填写邮箱和密码');
             if (password.length < 6) return showToast('密码至少需要6位');
             if (isRegisterMode && !nickname) return showToast('请输入昵称');
+            
             isLoggingIn = true; btn.innerText = '处理中...'; btn.disabled = true;
+            
             try {
                 if (isRegisterMode) {
                     const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { data: { display_name: nickname } } });
@@ -305,15 +313,11 @@
                     if (error) throw error;
                     await initUser(data.user);
                 }
-            } catch (err) { showToast('操作失败：' + err.message); } 
+            } catch (err) { showToast('操作失败: ' + err.message); } 
             finally { isLoggingIn = false; btn.innerText = isRegisterMode ? '注 册' : '登 录'; btn.disabled = false; }
         };
-    });
 
-    function initApp() {
-        if (typeof supabase === 'undefined') return;
-        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
+        // 切换登录/注册模式
         document.getElementById('switch-btn').onclick = function() {
             if (isLoggingIn) return;
             isRegisterMode = !isRegisterMode;
@@ -322,28 +326,30 @@
             document.getElementById('switch-text').innerText = isRegisterMode ? '去登录' : '立即注册';
             document.getElementById('nickname-group').style.display = isRegisterMode ? 'block' : 'none';
         };
+
         checkAuth();
-    }
+    });
 
     async function checkAuth() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
             await initUser(session.user);
         } else {
-            document.getElementById('auth-page').style.display = 'flex'; 
+            document.getElementById('auth-page').style.display = 'flex';
             document.getElementById('app').style.display = 'none';
         }
     }
 
     async function initUser(user) {
         let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
-        if (!profile) return;
+        if (!profile) return; 
         CurrentUserProfile = profile;
         localStorage.setItem('cached_profile', JSON.stringify(profile));
-        
+
         document.getElementById('auth-page').style.display = 'none';
         document.getElementById('app').style.display = 'block';
-        
+        document.getElementById('bottom-nav').classList.add('show');
+
         let { data: users } = await supabaseClient.from('profiles').select('*');
         AllUsers = users || [];
         
@@ -400,7 +406,7 @@
         if (viewName === 'profile_other') {
             viewingUserId = targetId;
         }
-        
+
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         if (viewName !== 'profile_other') {
             const navBtn = document.querySelector(`.nav-item[data-view="${viewName}"]`);
@@ -416,7 +422,6 @@
 
     function render() {
         if (!CurrentUserProfile) return;
-        
         const headerTitle = document.getElementById('header-title');
         let html = '';
         let postsToRender = AllPosts;
@@ -428,7 +433,7 @@
         else if (currentView === 'story') {
             headerTitle.innerText = '剧情广场';
             postsToRender = postsToRender.filter(p => p.type === 'cosplay');
-        } 
+        }
         else if (currentView === 'notifications') {
             headerTitle.innerText = '消息';
             if (window.UserNotifications.length === 0) {
@@ -446,12 +451,12 @@
                     </div>`;
                 });
             }
-        } 
+        }
         else if (currentView === 'profile_self' || currentView === 'profile_other') {
             const isSelf = currentView === 'profile_self';
             const targetUser = isSelf ? CurrentUserProfile : AllUsers.find(u => u.id === viewingUserId);
             if (!targetUser) return;
-            
+
             headerTitle.innerText = isSelf ? '我的主页' : '用户主页';
             postsToRender = postsToRender.filter(p => p.author_id === targetUser.id);
 
@@ -478,14 +483,14 @@
         }
 
         if (currentView !== 'notifications') {
-            postsToRender.sort((a, b) => b.created_at - a.created_at);
+            postsToRender.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             if (postsToRender.length === 0 && currentView !== 'feed') {
                 html += `<div style="text-align:center;padding:50px;color:#666;">这里空空如也~</div>`;
             } else {
                 postsToRender.forEach(post => { html += renderPostHTML(post); });
             }
         }
-        
+
         document.getElementById('main-content').innerHTML = html;
     }
 
@@ -493,14 +498,13 @@
         const authorProfile = post.profiles || { name: '未知', avatar: '', email: '' };
         const isLiked = post.isLiked || false;
         const isBookmarked = CurrentUserProfile.bookmarks?.includes(post.id);
-        
+
         let mediaHtml = '';
         if (post.media_data) {
             if (post.media_type === 'image') mediaHtml = `<img src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}" loading="lazy">`;
             else if (post.media_type === 'video') mediaHtml = `<video src="${post.media_data}" class="${currentLayout === 'new' ? 'post-media' : 'post-classic-media'}" controls></video>`;
         }
 
-        // 简约图标集
         const iconReply = `<svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>`;
         const iconRetweet = `<svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>`;
         const iconHeart = `<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
@@ -518,7 +522,7 @@
                             <img src="${authorProfile.avatar}">
                         </div>
                         <div class="post-new-name" onclick="event.stopPropagation(); viewUser('${post.author_id}')">
-                            <span class="username">${authorProfile.name}${post.type === 'cosplay' ? `<span class="role-tag">${post.role}</span>` : ''}</span>
+                            <span class="username">${authorProfile.name}${post.type === 'cosplay' ? `<span class="role-tag">${post.role || ''}</span>` : ''}</span>
                             <span class="time">${new Date(post.created_at).toLocaleString()}</span>
                         </div>
                     </div>
@@ -527,8 +531,6 @@
                     <div class="post-content">${post.content}</div>
                     ${mediaHtml}
                 </div>
-                
-                <!-- 新版简约操作栏 -->
                 <div class="action-bar-new">
                     <div class="action-icon" onclick="openDetailPage('${post.id}')">${iconReply} <span>${(post.comments || []).length}</span></div>
                     <div class="action-icon">${iconRetweet} <span>0</span></div>
@@ -538,14 +540,12 @@
                 </div>
             </div>`;
         } else {
-            // 怀旧版排版 (完美复刻图4)
             return `
             <div class="post-classic">
                 <div class="post-classic-avatar avatar" onclick="viewUser('${post.author_id}')">
                     <img src="${authorProfile.avatar}">
                 </div>
                 <div class="post-classic-main">
-                    <!-- 头部：左名字，右时间 -->
                     <div class="post-classic-header">
                         <div class="post-classic-name-group" onclick="viewUser('${post.author_id}')">
                             <span class="post-classic-name">${authorProfile.name}</span>
@@ -553,19 +553,14 @@
                         </div>
                         <span class="post-classic-time">· ${new Date(post.created_at).toLocaleString()}</span>
                     </div>
-                    
-                    <!-- 内容点击进详情 -->
                     <div class="post-classic-content" onclick="openDetailPage('${post.id}')">${post.content}</div>
                     <div onclick="openDetailPage('${post.id}')">${mediaHtml}</div>
-                    
-                    <!-- 底部操作栏 -->
                     <div class="action-bar-new" style="margin-top:12px;">
                         <div class="action-icon" onclick="openDetailPage('${post.id}')">${iconReply} <span>${(post.comments || []).length}</span></div>
                         <div class="action-icon">${iconRetweet} <span>0</span></div>
                         <div class="action-icon ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
                         <div class="action-icon">${iconViews} <span>${post.views}</span></div>
                         <div class="action-icon ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark('${post.id}')">${isBookmarked ? iconBookmarkFill : iconBookmark}</div>
-                        <div class="action-icon"><svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></div>
                     </div>
                 </div>
             </div>`;
@@ -575,7 +570,7 @@
     window.showUserList = function(type, userId) {
         const targetUser = AllUsers.find(u => u.id === userId);
         if (!targetUser) return;
-        
+
         let list = [];
         if (type === 'following') {
             list = AllUsers.filter(u => targetUser.following_list && targetUser.following_list.includes(u.id));
@@ -605,10 +600,10 @@
         currentReplyTo = null;
         const post = AllPosts.find(x => x.id === id);
         if (!post) return;
-
+        
         document.getElementById('detail-render-area').innerHTML = `<div style="text-align:center; padding:50px; color:#888;">拉取评论中...</div>`;
         document.getElementById('detail-page').style.display = 'flex';
-        
+
         post.views = (post.views || 0) + 1;
         supabaseClient.from('posts').update({ views: post.views }).eq('id', id).then();
 
@@ -616,7 +611,7 @@
 
         const authorProfile = post.profiles || { name: '未知', avatar: '' };
         let mediaHtml = post.media_data ? (post.media_type === 'image' ? `<img src="${post.media_data}" class="detail-post-media">` : `<video src="${post.media_data}" class="detail-post-media" controls></video>`) : '';
-        
+
         let html = `<div class="detail-post-main">
             <div class="detail-user-info">
                 <div class="detail-avatar" onclick="closeDetailPage(); viewUser('${post.author_id}')"><img src="${authorProfile.avatar}"></div>
@@ -646,6 +641,7 @@
                             <div class="comment-actions"><span onclick="prepareReply('${rootAuthor.name}', '${root.author_id}')">💬 回复</span></div>
                         </div>
                     </div>`;
+                
                 if (replies.length > 0) {
                     html += `<div class="comment-replies">`;
                     replies.forEach(reply => {
@@ -654,7 +650,7 @@
                             <div class="avatar" onclick="closeDetailPage(); viewUser('${reply.author_id}')"><img src="${replyAuthor.avatar}"></div>
                             <div class="reply-body">
                                 <div class="reply-header"><span class="reply-name" onclick="closeDetailPage(); viewUser('${reply.author_id}')">${replyAuthor.name}</span></div>
-                                <div class="reply-text"><span class="reply-target">回复：</span>${reply.content}</div>
+                                <div class="reply-text"><span class="reply-target">回复: </span>${reply.content}</div>
                             </div>
                         </div>`;
                     });
@@ -664,92 +660,48 @@
             });
         }
         html += `</div>`;
-        
+
         document.getElementById('detail-render-area').innerHTML = html;
         document.getElementById('comment-input').value = '';
     }
 
-    window.closeDetailPage = function() { document.getElementById('detail-page').style.display = 'none'; render(); }
-    window.prepareReply = function(name, id) { currentReplyTo = id; const input = document.getElementById('comment-input'); input.placeholder = `回复 @${name}...`; input.focus(); }
+    window.closeDetailPage = function() { 
+        document.getElementById('detail-page').style.display = 'none'; 
+        render(); 
+    }
+
+    window.prepareReply = function(name, id) { 
+        currentReplyTo = id; 
+        const input = document.getElementById('comment-input'); 
+        input.placeholder = `回复 @${name}...`; 
+        input.focus(); 
+    }
 
     window.submitComment = async function() {
         const input = document.getElementById('comment-input');
         const c = input.value.trim(); if (!c) return;
-        
+
         await supabaseClient.from('comments').insert([{ post_id: currentPostIdForComment, author_id: CurrentUserProfile.id, content: c, reply_to: currentReplyTo }]);
         
         const post = AllPosts.find(x => x.id === currentPostIdForComment);
         if(post && post.author_id !== CurrentUserProfile.id) {
             await supabaseClient.from('notifications').insert([{ user_id: post.author_id, sender_id: CurrentUserProfile.id, type: 'comment', content: c, post_id: post.id }]);
         }
-
+        
         input.value = ''; currentReplyTo = null;
-        openDetailPage(currentPostIdForComment); 
+        openDetailPage(currentPostIdForComment);
     }
 
-    // 修复：更新点赞状态到云端
-    window.toggleLike = async function(id) {
-        const post = AllPosts.find(x => x.id === id);
-        if (!post) return;
-        post.isLiked = !post.isLiked;
-        post.likes += post.isLiked ? 1 : -1;
-        
-        if(post.isLiked && post.author_id !== CurrentUserProfile.id) {
-            await supabaseClient.from('notifications').insert([{ user_id: post.author_id, sender_id: CurrentUserProfile.id, type: 'like', post_id: post.id }]);
-        }
-        
-        render();
-    }
-
-    // 修复：更新收藏状态到云端
-    window.toggleBookmark = async function(id) {
-        if (!CurrentUserProfile.bookmarks) CurrentUserProfile.bookmarks = [];
-        const idx = CurrentUserProfile.bookmarks.indexOf(id);
-        if (idx > -1) CurrentUserProfile.bookmarks.splice(idx, 1);
-        else CurrentUserProfile.bookmarks.push(id);
-        
-        // 同步到 Supabase
-        await supabaseClient.from('profiles').update({ bookmarks: CurrentUserProfile.bookmarks }).eq('id', CurrentUserProfile.id);
-        
-        let userInAll = AllUsers.find(u => u.id === CurrentUserProfile.id);
-        if(userInAll) userInAll.bookmarks = CurrentUserProfile.bookmarks;
-        render();
-    }
-
-    // 修复：更新关注状态到云端
-    window.toggleFollow = async function(targetId) {
-        const targetUser = AllUsers.find(u => u.id === targetId);
-        if (!targetUser) return;
-        
-        let fList = CurrentUserProfile.following_list || [];
-        const idx = fList.indexOf(targetId);
-
-        if (idx > -1) {
-            fList.splice(idx, 1);
-            targetUser.followers = Math.max(0, (targetUser.followers || 0) - 1);
-        } else {
-            fList.push(targetId);
-            targetUser.followers = (targetUser.followers || 0) + 1;
-            await supabaseClient.from('notifications').insert([{ user_id: targetId, sender_id: CurrentUserProfile.id, type: 'follow' }]);
-        }
-        
-        CurrentUserProfile.following_list = fList;
-        
-        // 同步到 Supabase (双向更新)
-        await supabaseClient.from('profiles').update({ following_list: fList }).eq('id', CurrentUserProfile.id);
-        await supabaseClient.from('profiles').update({ followers: targetUser.followers }).eq('id', targetId);
-        
-        render();
-    }
-
-    window.openPostModal = function() { 
-        document.getElementById('post-input').value = ''; 
-        document.getElementById('post-role').value = ''; 
+    window.openPostModal = function() {
+        document.getElementById('post-input').value = '';
+        document.getElementById('post-role').value = '';
         document.getElementById('post-media-url').value = '';
-        switchPostMode('normal'); 
-        document.getElementById('post-modal').style.display = 'flex'; 
+        switchPostMode('normal');
+        document.getElementById('post-modal').style.display = 'flex';
     }
+    
     window.closePostModal = function() { document.getElementById('post-modal').style.display = 'none'; }
+    
     window.switchPostMode = function(mode) {
         currentPostMode = mode;
         document.getElementById('mode-normal').style.background = mode === 'normal' ? '#222' : 'transparent';
@@ -763,7 +715,7 @@
         const c = document.getElementById('post-input').value.trim();
         const role = document.getElementById('post-role').value.trim();
         const mediaUrl = document.getElementById('post-media-url').value.trim();
-        
+
         if (!c) return showToast('内容不能为空');
         if (currentPostMode === 'cosplay' && !role) return showToast('请填写角色名');
 
@@ -771,17 +723,68 @@
             author_id: CurrentUserProfile.id, content: c, type: currentPostMode, role: currentPostMode === 'cosplay' ? role : null, media_type: mediaUrl ? 'image' : null, media_data: mediaUrl || null
         }]);
 
-        closePostModal(); 
-        await resetAndLoadPosts(); 
-        switchView(currentPostMode === 'cosplay' ? 'story' : 'feed'); 
+        closePostModal();
+        await resetAndLoadPosts();
+        switchView(currentPostMode === 'cosplay' ? 'story' : 'feed');
     }
 
     window.toggleLayout = function() {
         currentLayout = currentLayout === 'new' ? 'classic' : 'new';
         localStorage.setItem('forum_layout', currentLayout);
         document.getElementById('layout-btn').innerText = currentLayout === 'new' ? '切怀旧版' : '切普通版';
-        render(); 
+        render();
+    }
+
+    window.toggleLike = async function(id) {
+        const post = AllPosts.find(x => x.id === id);
+        if (!post) return;
+        
+        post.isLiked = !post.isLiked;
+        post.likes += post.isLiked ? 1 : -1;
+        
+        if(post.isLiked && post.author_id !== CurrentUserProfile.id) {
+            await supabaseClient.from('notifications').insert([{ user_id: post.author_id, sender_id: CurrentUserProfile.id, type: 'like', post_id: post.id }]);
+        }
+        
+        render();
+    }
+
+    window.toggleBookmark = async function(id) {
+        if (!CurrentUserProfile.bookmarks) CurrentUserProfile.bookmarks = [];
+        const idx = CurrentUserProfile.bookmarks.indexOf(id);
+        if (idx > -1) CurrentUserProfile.bookmarks.splice(idx, 1);
+        else CurrentUserProfile.bookmarks.push(id);
+
+        await supabaseClient.from('profiles').update({ bookmarks: CurrentUserProfile.bookmarks }).eq('id', CurrentUserProfile.id);
+        
+        let userInAll = AllUsers.find(u => u.id === CurrentUserProfile.id);
+        if(userInAll) userInAll.bookmarks = CurrentUserProfile.bookmarks;
+        render();
+    }
+
+    window.toggleFollow = async function(targetId) {
+        const targetUser = AllUsers.find(u => u.id === targetId);
+        if (!targetUser) return;
+
+        let fList = CurrentUserProfile.following_list || [];
+        const idx = fList.indexOf(targetId);
+
+        if (idx > -1) {
+            fList.splice(idx, 1);
+            targetUser.followers = Math.max(0, (targetUser.followers || 0) - 1);
+        } else {
+            fList.push(targetId);
+            targetUser.followers = (targetUser.followers || 0) + 1;
+            await supabaseClient.from('notifications').insert([{ user_id: targetId, sender_id: CurrentUserProfile.id, type: 'follow' }]);
+        }
+
+        CurrentUserProfile.following_list = fList;
+        
+        await supabaseClient.from('profiles').update({ following_list: fList }).eq('id', CurrentUserProfile.id);
+        await supabaseClient.from('profiles').update({ followers: targetUser.followers }).eq('id', targetId);
+        
+        render();
     }
 </script>
 </body>
-</html>
+        </html>
