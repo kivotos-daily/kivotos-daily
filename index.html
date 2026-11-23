@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v3.7</title>
+    <title>基沃托斯日讯-测试版v3.9</title>
     
-    <!-- 【国内字节跳动极速节点，绝对不会被拦截】 -->
-    <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/supabase-js/2.39.7/supabase.min.js"></script>
-
     <style>
         :root { --bg-color: #121212; --text-main: #e0e0e0; --accent-color: #ff7b9c; --border-color: #333333; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -164,7 +161,7 @@
 
 <div id="auth-page">
     <div class="auth-box">
-        <div class="auth-title" id="auth-title">基沃托斯日讯-测试版v3.7</div>
+        <div class="auth-title" id="auth-title">基沃托斯日讯-测试版v3.9</div>
         <div class="input-group" id="nickname-group" style="display: none;">
             <label>昵称</label>
             <input type="text" class="auth-input" id="auth-nickname" placeholder="给自己起个名字">
@@ -266,6 +263,38 @@
 <input type="file" id="cover-uploader" accept="image/*" style="display: none;" onchange="handleTempUpload(event, 'cover')">
 
 <script>
+    // 动态尝试加载 CDN，一个失败换下一个
+    const cdnList = [
+        'https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/supabase-js/2.39.7/supabase.min.js',
+        'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+        'https://unpkg.com/@supabase/supabase-js@2',
+        'https://cdn.bootcdn.net/ajax/libs/supabase-js/2.39.7/supabase.min.js'
+    ];
+    let currentCdn = 0;
+
+    function loadSupabase() {
+        if (currentCdn >= cdnList.length) {
+            document.getElementById('error-box').style.display = 'block';
+            document.getElementById('error-box').innerText = "❌ 致命错误：所有 CDN 节点均被拦截！请关闭浏览器的广告拦截，或更换 Chrome 浏览器。";
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = cdnList[currentCdn];
+        script.onload = function() {
+            // 成功加载，启动应用
+            document.getElementById('error-box').style.display = 'none';
+            initApp();
+        };
+        script.onerror = function() {
+            currentCdn++;
+            loadSupabase(); // 失败则递归尝试下一个
+        };
+        document.head.appendChild(script);
+    }
+
+    // 延迟一下确保 DOM 加载
+    setTimeout(loadSupabase, 100);
+
     function withTimeout(promise, ms = 12000) {
         return Promise.race([
             promise,
@@ -273,28 +302,10 @@
         ]);
     }
 
-    window.onerror = function(msg) {
-        var errBox = document.getElementById('error-box');
-        errBox.style.display = 'block';
-        errBox.innerHTML = "⚠️ 代码报错: " + msg;
-        return false;
-    };
-
-    // 继续使用第一招的代理网址
+    // 代理设置
     const SUPABASE_URL = 'https://api.allorigins.win/raw?url=https%3A%2F%2Fycjshhxxqnyizewpswoc.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut'; 
     let supabaseClient = null;
-
-    try {
-        if (typeof supabase !== 'undefined') {
-            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        } else {
-            throw new Error("本地JS加载失败，请确保 supabase.min.js 已经放在仓库里");
-        }
-    } catch(e) {
-        document.getElementById('error-box').style.display = 'block';
-        document.getElementById('error-box').innerText = "❌ 初始化失败：" + e.message;
-    }
 
     let CurrentUserProfile = null;
     let AllPosts = []; 
@@ -310,7 +321,11 @@
 
     function generateSignal() { return `KIV-${Math.floor(100000 + Math.random() * 900000)}`; }
 
-    document.addEventListener("DOMContentLoaded", function() {
+    // 初始化应用
+    function initApp() {
+        if (typeof supabase === 'undefined') return;
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         document.getElementById('switch-btn').onclick = function() {
             if (isLoggingIn) return;
             isRegisterMode = !isRegisterMode;
@@ -374,7 +389,9 @@
                 btn.disabled = false; 
             }
         };
-    });
+
+        checkAuth();
+    }
 
     async function initUser(user) {
         try {
@@ -562,7 +579,7 @@
             }
             AllPosts.filter(p => p.author_id === CurrentUserProfile.id).forEach(post => { html += renderPostHTML(post); });
         } else {
-            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 测试版v3.7 已上线！</div></div>`;
+            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 测试版v3.9 已上线！</div></div>`;
             let postsToRender = AllPosts;
             if (currentView === 'story') postsToRender = postsToRender.filter(p => p.type === 'cosplay');
             
@@ -794,8 +811,6 @@
         document.getElementById('edit-profile-modal').style.display = 'none';
         render();
     }
-
-    checkAuth();
 </script>
 </body>
-    </html>
+        </html>
