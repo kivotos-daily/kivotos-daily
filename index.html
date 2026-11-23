@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v6.5</title>
+    <title>基沃托斯日讯-测试版v7.0</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -38,7 +38,7 @@
         .header-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid #444;}
         .header-title { font-size: 18px; font-weight: bold; color: #fff; display: none; }
         
-        /* 返回按钮 (仅在个人主页显示) */
+        /* 返回按钮 */
         .back-home-btn { display: none; cursor: pointer; color: #fff; align-items: center; justify-content: center; padding: 4px; margin-right: 4px;}
         .back-home-btn svg { width: 20px; height: 20px; fill: currentColor; }
         
@@ -87,7 +87,6 @@
         
         .btn-delete { color: #ff4757; margin-left: 10px;}
         .btn-delete:hover { color: #ff6b81; background: rgba(255,71,87,0.1); border-radius: 50%;}
-
         .role-tag { font-size: 11px; background: rgba(255, 123, 156, 0.2); color: var(--accent-color); padding: 1px 6px; border-radius: 4px; }
 
         /* 侧边栏 */
@@ -164,7 +163,7 @@
         .profile-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
 
         /* =========================================
-           居中弹窗样式 (图1的提示框风格)
+           居中弹窗样式
            ========================================= */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 500; display: none; justify-content: center; align-items: center; }
         .modal-content { background: #161616; width: 90%; max-width: 360px; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; border: 1px solid #333; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5);}
@@ -179,6 +178,13 @@
         .modal-input-group label { display: block; font-size: 12px; color: #888; margin-bottom: 6px;}
         .modal-input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: #1e1e1e; color: #fff; font-size: 14px; outline: none;}
         .modal-input:focus { border-color: var(--accent-color);}
+
+        /* 图片上传专用按钮 */
+        .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%;}
+        .file-upload-btn { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px dashed var(--border-color); background: #1e1e1e; color: var(--text-sub); font-size: 14px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
+        .file-upload-btn:hover { border-color: var(--accent-color); color: #fff;}
+        .file-upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
+        .preview-img { max-width: 100%; max-height: 100px; border-radius: 8px; margin-top: 8px; display: none; object-fit: cover;}
 
         /* 全屏搜索 */
         #search-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 450; display: none; flex-direction: column; }
@@ -276,7 +282,7 @@
     <div class="search-results" id="search-results"></div>
 </div>
 
-<!-- ================= 弹窗（居中样式） ================= -->
+<!-- ================= 弹窗 ================= -->
 
 <!-- 消息通知弹窗 -->
 <div class="modal-overlay" id="noti-modal-overlay" onclick="closeNotiModal(event)">
@@ -296,7 +302,7 @@
     </div>
 </div>
 
-<!-- 发帖弹窗 -->
+<!-- 发帖弹窗 (支持图片上传) -->
 <div class="modal-overlay" id="post-modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -312,15 +318,25 @@
             <input type="text" class="modal-input" id="post-role" placeholder="如: 砂狼白子">
         </div>
         <textarea class="modal-textarea" id="post-input" placeholder="有什么新鲜事？"></textarea>
+        
+        <!-- 上传图片 -->
         <div class="modal-input-group">
-            <label>附带图片/视频链接（可选）</label>
-            <input type="text" class="modal-input" id="post-media-url" placeholder="https://...">
+            <label>附带图片（可选）</label>
+            <div class="file-upload-wrapper">
+                <div class="file-upload-btn">
+                    <span id="file-upload-text">点击选择本地图片</span>
+                    <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                </div>
+                <input type="file" id="post-media-file" accept="image/*" onchange="previewImage(this, 'post-preview')">
+            </div>
+            <img id="post-preview" class="preview-img">
         </div>
-        <button class="modal-submit" onclick="submitPost()">发布</button>
+        
+        <button class="modal-submit" id="post-submit-btn" onclick="submitPost()">发布</button>
     </div>
 </div>
 
-<!-- 编辑资料弹窗 (包含 4 个字段) -->
+<!-- 编辑资料弹窗 (包含图片上传) -->
 <div class="modal-overlay" id="edit-profile-modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -335,15 +351,32 @@
             <label>个人简介 / 签名</label>
             <input type="text" class="modal-input" id="edit-bio" placeholder="介绍一下自己吧...">
         </div>
+        
         <div class="modal-input-group">
-            <label>个人头像链接</label>
-            <input type="text" class="modal-input" id="edit-avatar" placeholder="https://...">
+            <label>个人头像</label>
+            <div class="file-upload-wrapper">
+                <div class="file-upload-btn">
+                    <span id="avatar-upload-text">点击选择新头像</span>
+                    <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                </div>
+                <input type="file" id="edit-avatar-file" accept="image/*" onchange="previewImage(this, 'avatar-preview')">
+            </div>
+            <img id="avatar-preview" class="preview-img">
         </div>
+        
         <div class="modal-input-group">
-            <label>主页背景链接</label>
-            <input type="text" class="modal-input" id="edit-cover" placeholder="https://...">
+            <label>主页背景</label>
+            <div class="file-upload-wrapper">
+                <div class="file-upload-btn">
+                    <span id="cover-upload-text">点击选择背景图</span>
+                    <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                </div>
+                <input type="file" id="edit-cover-file" accept="image/*" onchange="previewImage(this, 'cover-preview')">
+            </div>
+            <img id="cover-preview" class="preview-img">
         </div>
-        <button class="modal-submit" onclick="saveProfile()">保存修改</button>
+        
+        <button class="modal-submit" id="profile-submit-btn" onclick="saveProfile()">保存修改</button>
     </div>
 </div>
 
@@ -371,6 +404,7 @@
 <script>
     const SUPABASE_URL = 'https://ycjshhxxqnyizewpswoc.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut';
+    const BUCKET_NAME = 'images'; // 你的云存储桶名字
 
     let supabaseClient = null;
     let CurrentUserProfile = null;
@@ -394,6 +428,37 @@
         toast.style.display = 'block';
         clearTimeout(window.toastTimer);
         window.toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3000); 
+    }
+
+    // ================= 图片预览逻辑 =================
+    window.previewImage = function(input, previewId) {
+        const preview = document.getElementById(previewId);
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.src = '';
+            preview.style.display = 'none';
+        }
+    }
+
+    // ================= 图片上传核心逻辑 =================
+    async function uploadImage(file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.floor(Math.random() * 1000)}.${fileExt}`;
+        const filePath = `${CurrentUserProfile.id}/${fileName}`;
+
+        // 上传文件
+        const { error: uploadError } = await supabaseClient.storage.from(BUCKET_NAME).upload(filePath, file);
+        if (uploadError) throw uploadError;
+
+        // 获取公开链接
+        const { data } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(filePath);
+        return data.publicUrl;
     }
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -676,10 +741,9 @@
         let html = '';
         let postsToRender = AllPosts;
 
-        // 控制返回按钮显示
         if (currentView === 'profile_self' || currentView === 'profile_other') {
             backBtn.style.display = 'flex';
-            searchIcon.style.display = 'none'; // 个人主页隐藏搜索图标
+            searchIcon.style.display = 'none';
         } else {
             backBtn.style.display = 'none';
             searchIcon.style.display = 'block';
@@ -976,10 +1040,13 @@
         openDetailPage(currentPostIdForComment);
     }
 
+    // ================= 发帖逻辑（带图片上传） =================
     window.openPostModal = function() {
         document.getElementById('post-input').value = '';
         document.getElementById('post-role').value = '';
-        document.getElementById('post-media-url').value = '';
+        document.getElementById('post-media-file').value = ''; // 清空文件
+        document.getElementById('post-preview').style.display = 'none'; // 隐藏预览
+        document.getElementById('file-upload-text').innerText = '点击选择本地图片';
         switchPostMode('normal');
         document.getElementById('post-modal').style.display = 'flex';
     }
@@ -997,22 +1064,47 @@
     window.submitPost = async function() {
         const c = document.getElementById('post-input').value.trim();
         const role = document.getElementById('post-role').value.trim();
-        const mediaUrl = document.getElementById('post-media-url').value.trim();
+        const fileInput = document.getElementById('post-media-file');
+        const btn = document.getElementById('post-submit-btn');
 
         if (!c) return showToast('内容不能为空');
         if (currentPostMode === 'cosplay' && !role) return showToast('请填写角色名');
 
+        btn.innerText = '发布中...';
+        btn.disabled = true;
+
         try {
+            let mediaUrl = null;
+            let mediaType = null;
+            
+            // 如果选了文件，先上传图片
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                mediaUrl = await uploadImage(file);
+                mediaType = 'image';
+            }
+
+            // 写入数据库
             const { error } = await supabaseClient.from('posts').insert([{
-                author_id: CurrentUserProfile.id, content: c, type: currentPostMode, role: currentPostMode === 'cosplay' ? role : null, media_type: mediaUrl ? 'image' : null, media_data: mediaUrl || null
+                author_id: CurrentUserProfile.id, 
+                content: c, 
+                type: currentPostMode, 
+                role: currentPostMode === 'cosplay' ? role : null, 
+                media_type: mediaType, 
+                media_data: mediaUrl
             }]);
+            
             if (error) throw error;
+            
             showToast('发布成功！');
             closePostModal();
             await resetAndLoadPosts();
             switchView(currentPostMode === 'cosplay' ? 'story' : 'feed');
         } catch (err) {
             showToast('发帖失败: ' + err.message);
+        } finally {
+            btn.innerText = '发布';
+            btn.disabled = false;
         }
     }
 
@@ -1024,53 +1116,82 @@
         render();
     }
 
-    // ================= 编辑资料 =================
+    // ================= 编辑资料（带图片上传） =================
     window.openEditProfile = function() {
         document.getElementById('edit-name').value = CurrentUserProfile.name;
         document.getElementById('edit-bio').value = CurrentUserProfile.bio || '';
-        document.getElementById('edit-avatar').value = CurrentUserProfile.avatar || '';
-        document.getElementById('edit-cover').value = CurrentUserProfile.cover || '';
+        
+        // 清空文件输入和预览
+        document.getElementById('edit-avatar-file').value = '';
+        document.getElementById('avatar-preview').style.display = 'none';
+        document.getElementById('avatar-upload-text').innerText = '点击选择新头像';
+
+        document.getElementById('edit-cover-file').value = '';
+        document.getElementById('cover-preview').style.display = 'none';
+        document.getElementById('cover-upload-text').innerText = '点击选择背景图';
+
         document.getElementById('edit-profile-modal').style.display = 'flex';
     }
 
     window.saveProfile = async function() {
         const newName = document.getElementById('edit-name').value.trim();
         const newBio = document.getElementById('edit-bio').value.trim();
-        const newAvatar = document.getElementById('edit-avatar').value.trim();
-        const newCover = document.getElementById('edit-cover').value.trim();
+        const avatarFileInput = document.getElementById('edit-avatar-file');
+        const coverFileInput = document.getElementById('edit-cover-file');
+        const btn = document.getElementById('profile-submit-btn');
         
         if (!newName) return showToast('昵称不能为空');
 
-        // 更新数据库
-        const { error } = await supabaseClient.from('profiles').update({ 
-            name: newName, 
-            bio: newBio,
-            avatar: newAvatar || CurrentUserProfile.avatar,
-            cover: newCover
-        }).eq('id', CurrentUserProfile.id);
-        
-        if (error) return showToast('保存失败: ' + error.message);
+        btn.innerText = '保存中...';
+        btn.disabled = true;
 
-        // 更新本地状态
-        CurrentUserProfile.name = newName;
-        CurrentUserProfile.bio = newBio;
-        CurrentUserProfile.avatar = newAvatar || CurrentUserProfile.avatar;
-        CurrentUserProfile.cover = newCover;
-        
-        const userInAll = AllUsers.find(u => u.id === CurrentUserProfile.id);
-        if (userInAll) { 
-            userInAll.name = newName; 
-            userInAll.bio = newBio; 
-            userInAll.avatar = CurrentUserProfile.avatar; 
-            userInAll.cover = newCover;
+        try {
+            let newAvatarUrl = CurrentUserProfile.avatar;
+            let newCoverUrl = CurrentUserProfile.cover;
+
+            // 上传新头像
+            if (avatarFileInput.files.length > 0) {
+                newAvatarUrl = await uploadImage(avatarFileInput.files[0]);
+            }
+            // 上传新背景
+            if (coverFileInput.files.length > 0) {
+                newCoverUrl = await uploadImage(coverFileInput.files[0]);
+            }
+
+            // 更新数据库
+            const { error } = await supabaseClient.from('profiles').update({ 
+                name: newName, 
+                bio: newBio,
+                avatar: newAvatarUrl,
+                cover: newCoverUrl
+            }).eq('id', CurrentUserProfile.id);
+            
+            if (error) throw error;
+
+            // 更新本地状态
+            CurrentUserProfile.name = newName;
+            CurrentUserProfile.bio = newBio;
+            CurrentUserProfile.avatar = newAvatarUrl;
+            CurrentUserProfile.cover = newCoverUrl;
+            
+            const userInAll = AllUsers.find(u => u.id === CurrentUserProfile.id);
+            if (userInAll) { 
+                userInAll.name = newName; 
+                userInAll.bio = newBio; 
+                userInAll.avatar = newAvatarUrl; 
+                userInAll.cover = newCoverUrl;
+            }
+
+            document.getElementById('header-avatar-img').src = CurrentUserProfile.avatar;
+            document.getElementById('edit-profile-modal').style.display = 'none';
+            showToast('资料已更新！');
+            render();
+        } catch (err) {
+            showToast('保存失败: ' + err.message);
+        } finally {
+            btn.innerText = '保存修改';
+            btn.disabled = false;
         }
-
-        // 更新左上角头像
-        document.getElementById('header-avatar-img').src = CurrentUserProfile.avatar;
-
-        document.getElementById('edit-profile-modal').style.display = 'none';
-        showToast('资料已更新！');
-        render();
     }
 
     window.toggleLike = async function(id) {
