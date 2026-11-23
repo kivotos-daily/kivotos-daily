@@ -3,15 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v3.4</title>
+    <title>基沃托斯日讯-测试版v3.7</title>
     
-    <script src="https://cdn.bootcdn.net/ajax/libs/supabase-js/2.39.7/supabase.min.js"></script>
-    <script>
-        if (typeof supabase === 'undefined') document.write('<script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/supabase-js/2.39.7/supabase.min.js"><\/script>');
-    </script>
-    <script>
-        if (typeof supabase === 'undefined') document.write('<script src="https://cdn.staticfile.org/supabase-js/2.39.7/supabase.min.js"><\/script>');
-    </script>
+    <!-- 【国内字节跳动极速节点，绝对不会被拦截】 -->
+    <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/supabase-js/2.39.7/supabase.min.js"></script>
 
     <style>
         :root { --bg-color: #121212; --text-main: #e0e0e0; --accent-color: #ff7b9c; --border-color: #333333; }
@@ -169,7 +164,7 @@
 
 <div id="auth-page">
     <div class="auth-box">
-        <div class="auth-title" id="auth-title">基沃托斯日讯-测试版v3.4</div>
+        <div class="auth-title" id="auth-title">基沃托斯日讯-测试版v3.7</div>
         <div class="input-group" id="nickname-group" style="display: none;">
             <label>昵称</label>
             <input type="text" class="auth-input" id="auth-nickname" placeholder="给自己起个名字">
@@ -285,20 +280,16 @@
         return false;
     };
 
-    // ==========================================
-    // 👇👇👇 这里是第一招的【公共代理网址】 👇👇👇
-    // ==========================================
+    // 继续使用第一招的代理网址
     const SUPABASE_URL = 'https://api.allorigins.win/raw?url=https%3A%2F%2Fycjshhxxqnyizewpswoc.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_SS8mq5Lp308vHP-e6rLtlw_hq1GILut'; 
-    // ==========================================
-
     let supabaseClient = null;
 
     try {
         if (typeof supabase !== 'undefined') {
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         } else {
-            throw new Error("CDN加载失败，请刷新或切换浏览器");
+            throw new Error("本地JS加载失败，请确保 supabase.min.js 已经放在仓库里");
         }
     } catch(e) {
         document.getElementById('error-box').style.display = 'block';
@@ -571,7 +562,7 @@
             }
             AllPosts.filter(p => p.author_id === CurrentUserProfile.id).forEach(post => { html += renderPostHTML(post); });
         } else {
-            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 测试版v3.4 已上线！</div></div>`;
+            html += `<div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-content">基沃托斯日讯 测试版v3.7 已上线！</div></div>`;
             let postsToRender = AllPosts;
             if (currentView === 'story') postsToRender = postsToRender.filter(p => p.type === 'cosplay');
             
