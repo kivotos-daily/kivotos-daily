@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>基沃托斯日讯-测试版v7.2</title>
+    <title>基沃托斯日讯-测试版v7.3</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -38,7 +38,6 @@
         .header-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid #444;}
         .header-title { font-size: 18px; font-weight: bold; color: #fff; display: none; }
         
-        /* 返回按钮 */
         .back-home-btn { display: none; cursor: pointer; color: #fff; align-items: center; justify-content: center; padding: 4px; margin-right: 4px;}
         .back-home-btn svg { width: 20px; height: 20px; fill: currentColor; }
         
@@ -106,7 +105,6 @@
         .back-btn { cursor: pointer; color: #fff; display: flex; align-items: center; padding: 4px; }
         .back-btn svg { width: 20px; height: 20px; fill: currentColor;}
         .detail-header-title { font-size: 16px; font-weight: bold; }
-        .detail-header-right svg { width: 20px; height: 20px; fill: #fff; cursor: pointer;}
         
         .detail-content-area { flex: 1; overflow-y: auto; padding-bottom: 70px; }
         .detail-post-main { padding: 16px; border-bottom: 1px solid var(--border-color); }
@@ -159,10 +157,10 @@
         .platform-tag { background: #2a2a2a; color: #aaa; font-size: 11px; padding: 2px 6px; border-radius: 4px;}
         .profile-bio { font-size: 15px; margin-bottom: 16px; line-height: 1.5; color: #ddd;}
         .profile-stats-row { display: flex; gap: 20px; font-size: 14px; color: var(--text-sub); margin-bottom: 16px;}
-        .profile-stats-row b { color: var(--accent-color); font-weight: normal; margin-right: 4px;}
+        .profile-stats-row b { color: var(--accent-color); font-weight: normal; margin-right: 4px; cursor: pointer;}
         .profile-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
 
-        /* 居中弹窗 */
+        /* 弹窗统一样式 */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 500; display: none; justify-content: center; align-items: center; }
         .modal-content { background: #161616; width: 90%; max-width: 360px; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; border: 1px solid #333; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5);}
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: bold; font-size: 16px; color: var(--accent-color); padding-bottom: 12px; border-bottom: 1px solid #2a2a2a;}
@@ -192,8 +190,8 @@
         .search-user-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #222; cursor: pointer;}
         
         /* 消息通知样式 */
-        .noti-tabs { display: flex; padding: 0 0 12px 0; gap: 10px; border-bottom: 1px solid #2a2a2a; margin-bottom: 12px;}
-        .noti-tab { font-size: 13px; color: #888; cursor: pointer; padding: 4px 10px; border-radius: 20px;}
+        .noti-tabs { display: flex; padding: 0 0 12px 0; gap: 10px; border-bottom: 1px solid #2a2a2a; margin-bottom: 12px; overflow-x: auto;}
+        .noti-tab { font-size: 13px; color: #888; cursor: pointer; padding: 4px 10px; border-radius: 20px; white-space: nowrap;}
         .noti-tab.active { background: #2a2a2a; color: #fff;}
         .noti-item { display: flex; gap: 12px; margin-bottom: 16px;}
         .noti-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;}
@@ -210,7 +208,7 @@
 <div id="error-box"></div>
 <div id="toast">提示信息</div>
 
-<!-- 登录页 (删除了昵称输入框) -->
+<!-- 登录页 -->
 <div id="auth-page">
     <div class="auth-box">
         <div class="auth-title" id="auth-title">登录基沃托斯</div>
@@ -261,7 +259,7 @@
     <main id="main-content"></main>
 </div>
 
-<!-- 左侧侧边栏 -->
+<!-- 侧边栏 -->
 <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
 <div id="sidebar-nav" class="sidebar-nav">
     <div id="sidebar-content" style="display:flex; flex-direction:column; flex:1;"></div>
@@ -286,9 +284,9 @@
         <div class="noti-tabs">
             <div class="noti-tab active" onclick="switchNotiTab(this)">全部</div>
             <div class="noti-tab" onclick="switchNotiTab(this)">评论</div>
-            <div class="noti-tab" onclick="switchNotiTab(this)">回复</div>
             <div class="noti-tab" onclick="switchNotiTab(this)">点赞</div>
             <div class="noti-tab" onclick="switchNotiTab(this)">关注</div>
+            <div class="noti-tab" onclick="switchNotiTab(this)">公告</div>
         </div>
         <div id="noti-modal-content" style="flex:1; overflow-y:auto; min-height:200px;"></div>
     </div>
@@ -364,6 +362,17 @@
     </div>
 </div>
 
+<!-- 用户列表弹窗 (新增) -->
+<div class="modal-overlay" id="user-list-modal">
+    <div class="modal-content" style="height: 60vh;">
+        <div class="modal-header">
+            <span id="user-list-title">列表</span>
+            <span class="modal-close" onclick="document.getElementById('user-list-modal').style.display='none'">×</span>
+        </div>
+        <div id="user-list-content" style="flex:1; overflow-y:auto;"></div>
+    </div>
+</div>
+
 <!-- 详情页 -->
 <div id="detail-page">
     <div class="detail-header">
@@ -429,7 +438,6 @@
         }
     }
 
-    // ================= 核心：前端图片自动压缩 =================
     function compressImage(file, maxWidth = 1080, quality = 0.8) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -461,7 +469,6 @@
         });
     }
 
-    // ================= 上传图片逻辑 =================
     async function uploadImage(file) {
         const compressedBlob = await compressImage(file);
         const fileName = `${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
@@ -476,7 +483,6 @@
         return data.publicUrl;
     }
 
-    // ================= 删除云端图片逻辑 =================
     async function deleteImageFromCloud(imageUrl) {
         if (!imageUrl) return;
         try {
@@ -493,7 +499,6 @@
     document.addEventListener("DOMContentLoaded", function() {
         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // 注册逻辑已修改
         document.getElementById('submit-btn').onclick = async function() {
             if (isLoggingIn) return;
             const email = document.getElementById('auth-email').value.trim();
@@ -513,19 +518,12 @@
                     if (error) throw error;
                     
                     if (data.user) {
-                        // 【核心修改】生成默认讯号、名字、首字母头像
                         const signal = generateSignal();
-                        const defaultName = `用户${signal.split('-')[1]}`; // 例如: 用户123456
-                        // 使用 ui-avatars 接口生成粉底白字的默认头像
+                        const defaultName = `用户${signal.split('-')[1]}`; 
                         const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(defaultName.charAt(0))}&background=ff7b9c&color=fff&size=128`;
 
                         const { error: profileErr } = await supabaseClient.from('profiles').insert([{ 
-                            id: data.user.id, 
-                            name: defaultName, 
-                            email: email, 
-                            signal: signal, 
-                            avatar: defaultAvatar, 
-                            bio: '' 
+                            id: data.user.id, name: defaultName, email: email, signal: signal, avatar: defaultAvatar, bio: '' 
                         }]);
                         if (profileErr) throw new Error("创建档案失败：" + profileErr.message);
                         
@@ -538,7 +536,6 @@
                 } else {
                     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                     if (error) throw error;
-                    
                     if (data.user) {
                         await initUser(data.user);
                         showToast('登录成功！');
@@ -562,7 +559,6 @@
         };
 
         document.getElementById('layout-btn').innerText = currentLayout === 'new' ? '切怀旧版' : '切普通版';
-        
         checkAuth();
     });
 
@@ -585,8 +581,7 @@
             const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(fallbackName.charAt(0))}&background=ff7b9c&color=fff&size=128`;
             
             const { data: newProfile, error: createErr } = await supabaseClient.from('profiles').insert([{
-                id: user.id, name: fallbackName, email: user.email, signal: generateSignal(), 
-                avatar: defaultAvatar, bio: '这个人很神秘。'
+                id: user.id, name: fallbackName, email: user.email, signal: generateSignal(), avatar: defaultAvatar, bio: '这个人很神秘。'
             }]).select().single();
             if (createErr) throw new Error("自动补建档案失败: " + createErr.message);
             profile = newProfile;
@@ -613,7 +608,6 @@
         location.reload();
     }
 
-    // 【核心修改】在拉取帖子时，把评论数量也一起查出来
     async function resetAndLoadPosts() {
         const { data: posts, error } = await supabaseClient
             .from('posts')
@@ -632,6 +626,10 @@
     async function loadNotifications() {
         const { data: notis } = await supabaseClient.from('notifications').select('*, sender:profiles!sender_id(name, avatar)').eq('user_id', CurrentUserProfile.id).order('created_at', { ascending: false });
         window.UserNotifications = notis || [];
+        updateNotiDot();
+    }
+
+    function updateNotiDot() {
         let unread = window.UserNotifications.filter(n => !n.is_read).length;
         const dot = document.getElementById('header-noti-dot');
         if (unread > 0) {
@@ -671,27 +669,57 @@
         document.getElementById('sidebar-nav').classList.remove('open');
     }
 
-    // ================= 弹窗通用逻辑 =================
-    window.openNotiModal = function() {
+    // ================= 消息弹窗逻辑 (增加已读和公告) =================
+    window.openNotiModal = async function() {
         document.getElementById('noti-modal-overlay').style.display = 'flex';
         renderNotiList('all');
+        
+        // 【核心修复】点击进入后，把所有未读标记为已读
+        if (window.UserNotifications.some(n => !n.is_read)) {
+            const unreadIds = window.UserNotifications.filter(n => !n.is_read).map(n => n.id);
+            window.UserNotifications.forEach(n => n.is_read = true); // 本地状态更新
+            updateNotiDot(); // 立刻隐藏红点
+            
+            // 异步更新云端数据库
+            await supabaseClient.from('notifications').update({ is_read: true }).in('id', unreadIds);
+        }
     }
+    
     window.closeNotiModal = function(event) {
         if(event && event.target !== document.getElementById('noti-modal-overlay')) return;
         document.getElementById('noti-modal-overlay').style.display = 'none';
     }
+    
     window.switchNotiTab = function(el) {
         document.querySelectorAll('.noti-tab').forEach(t => t.classList.remove('active'));
         el.classList.add('active');
         const typeText = el.innerText;
         let filterType = 'all';
-        if (typeText === '评论' || typeText === '回复') filterType = 'comment';
+        if (typeText === '评论') filterType = 'comment';
         else if (typeText === '点赞') filterType = 'like';
         else if (typeText === '关注') filterType = 'follow';
+        else if (typeText === '公告') filterType = 'announcement';
         renderNotiList(filterType);
     }
+    
     function renderNotiList(filterType) {
         const box = document.getElementById('noti-modal-content');
+        
+        // 如果是公告，直接输出静态公告
+        if (filterType === 'announcement') {
+            box.innerHTML = `
+                <div class="noti-item">
+                    <img class="noti-avatar" src="https://ui-avatars.com/api/?name=公&background=ff7b9c&color=fff&size=128">
+                    <div class="noti-item-right">
+                        <div class="noti-user-line"><span class="noti-username" style="color:var(--accent-color);">系统公告</span></div>
+                        <div style="font-size:13px; color:#ddd; margin-bottom:8px;">欢迎来到基沃托斯日讯！v7.3版本已上线，修复了点赞慢、小红点等问题，新增了图片自动压缩和首字头像功能。</div>
+                        <div class="noti-time-text">置顶</div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
         let list = window.UserNotifications || [];
         if (filterType !== 'all') list = list.filter(n => n.type === filterType);
         if (list.length === 0) {
@@ -709,10 +737,7 @@
             <div class="noti-item" onclick="viewUser('${n.sender_id}'); closeNotiModal();">
                 <img class="noti-avatar" src="${n.sender?.avatar || ''}">
                 <div class="noti-item-right">
-                    <div class="noti-user-line">
-                        <span class="noti-username">${n.sender?.name || '某人'}</span>
-                        <span class="noti-action-text">${actionText}</span>
-                    </div>
+                    <div class="noti-user-line"><span class="noti-username">${n.sender?.name || '某人'}</span><span class="noti-action-text">${actionText}</span></div>
                     ${quoteHtml}
                     <div class="noti-time-text">${new Date(n.created_at).toLocaleString()}</div>
                 </div>
@@ -721,15 +746,31 @@
         box.innerHTML = html;
     }
 
-    window.openSearch = function() {
-        document.getElementById('search-overlay').style.display = 'flex';
-        document.getElementById('search-input').focus();
+    // ================= 用户列表弹窗 (关注/粉丝) =================
+    window.showUserList = function(type, userId) {
+        const targetUser = AllUsers.find(u => u.id === userId);
+        if (!targetUser) return;
+
+        let list = [];
+        if (type === 'following') {
+            list = AllUsers.filter(u => targetUser.following_list && targetUser.following_list.includes(u.id));
+            document.getElementById('user-list-title').innerText = '正在关注';
+        } else {
+            list = AllUsers.filter(u => u.following_list && u.following_list.includes(targetUser.id));
+            document.getElementById('user-list-title').innerText = '关注者';
+        }
+
+        let html = list.length === 0 ? `<div style="text-align:center;padding:40px;color:#666;">暂无用户</div>` : '';
+        list.forEach(u => {
+            html += `<div class="search-user-item" onclick="document.getElementById('user-list-modal').style.display='none'; viewUser('${u.id}')"><div class="avatar" style="width:40px;height:40px;margin-right:12px;border-radius:50%;overflow:hidden;"><img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;"></div><div style="font-weight:bold;color:#fff;">${u.name}</div></div>`;
+        });
+        
+        document.getElementById('user-list-content').innerHTML = html;
+        document.getElementById('user-list-modal').style.display = 'flex';
     }
-    window.closeSearch = function() {
-        document.getElementById('search-overlay').style.display = 'none';
-        document.getElementById('search-input').value = '';
-        document.getElementById('search-results').innerHTML = '';
-    }
+
+    window.openSearch = function() { document.getElementById('search-overlay').style.display = 'flex'; document.getElementById('search-input').focus(); }
+    window.closeSearch = function() { document.getElementById('search-overlay').style.display = 'none'; document.getElementById('search-input').value = ''; document.getElementById('search-results').innerHTML = ''; }
     window.handleSearch = function(val) {
         const resBox = document.getElementById('search-results');
         if (!val) { resBox.innerHTML = ''; return; }
@@ -835,8 +876,8 @@
                 <div class="profile-handle">@${targetUser.signal} <span class="platform-tag">平台用户</span></div>
                 <div class="profile-bio">${targetUser.bio || '吾乃夏莱文礼部善哉仙人是也！善哉善哉😋'}</div>
                 <div class="profile-stats-row">
-                    <span><b>${followingCount}</b>关注</span>
-                    <span><b>${followersList.length}</b>粉丝</span>
+                    <span onclick="showUserList('following', '${targetUser.id}')"><b>${followingCount}</b>关注</span>
+                    <span onclick="showUserList('followers', '${targetUser.id}')"><b>${followersList.length}</b>粉丝</span>
                     <span><b>${likesCount}</b>获赞</span>
                 </div>
             </div>
@@ -858,7 +899,6 @@
         const authorProfile = post.profiles || { name: '未知', avatar: '' };
         const isBookmarked = CurrentUserProfile.bookmarks?.includes(post.id);
         
-        // 【核心修改】从聚合查询中提取真实的评论数量
         const commentCount = post.comments && post.comments[0] ? post.comments[0].count : 0;
 
         let mediaHtml = '';
@@ -940,16 +980,91 @@
         }
     }
 
-    // ================= 删除帖子及图片逻辑 =================
+    // ================= 交互逻辑优化 =================
+    
+    // 点赞：先用本地状态立即刷新UI，再后台同步
+    window.toggleLike = async function(id) {
+        const post = AllPosts.find(x => x.id === id);
+        if (!post) return;
+        
+        // 乐观更新
+        post.isLiked = !post.isLiked;
+        post.likes += post.isLiked ? 1 : -1;
+        render(); // 立即重绘，让爱心变色
+
+        try {
+            // 实际去更新数据库
+            if(post.isLiked && post.author_id !== CurrentUserProfile.id) {
+                await supabaseClient.from('notifications').insert([{ user_id: post.author_id, sender_id: CurrentUserProfile.id, type: 'like', post_id: post.id }]);
+            }
+            // 你的表里如果有记录点赞的字段，这里也可以加 update
+        } catch (err) {
+            console.error("点赞同步失败", err);
+        }
+    }
+
+    // 收藏：同上，先更新UI再同步
+    window.toggleBookmark = async function(id) {
+        if (!CurrentUserProfile.bookmarks) CurrentUserProfile.bookmarks = [];
+        const idx = CurrentUserProfile.bookmarks.indexOf(id);
+        
+        // 乐观更新
+        if (idx > -1) CurrentUserProfile.bookmarks.splice(idx, 1);
+        else CurrentUserProfile.bookmarks.push(id);
+        
+        const isNowBookmarked = CurrentUserProfile.bookmarks.includes(id);
+        showToast(isNowBookmarked ? '已加入收藏' : '已取消收藏');
+        render(); // 立即重绘让书签变色
+
+        try {
+            // 后台同步到数据库
+            await supabaseClient.from('profiles').update({ bookmarks: CurrentUserProfile.bookmarks }).eq('id', CurrentUserProfile.id);
+        } catch (err) {
+            console.error("收藏同步失败", err);
+        }
+    }
+
+    // 关注：修改为“乐观更新”，点击瞬间变化，不再卡顿
+    window.toggleFollow = async function(targetId) {
+        const targetUser = AllUsers.find(u => u.id === targetId);
+        if (!targetUser) return;
+        
+        let fList = CurrentUserProfile.following_list || [];
+        const idx = fList.indexOf(targetId);
+        
+        // 1. 立即更新本地状态
+        if (idx > -1) {
+            fList.splice(idx, 1);
+            targetUser.followers = Math.max(0, (targetUser.followers || 0) - 1);
+        } else {
+            fList.push(targetId);
+            targetUser.followers = (targetUser.followers || 0) + 1;
+        }
+        CurrentUserProfile.following_list = fList;
+        
+        // 2. 立即重绘界面（按钮瞬间变化）
+        render();
+
+        // 3. 后台静默同步
+        try {
+            if (idx === -1 && targetId !== CurrentUserProfile.id) {
+                await supabaseClient.from('notifications').insert([{ user_id: targetId, sender_id: CurrentUserProfile.id, type: 'follow' }]);
+            }
+            await supabaseClient.from('profiles').update({ following_list: fList }).eq('id', CurrentUserProfile.id);
+            await supabaseClient.from('profiles').update({ followers: targetUser.followers }).eq('id', targetId);
+        } catch (err) {
+            console.error("关注同步失败", err);
+            showToast("网络延迟，关注状态同步失败");
+        }
+    }
+
     window.deletePost = async function(id) {
         if (!confirm('确定要删除这条帖子吗？')) return;
         try {
             const post = AllPosts.find(x => x.id === id);
-            
             if (post && post.media_data) {
                 await deleteImageFromCloud(post.media_data);
             }
-
             const { error } = await supabaseClient.from('posts').delete().eq('id', id);
             if (error) throw error;
             showToast('帖子已删除');
@@ -995,7 +1110,6 @@
             ${mediaHtml}
             <div class="detail-actions-bar">
                 <div class="action-group">
-                    <!-- 这里的评论数先占位，后面加载完会更新 -->
                     <div class="action-icon" id="detail-comment-count">${iconReply} <span>...</span></div>
                     <div class="action-icon">${iconRetweet} <span>0</span></div>
                     <div class="action-icon like-btn ${post.isLiked ? 'active' : ''}" onclick="toggleLike('${post.id}')">${post.isLiked ? iconHeartFill : iconHeart} <span>${post.likes}</span></div>
@@ -1010,19 +1124,16 @@
         document.getElementById('detail-render-area').innerHTML = html;
 
         try {
-            // 浏览量+1 逻辑
             const currentViews = (post.views || 0) + 1;
             post.views = currentViews;
             supabaseClient.from('posts').update({ views: currentViews }).eq('id', id).then();
 
-            // 更新本地数据里的浏览量和评论数，确保退回列表页时显示正确
             const localPost = AllPosts.find(x => x.id === id);
             if(localPost) localPost.views = currentViews;
 
             const { data: comments, error } = await supabaseClient.from('comments').select(`*, profiles ( name, avatar, signal )`).eq('post_id', id).order('created_at', { ascending: true });
             if (error) throw error;
 
-            // 更新详情页顶部的评论数
             document.getElementById('detail-comment-count').innerHTML = `${iconReply} <span>${comments.length}</span>`;
 
             let commentHtml = '';
@@ -1089,7 +1200,7 @@
         document.getElementById('comment-input').value = '';
     }
 
-    window.closeDetailPage = function() { document.getElementById('detail-page').style.display = 'none'; resetAndLoadPosts(); } // 关闭时刷新列表，同步最新数据
+    window.closeDetailPage = function() { document.getElementById('detail-page').style.display = 'none'; resetAndLoadPosts(); }
     window.prepareReply = function(name, id) { currentReplyTo = id; const input = document.getElementById('comment-input'); input.placeholder = `回复 @${name}...`; input.focus(); }
 
     window.submitComment = async function() {
@@ -1178,7 +1289,6 @@
         render();
     }
 
-    // ================= 编辑资料（带图片上传） =================
     window.openEditProfile = function() {
         document.getElementById('edit-name').value = CurrentUserProfile.name;
         document.getElementById('edit-bio').value = CurrentUserProfile.bio || '';
@@ -1250,46 +1360,6 @@
             btn.disabled = false;
         }
     }
-
-    window.toggleLike = async function(id) {
-        const post = AllPosts.find(x => x.id === id);
-        if (!post) return;
-        post.isLiked = !post.isLiked;
-        post.likes += post.isLiked ? 1 : -1;
-        if(post.isLiked && post.author_id !== CurrentUserProfile.id) {
-            await supabaseClient.from('notifications').insert([{ user_id: post.author_id, sender_id: CurrentUserProfile.id, type: 'like', post_id: post.id }]);
-        }
-        render();
-    }
-
-    window.toggleBookmark = async function(id) {
-        if (!CurrentUserProfile.bookmarks) CurrentUserProfile.bookmarks = [];
-        const idx = CurrentUserProfile.bookmarks.indexOf(id);
-        if (idx > -1) CurrentUserProfile.bookmarks.splice(idx, 1);
-        else CurrentUserProfile.bookmarks.push(id);
-        await supabaseClient.from('profiles').update({ bookmarks: CurrentUserProfile.bookmarks }).eq('id', CurrentUserProfile.id);
-        showToast(CurrentUserProfile.bookmarks.includes(id) ? '已加入收藏' : '已取消收藏');
-        render();
-    }
-
-    window.toggleFollow = async function(targetId) {
-        const targetUser = AllUsers.find(u => u.id === targetId);
-        if (!targetUser) return;
-        let fList = CurrentUserProfile.following_list || [];
-        const idx = fList.indexOf(targetId);
-        if (idx > -1) {
-            fList.splice(idx, 1);
-            targetUser.followers = Math.max(0, (targetUser.followers || 0) - 1);
-        } else {
-            fList.push(targetId);
-            targetUser.followers = (targetUser.followers || 0) + 1;
-            await supabaseClient.from('notifications').insert([{ user_id: targetId, sender_id: CurrentUserProfile.id, type: 'follow' }]);
-        }
-        CurrentUserProfile.following_list = fList;
-        await supabaseClient.from('profiles').update({ following_list: fList }).eq('id', CurrentUserProfile.id);
-        await supabaseClient.from('profiles').update({ followers: targetUser.followers }).eq('id', targetId);
-        render();
-    }
 </script>
 </body>
-    </html>
+                </html>
